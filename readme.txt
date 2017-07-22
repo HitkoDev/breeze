@@ -11,7 +11,7 @@ Breeze is a WordPress Caching Plugin developed by Cloudways. Breeze uses advance
 
 == Description ==
 
-Breeze is a simple and user-friendly WordPress Caching Plugin developed by the Cloudways team. It offers users various options to optimize WordPress performance on various levels. It works equally great on WordPress, WordPress with WooCommerce and WordPress Multisite..
+Breeze is a simple and user-friendly WordPress Caching Plugin developed by the Cloudways team. It offers users various options to optimize WordPress performance on various levels. It works equally great on WordPress, WordPress with WooCommerce and WordPress Multisite.
 
 Breeze features excellence on the following levels:.
 
@@ -36,9 +36,9 @@ Once you install the plugin, the results will show instantly. Along with awesome
 * Click on install and then click on the activate link
 
 = To install the plugin manually: =
-* Download and unzip the plugin cloudways_breeze.zip
-* Upload the /cloudways_breeze to /wp-content/plugins/
-* Activate the plugin through the 'Plugins' menu in WordPress
+* Download and unzip the plugin Breeze
+* Upload the /breeze to /wp-content/plugins/
+* Activate Breeze through the 'Plugins' menu in WordPress
 * Access Breeze from WordPress Admin > Settings > Breeze
 
 == Frequently Asked Questions ==
@@ -46,15 +46,10 @@ Once you install the plugin, the results will show instantly. Along with awesome
 = Installation Instructions
 
 To install the plugin via WordPress Dashboard
-1. Through the WordPress admin panel, Menu > Plugin > Add new
-2. Search for Breeze
-3. Click on install then click activate link
+1. Through the WordPress admin panel, Menu > Plugin > Add new, 2. Search for Breeze, 3. Click on install then click activate link
 
 To install the plugin manually
-1. Download and unzip the plugin package - breeze.zip
-2. Upload the /breeze to /wp-content/plugins/
-3. Activate the plugin through the 'Plugins' menu in WordPress
-4. Access Breeze from WordPress Admin > Settings > Breeze
+1. Download and unzip the plugin package, 2. Upload the /breeze to /wp-content/plugins/, 3. Activate the Breeze through the 'Plugins' menu in WordPress, 4. Access Breeze from WordPress Admin > Settings > Breeze
 
 = Does Breeze support Varnish and to what extent? =
 
