@@ -25,8 +25,7 @@ Once you install the plugin, the results will show instantly. Along with awesome
 
 **Note:** Not all options will be functional on all hosting providers. For example, Varnish is only functional on hosting providers that have Varnish installed on their servers.
 
-= **Support** =
-We recommend that you get your questions answered in the support section before leaving a review. We never leave any question unanswered! 
+**Support:** We recommend that you get your questions answered in the support section before leaving a review. We never leave any question unanswered! 
 
 
 == Installation ==
@@ -47,15 +46,15 @@ We recommend that you get your questions answered in the support section before 
 = Installation Instructions
 
 To install the plugin via WordPress Dashboard
-* Through the WordPress admin panel, Menu > Plugin > Add new
-* Search for Breeze
-* Click on install then click activate link
+1. Through the WordPress admin panel, Menu > Plugin > Add new
+2. Search for Breeze
+3. Click on install then click activate link
 
 To install the plugin manually
-* Download and unzip the plugin package - breeze.zip
-* Upload the /breeze to /wp-content/plugins/
-* Activate the plugin through the 'Plugins' menu in WordPress
-* Access Breeze from WordPress Admin > Settings > Breeze
+1. Download and unzip the plugin package - breeze.zip
+2. Upload the /breeze to /wp-content/plugins/
+3. Activate the plugin through the 'Plugins' menu in WordPress
+4. Access Breeze from WordPress Admin > Settings > Breeze
 
 = Does Breeze support Varnish and to what extent? =
 
@@ -106,7 +105,7 @@ Breeze supports all options including Gzip, browser cache, minification, groupin
 
 =  Where can I get support for Breeze? =
 
-You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion on [Cloudways Community Forums] (https://community.cloudways.com/).
+You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion on <a href="https://community.cloudways.com/">Cloudways community forums</a>.
 
 == Changelog ==
 
