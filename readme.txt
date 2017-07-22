@@ -46,10 +46,15 @@ Once you install the plugin, the results will show instantly. Along with awesome
 = Installation Instructions
 
 To install the plugin via WordPress Dashboard
-1. Through the WordPress admin panel, Menu > Plugin > Add new, 2. Search for Breeze, 3. Click on install then click activate link
+ 1. Through the WordPress admin panel, Menu > Plugin > Add new
+ 2. Search for Breeze
+ 3. Click on install then click activate link
 
 To install the plugin manually
-1. Download and unzip the plugin package, 2. Upload the /breeze to /wp-content/plugins/, 3. Activate the Breeze through the 'Plugins' menu in WordPress, 4. Access Breeze from WordPress Admin > Settings > Breeze
+ 1. Download and unzip the plugin package
+ 2. Upload the /breeze to /wp-content/plugins/
+ 3. Activate the Breeze through the 'Plugins' menu in WordPress
+ 4. Access Breeze from WordPress Admin > Settings > Breeze
 
 = Does Breeze support Varnish and to what extent? =
 
