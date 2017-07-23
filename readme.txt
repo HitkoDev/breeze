@@ -11,34 +11,35 @@ Breeze is a WordPress Caching Plugin developed by Cloudways. Breeze uses advance
 
 == Description ==
 
-Breeze is a simple and user-friendly WordPress Caching Plugin developed by the Cloudways team. It offers users various options to optimize WordPress performance on various levels. It works equally great on WordPress, WordPress with WooCommerce and WordPress Multisite.
+Breeze is a free, simple (yet powerful) and user-friendly WordPress Caching Plugin developed by the Cloudways team. It offers various options to optimize WordPress performance at various levels. It works equally great with WordPress, WordPress with WooCommerce and WordPress Multisite.
 
-Breeze features excellence on the following levels:.
+Breeze excels in the following areas:
 
-* **Performance:** Your website speeds will be improved and resources will be optimized. Other features include file level cache system, database cleanup, minification, support for Varnish cache and simplified CDN integration options.
+* **Performance:** Breeze improves website speed and resource optimization. Other features include file level cache system, database cleanup, minification, support for Varnish cache and simplified CDN integration options.
 
-* **Convenience:** It's easy to install directly from WordPress and configure. Breeze comes pre-configured so you can use it without worrying about configuration. Our recommended settings should work on all your WordPress websites seamlessly.
+* **Convenience:** Breeze is easy to install and configure directly from WordPress. Configuring Breeze is easy and most of the default options work well right out of the box. The recommended settings should work on all your WordPress websites seamlessly.
 
-* **Simplicity:** It's quite simple to use for regular and advanced users. Just install and activate the plugin and you'll see the results instantaneously.
+* **Simplicity:** Breeze is designed to be simple for all users. Just install and activate the plugin and you'll see the results instantaneously.
 
-Once you install the plugin, the results will show instantly. Along with awesome site performance, Varnish cache integration will  speed up loading times of your WordPress website exponentially.
+What makes Breeze WordPress Cache Plugin awesome is that it comes with builtin support for Varnish. If Varnish is not installed on your servers, Breeze will utilize its internal cache mechanism to boost up your WordPress site performance.
 
-**Note:** Not all options will be functional on all hosting providers. For example, Varnish is only functional on hosting providers that have Varnish installed on their servers.
+**Support:** We love to provide support! Post your questions on the WordPress.org support forums, or if you are a Cloudways Customer you may ask questions on the <a href="https://community.cloudways.com/">Cloudways Community Forum</a>. 
 
-**Support:** We recommend that you get your questions answered in the support section before leaving a review. We never leave any question unanswered! 
+**Note:** This plugin is still in Beta phase and this plugin is tested on Cloudways WordPress hosting servers.
+
 
 
 == Installation ==
 
 = To install the plugin via WordPress Dashboard: =
-* Through the WordPress admin panel, navigate to Plugin > Add new
+* In the WordPress admin panel, navigate to Plugin > Add new
 * Search for Breeze
-* Click on install and then click on the activate link
+* Click install and wait for the installation to finish. Next, click the activate link
 
 = To install the plugin manually: =
-* Download and unzip the plugin Breeze
-* Upload the /breeze to /wp-content/plugins/
-* Activate Breeze through the 'Plugins' menu in WordPress
+* Download and unzip the plugin package - breeze.1.0.0.zip
+* Upload the breeze to /wp-content/plugins/
+* Activate the plugin through the 'Plugins' menu in WordPress
 * Access Breeze from WordPress Admin > Settings > Breeze
 
 == Frequently Asked Questions ==
@@ -46,31 +47,32 @@ Once you install the plugin, the results will show instantly. Along with awesome
 = Installation Instructions
 
 To install the plugin via WordPress Dashboard
- 1. Through the WordPress admin panel, Menu > Plugin > Add new
- 2. Search for Breeze
- 3. Click on install then click activate link
+1. In the WordPress admin panel, Menu > Plugin > Add new
+2. Search for Breeze
+3. Click on install and wait for the installation to finish. Next, then click on the activate link
 
 To install the plugin manually
- 1. Download and unzip the plugin package
- 2. Upload the /breeze to /wp-content/plugins/
- 3. Activate the Breeze through the 'Plugins' menu in WordPress
- 4. Access Breeze from WordPress Admin > Settings > Breeze
+1. Download and unzip the plugin package - breeze.1.0.0.zip
+2. Upload the /breeze to /wp-content/plugins/
+3. Activate the plugin through the 'Plugins' menu in WordPress
+4. Access Breeze from WordPress Admin > Settings > Breeze
 
 = Does Breeze support Varnish and to what extent? =
 
-Breeze, by default, supports Varnish. It has been tested to be fully compatible with Cloudways Servers that come with Varnish pre-installed. If you are using hosting providers other than Cloudways, we suggest that you confirm Varnish support with them.
+Breeze, by default, supports Varnish. It has been tested to be fully compatible with Cloudways Servers that come with Varnish pre-installed. If you are using hosting providers other than Cloudways, we suggest you confirm Varnish support with your hosting provider
 
 = Does Breeze support WooCommerce? =
 
-Breeze is fully compatible with WooCommerce out of the box. Hence, no special configuration is required.
+Breeze is fully compatible with WooCommerce, out of the box. It does not require any special configurations. 
 
-= Does Breeze support WordPress Multisite?
+= Does Breeze support WordPress Multisite? =
 
 Breeze is fully compatible with WordPress Multisite without the need for any extra configuration. 
 
-= Is Breeze compatible with other WordPress cache plugins? =
+= Is Breeze compatible with other WordPress Cache plugins? =
 
-It is not recommended to use two WordPress cache plugins at the same time on any WordPress website. We recommend  that you only stick to Breeze. If there are any other cache plugins installed, please ensure that you have t disabled them prior to proceeding with the Breeze installation.
+We DO NOT recommend using two WordPress cache plugins at the same time on any WordPress website. 
+We strongly recommend that you use Breeze as the only cache plugin for your website. If there are any other cache plugins installed, please ensure that you have disabled them prior to proceeding with the Breeze installation.
 
 
 = Is Breeze compatible with HTTPS? =
@@ -79,38 +81,41 @@ Breeze does not require any special configuration to work with HTTP or HTTPS pag
 
 = Does Breeze have compatibility issues with other known plugins? =
 
-Breeze has been tested with popular plugins available on WordPress.org. Please feel free to report any incompatibilities on the WordPress support forums.
+Breeze has been tested with popular plugins available on WordPress.org. Please feel free to report any incompatibilities on the WordPress Support Forums or on <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
 
 = Does Breeze support CDN? =
 
-Breeze supports CDN integration. It allows all static assets to be served via CDN such as images, css and js files.
+Breeze supports CDN integration. It allows all static assets (such as images, CSS and JS files) to be served via CDN. 
 
 = What does Breeze's Database Optimization feature do? =
 
-WordPress databases are notorious for storing information like post revisions, spam comments and much more. Over time, databases will become bloated and it is a good practice to clear out unwanted information from the WordPress database to reduce its size and optimize it.
+WordPress databases are notorious for storing information like post revisions, spam comments and much more. Over time, databases l become bloated and it is a good practice to clear out unwanted information to reduce database size and improve optimization. 
+Breeze's database optimization cleans out unwanted information in a single click. 
 
-Breeze's database optimization will help you clear out databases from unwanted information with just a single click.
+= Will comments and other dynamic parts of my blog appear immediately? =
 
-= Will comments and other dynamic parts of my Blog appear immediately? =
-
-Comments will appear upon moderation as per the comment system (or policy) set in place by the Blog owner. Other dynamic changes such as any modifications in files will require a full cache purge.
+Comments will appear upon moderation as per the comment system (or policy) set in place by the blog owner. Other dynamic changes such as any modifications in files will require a full cache purge.
 
 = Can I exclude URLs of individual files and pages from cache? =
 
-You can exclude a file by mentioning its URL or file type by mentioning file extension on the exclude fields. Exclude will not let the cache impact that URL or file type. However, you may need to exclude  for Varnish to work. 
+You can exclude a file by mentioning its URL or file type (by mentioning file extension) in the exclude fields (available in the Breeze settings). Exclude will not let the cache impact that URL or file type. 
+If Varnish is active, you will need to exclude URLs and file type(s) in the Varnish configuration. If you are hosting WordPress websites on Cloudways servers, follow < a href=.https://support.cloudways.com/how-to-exclude-url-from-varnish/.>this KB to exclude URLs from the Varnish cache</a>.  
+
 
 = Does it work with all hosting providers? =
 
-Breeze supports all options including Gzip, browser cache, minification, grouping, database optimization. CDN integration will work similarly on all hosting providers. Varnish, however, is compatible with Cloudways servers.
+Breeze is in Beta phase and has not yet been tested on hosting providers other than Cloudways. 
+However, major Breeze options such as Gzip, browser cache, minification, grouping, database optimization. CDN integration will work as expected on other hosting providers. 
+
 
 =  Where can I get support for Breeze? =
 
-You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion on <a href="https://community.cloudways.com/">Cloudways community forums</a>.
+You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at <a href="https://community.cloudways.com/">Cloudways Community Forums</a>.
 
 == Changelog ==
 
 = 1.0.0 =
-* Add : First release
+* Add : First Beta release
 
 
 == Upgrade Notice ==
