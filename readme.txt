@@ -112,8 +112,7 @@ However, major Breeze options such as Gzip, browser cache, minification, groupin
 
 =  Where can I get support for Breeze? =
 
-You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at <a href="https://community.cloudways.com/">Cloudways Community Forums</a>.
-.
+You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
 
 == Changelog ==
 
