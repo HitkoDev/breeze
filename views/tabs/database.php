@@ -1,5 +1,5 @@
 <div class="breeze-top-notice">
-    <label class="breeze_tool_tip"><?php _e('It is recommended to backup your Database before using the following options.','breeze')?></label>
+    <label class="breeze_tool_tip"><?php _e('Important: Backup your databases before using the following options!','breeze')?></label>
 </div>
 <table cellspacing="15">
     <tr>
@@ -17,7 +17,7 @@
         </td>
         <td>
             <input type="checkbox" id="data1" name="clean[]" class="clean-data" value="revisions"/>
-            <label class="breeze_tool_tip"><?php _e('Use this option to clear out post revisions from your WordPress database.','breeze')?></label>
+            <label class="breeze_tool_tip"><?php _e('Use this option to delete all post revisions from the WordPress database.','breeze')?></label>
         </td>
     </tr>
     <tr>
@@ -26,7 +26,7 @@
         </td>
         <td>
             <input type="checkbox" id="data2" name="clean[]" class="clean-data" value="drafted"/>
-            <label class="breeze_tool_tip"><?php _e('Use this option to delete the auto saved drafts from WordPress database.','breeze')?></label>
+            <label class="breeze_tool_tip"><?php _e('Use this option to delete auto saved drafts from the WordPress database.','breeze')?></label>
         </td>
     </tr>
     <tr>
@@ -35,7 +35,7 @@
         </td>
         <td>
             <input type="checkbox" id="data3" name="clean[]" class="clean-data" value="trash"/>
-            <label class="breeze_tool_tip"><?php _e('Use this option to delete the trashed content from WordPress database.','breeze')?></label>
+            <label class="breeze_tool_tip"><?php _e('Use this option to delete all trashed content from the WordPress database.','breeze')?></label>
 
         </td>
     </tr>
@@ -45,7 +45,7 @@
         </td>
         <td>
             <input type="checkbox" id="data4" name="clean[]" class="clean-data" value="comments"/>
-            <label class="breeze_tool_tip"><?php _e('Use this option to cleanup trash and spam comments from WordPress database.','breeze')?></label>
+            <label class="breeze_tool_tip"><?php _e('Use this option to delete trash and spam comments from the WordPress database.','breeze')?></label>
         </td>
     </tr>
     <tr>
@@ -54,7 +54,7 @@
         </td>
         <td>
             <input type="checkbox" id="data5" name="clean[]" class="clean-data" value="trackbacks"/>
-            <label class="breeze_tool_tip"><?php _e('Cleanup Transients and Pingbacks from the WordPress database.','breeze')?></label>
+            <label class="breeze_tool_tip"><?php _e('Use this option to delete Trackbacks and Pingbacks from the WordPress database.','breeze')?></label>
         </td>
     </tr>
     <tr>
@@ -63,7 +63,7 @@
         </td>
         <td>
             <input type="checkbox" id="data6" name="clean[]" class="clean-data" value="transient"/>
-            <label class="breeze_tool_tip"><?php _e('Cleanup expired and active Transients from WordPress.','breeze')?></label>
+            <label class="breeze_tool_tip"><?php _e('Delete expired and active transients from the WordPress database.','breeze')?></label>
         </td>
     </tr>
 </table>

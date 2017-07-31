@@ -48,7 +48,7 @@ $basic = get_option('breeze_basic_settings');
                     <label class="breeze_tool_tip"><?php _e('JS', 'breeze') ?></label>
                 </li>
                 <li>
-                    <label><?php _e('Use the above options to minify HTML, CSS, or JS files.', 'breeze') ?></label>
+                    <label><?php _e('Check the above boxes to minify HTML, CSS, or JS files.', 'breeze') ?></label>
                     <br>
                     <label><b>Note:&nbsp;</b>
                         <span style="color: #ff0000"><?php _e('We recommend testing minification on a staging website before deploying it on a live website. Minification is known to cause issues on the frontend.', 'breeze') ?></span>

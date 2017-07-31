@@ -1,10 +1,10 @@
 <?php
 $tabs = array(
-    'basic' => __('Basic options', 'breeze'),
-    'advanced' => __('Advanced options', 'breeze'),
-    'database' => __('Database', 'breeze'),
+    'basic' => __('BASIC OPTIONS', 'breeze'),
+    'advanced' => __('ADVANCED OPTIONS', 'breeze'),
+    'database' => __('DATABASE', 'breeze'),
     'cdn' => __('CDN', 'breeze'),
-    'varnish' => __('Varnish', 'breeze'),
+    'varnish' => __('VARNISH', 'breeze'),
 );
 ?>
 <?php if (isset($_REQUEST['database-cleanup']) && $_REQUEST['database-cleanup'] == 'success'): ?>
@@ -15,13 +15,19 @@ $tabs = array(
      <div id="message-save-settings" class="notice notice-success" style="margin: 10px 0px 10px 0;padding: 10px;"><strong><?php _e('Configuration settings saved', 'breeze'); ?></strong></div>
 <?php endif; ?>
 <div class="wrap breeze-main">
-    <div class="breeze-header" style="display: none"><a  href="https://www.cloudways.com" target="_blank">
+    <div class="breeze-header">
+        <a  href="https://www.cloudways.com" target="_blank">
         <div class="breeze-logo"></div>
-        <label class="breeze-logo-title"><?php _e('CLOUDWAYS', 'breeze'); ?></label>
         </a>
     </div>
+
+    <div class="breeze-desc" style="margin-bottom: 10px">
+        <span><?php _e('This plugin is in Beta phase. Please feel free to report any issues on the WordPress Support Forums or on', 'breeze'); ?></span>
+        <a href="https://community.cloudways.com/" target="_blank"><?php _e('Cloudways Community Forum', 'breeze') ?></a>
+    </div>
+    <h1></h1>
+
     <div style="clear: both"></div>
-    <h1 style="padding: 0;font-size: 30px"><?php _e("Breeze - WordPress Cache Settings", 'breeze'); ?></h1>
 
     <ul id="breeze-tabs" class="nav-tab-wrapper">
         <?php

@@ -103,12 +103,12 @@ class Breeze_PurgeVarnish {
                 //clear varnish cache
                 $this->purge_cache($homepage);
                 //clear static cache
-                $size_cache = Breeze_Configuration::ajax_clean_cache($_GET['breeze_purge']);
+                $size_cache = Breeze_Configuration::breeze_clean_cache();
 
                 if((int)$size_cache > 0){
-                    echo '<div id="message-clear-cache-top" style="margin: 10px 0px 10px 0;padding: 10px;" class="notice notice-success" ><strong>'.__('OK ! Cache is cleaned: ','breeze') .$size_cache.__(' Kb static cache cleaned','breeze').'</strong></div>';
+                    echo '<div id="message-clear-cache-top" style="margin: 10px 0px 10px 0;padding: 10px;" class="notice notice-success" ><strong>'.__('Cache data has been purged: ','breeze') .$size_cache.__(' Kb static cache cleaned','breeze').'</strong></div>';
                 }else{
-                    echo '<div id="message-clear-cache-top" style="margin: 10px 0px 10px 0;padding: 10px;" class="notice notice-success" ><strong>'.__('OK ! Cache file cleaned successfully','breeze').'</strong></div>';
+                    echo '<div id="message-clear-cache-top" style="margin: 10px 0px 10px 0;padding: 10px;" class="notice notice-success" ><strong>'.__('Cache data has been purged.','breeze').'</strong></div>';
                 }
             }
         }

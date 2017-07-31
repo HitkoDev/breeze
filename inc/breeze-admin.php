@@ -2,7 +2,7 @@
 /**
  *  @copyright 2017  Cloudways  https://www.cloudways.com
  *
- *  Original development of this plugin by JoomUnited https://www.joomunited.com/
+ *  This plugin is inspired from WP Speed of Light by JoomUnited.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,15 @@ class Breeze_Admin {
         add_action('admin_init', array($this, 'admin_init'));
         //register menu
         add_action('admin_menu', array($this, 'register_menu_page'));
+
+        // Add notice when installing plugin
+	    $first_install = get_option('breeze_first_install');
+	    if ($first_install === false) {
+	    	add_option('breeze_first_install', 'yes');
+	    }
+	    if ($first_install == 'yes') {
+		    add_action('admin_notices', array($this, 'installing_notices'));
+	    }
 
         $config = get_option('breeze_basic_settings');
 
@@ -73,7 +82,17 @@ class Breeze_Admin {
         }
     }
 
-    function loadAdminScripts() {
+    // Add notice message when install plugin
+	public function installing_notices() {
+		$class = 'notice notice-success';
+		$message = __('Thanks for installing Breeze. It is always recommended not to use more than one caching plugin at the same time. We recommend you to purge cache if necessary.', 'breeze');
+
+		printf( '<div class="%1$s"><p>%2$s <button class="button" id="breeze-hide-install-msg">'.__("Hide message", "breeze").'</button></p></div>', esc_attr( $class ), esc_html( $message ));
+		update_option('breeze_first_install', 'no');
+	}
+
+
+	function loadAdminScripts() {
         wp_enqueue_script('jquery');
         wp_enqueue_script('breeze-backend', plugins_url('assets/js/breeze-backend.js', dirname(__FILE__)), array('jquery'), BREEZE_VERSION, true);
         $current_screen = get_current_screen();
@@ -83,6 +102,14 @@ class Breeze_Admin {
             //js
             wp_enqueue_script('breeze-configuration', plugins_url('assets/js/breeze-configuration.js', dirname(__FILE__)), array('jquery'), BREEZE_VERSION, true);
         }
+
+        $token_name = array(
+            'breeze_purge_varnish' => wp_create_nonce("_breeze_purge_varnish"),
+            'breeze_purge_database' => wp_create_nonce("_breeze_purge_database"),
+            'breeze_purge_cache' => wp_create_nonce("_breeze_purge_cache")
+        );
+
+        wp_localize_script('breeze-backend','breeze_token_name',$token_name);
     }
 
     /**
@@ -137,7 +164,7 @@ class Breeze_Admin {
             // add child item (Purge Modules)
             $args = array(
                 'id'     => 'breeze-purge-varnish-group',
-                'title'  => esc_html(__('Purge Varnish', 'breeze')),
+                'title'  => esc_html(__('Purge Varnish Cache', 'breeze')),
                 'href' => '#',
                 'parent' => 'breeze-purge-modules',
             );
@@ -146,16 +173,7 @@ class Breeze_Admin {
             // add child item (Purge Modules)
             $args = array(
                 'id'     => 'breeze-purge-file-group',
-                'title'  => esc_html(__('Purge File', 'breeze')),
-                'href' => '#',
-                'parent' => 'breeze-purge-modules',
-            );
-            $wp_admin_bar->add_node( $args );
-
-            // add child item (Purge Modules)
-            $args = array(
-                'id'     => 'breeze-purge-database-group',
-                'title'  => esc_html(__('Purge Database', 'breeze')),
+                'title'  => esc_html(__('Purge Internal Cache', 'breeze')),
                 'href' => '#',
                 'parent' => 'breeze-purge-modules',
             );
@@ -182,6 +200,17 @@ class Breeze_Admin {
             );
             $wp_admin_bar->add_node( $args );
 
+	        // add feedback item
+	        $args = array(
+		        'id'     => 'breeze-feedback',
+		        'title'  => esc_html(__('Feedback', 'breeze')),
+		        'href' => 'https://www.surveymonkey.com/r/YNV2XVL',
+		        'parent' => 'breeze-topbar',
+		        'meta'   => array( 'class' => 'breeze-toolbar-group',
+		                           'target' => '_blank'),
+	        );
+	        $wp_admin_bar->add_node( $args );
+
         }
     }
 
@@ -199,8 +228,8 @@ class Breeze_Admin {
     //ajax admin
     function ajaxHandle() {
         add_action('wp_ajax_breeze_purge_varnish', array('Breeze_Configuration', 'purge_varnish_action'));
-        add_action('wp_ajax_breeze_purge_file', array('Breeze_Configuration', 'ajax_clean_cache'));
-        add_action('wp_ajax_breeze_purge_database', array('Breeze_Configuration', 'ajax_purge_database'));
+        add_action('wp_ajax_breeze_purge_file', array('Breeze_Configuration', 'breeze_ajax_clean_cache'));
+        add_action('wp_ajax_breeze_purge_database', array('Breeze_Configuration', 'breeze_ajax_purge_database'));
     }
     /*
      * Register active plugin hook

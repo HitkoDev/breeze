@@ -6,9 +6,6 @@ jQuery(document).ready(function ($) {
     $('#wp-admin-bar-breeze-purge-file-group').click(function(){
         breeze_purgeFile_callAjax();
     });
-    $('#wp-admin-bar-breeze-purge-database-group').click(function(){
-        breeze_purgeDatabase_callAjax();
-    });
     // Varnish clear button
     $('#purge-varnish-button').click(function(){
         breeze_purgeVarnish_callAjax();
@@ -21,12 +18,13 @@ jQuery(document).ready(function ($) {
             dataType:'json',
             method:'POST',
             data:{
-                action:'breeze_purge_varnish'
+                action:'breeze_purge_varnish',
+                security : breeze_token_name.breeze_purge_varnish
             },
             success : function(res){
                 current = location.href;
                 if(res.clear){
-                    var div = '<div id="message" class="notice notice-success" style="margin-top:10px; margin-bottom:10px;padding: 10px;"><strong>OK! Purge Varnish Success</strong></div>';
+                    var div = '<div id="message" class="notice notice-success" style="margin-top:10px; margin-bottom:10px;padding: 10px;"><strong>Varnish Cache has been purged.</strong></div>';
                     //backend
                     $("#wpbody .wrap h1").after(div);
                     setTimeout(function(){
@@ -46,7 +44,8 @@ jQuery(document).ready(function ($) {
             dataType:'json',
             method:'POST',
             data:{
-                action:'breeze_purge_file'
+                action:'breeze_purge_file',
+                security : breeze_token_name.breeze_purge_cache
             },
             success : function(res){
                 current = location.href;
@@ -57,31 +56,6 @@ jQuery(document).ready(function ($) {
                     window.location.href = current+ "breeze-msg=success-cleancache&file="+res;
                 }
                 location.reload();
-            }
-        });
-    }
-
-    function breeze_purgeDatabase_callAjax(){
-        $.ajax({
-            url:ajaxurl,
-            dataType:'json',
-            method:'POST',
-            data:{
-                action:'breeze_purge_database'
-            },
-            success : function(res){
-                current = location.href;
-                if(res.clear){
-                    var div = '<div id="message" class="notice notice-success" style="margin-top:10px; margin-bottom:10px;padding: 10px;"><strong>OK! Database cleanup successful</strong></div>';
-                    //backend
-                    $("#wpbody .wrap h1").after(div);
-                    setTimeout(function(){
-                        location.reload();
-                    },2000);
-                }else{
-                    window.location.href = current+ "breeze-msg=purge-fail";
-                    location.reload();
-                }
             }
         });
     }
@@ -106,9 +80,9 @@ jQuery(document).ready(function ($) {
             var div = '';
             if(url.indexOf("msg=success-cleancache") > 0 && !isNaN(fileClean) ) {
                 if(fileClean > 0){
-                    div = '<div id="message" class="notice notice-success" style="margin-top:10px; margin-bottom:10px;padding: 10px;"><strong>OK cache is clean: '+fileClean+'Kb cleaned</strong></div>';
+                    div = '<div id="message" class="notice notice-success" style="margin-top:10px; margin-bottom:10px;padding: 10px;"><strong>Internal cache has been purged: '+fileClean+'Kb cleaned</strong></div>';
                 }else{
-                    div = '<div id="message" class="notice notice-success" style="margin-top:10px; margin-bottom:10px;padding: 10px;"><strong>OK ! Cache file cleaned successfully</strong></div>';
+                    div = '<div id="message" class="notice notice-success" style="margin-top:10px; margin-bottom:10px;padding: 10px;"><strong>Internal cache has been purged.</strong></div>';
 
                 }
 
@@ -126,5 +100,7 @@ jQuery(document).ready(function ($) {
 
     });
 
-
+    $('#breeze-hide-install-msg').unbind('click').click(function () {
+        $(this).closest('div.notice').fadeOut();
+    })
 });

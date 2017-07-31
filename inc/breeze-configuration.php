@@ -2,7 +2,7 @@
 /**
  *  @copyright 2017  Cloudways  https://www.cloudways.com
  *
- *  Original development of this plugin by JoomUnited https://www.joomunited.com/
+ *  This plugin is inspired from WP Speed of Light by JoomUnited.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -400,7 +400,7 @@ class Breeze_Configuration{
         return $output;
     }
     //ajax clean cache
-    public static function ajax_clean_cache($check = false) {
+    public static function breeze_clean_cache() {
         $size_cache = 0;
         $size_css_cache = 0;
         $size_js_cache = 0;
@@ -475,15 +475,28 @@ class Breeze_Configuration{
        //delete all cache
         Breeze_PurgeCache::breeze_cache_flush();
 
-        if($check){
-            return $result;
-        }
+        return $result;
+    }
+
+    /*
+     *Ajax clean cache
+     *
+     */
+    public static function breeze_ajax_clean_cache(){
+        //check security nonce
+        check_ajax_referer( '_breeze_purge_cache', 'security' );
+        $result = self::breeze_clean_cache();
 
         echo json_encode($result);
         exit;
     }
-
+    /*
+     * Ajax purge varnish
+     */
     public static function purge_varnish_action(){
+        //check security
+        check_ajax_referer( '_breeze_purge_varnish', 'security' );
+
         $homepage = home_url().'/?breeze';
         $main = new Breeze_PurgeVarnish();
         $main->purge_cache($homepage);
@@ -491,8 +504,13 @@ class Breeze_Configuration{
         echo json_encode(array('clear' => true));
         exit;
     }
+    /*
+     * Ajax purge database
+     */
+    public static function breeze_ajax_purge_database(){
+        //check security
+        check_ajax_referer( '_breeze_purge_database', 'security' );
 
-    public static function ajax_purge_database(){
         $type = array('revisions','drafted','trash','comments','trackbacks','transient');
         foreach ($type as $item){
             self::cleanSystem($item);

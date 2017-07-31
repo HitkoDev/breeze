@@ -13,7 +13,7 @@
                     echo esc_textarea($output);
                 } ?></textarea>
             <br>
-            <label class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e('Add URLs per line of pages that you want to exclude from the WordPress internal cache. To exclude URLs from Varnish cache, please refer to ', 'breeze') ?><a href="https://support.cloudways.com/how-to-exclude-url-from-varnish/" target="_blank"><?php _e('this KB','breeze')?></a></a> </label>
+            <label class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e('Add the URLs of the pages (one per line) you wish to exclude from the WordPress internal cache. To exclude URLs from the Varnish cache, please refer to this ', 'breeze') ?><a href="https://support.cloudways.com/how-to-exclude-url-from-varnish/" target="_blank"><?php _e('Knowledge Base','breeze')?></a><?php _e(' article.','breeze')?> </label>
         </td>
     </tr>
     <tr>
@@ -32,8 +32,8 @@
                 </li>
                 <li>
                     <label class="breeze_tool_tip">
-                        <b>Note:&nbsp;</b><?php _e('Group CSS, JS files to combine them into single file. This will reduce the number of HTTP requests to your server.', 'breeze') ?><br>
-                        <b><?php _e('Enable Minification to be able to use Group option','breeze')?></b>
+                        <b>Note:&nbsp;</b><?php _e('Group CSS and JS files to combine them into a single file. This will reduce the number of HTTP requests to your server.', 'breeze') ?><br>
+                        <b><?php _e('Important: Enable Minification to use this option.','breeze')?></b>
                     </label>
                 </li>
             </ul>

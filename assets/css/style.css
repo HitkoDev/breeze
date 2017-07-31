@@ -4,21 +4,16 @@
   margin: 15px 0 15px 0;
   border: 1px solid #CCC;
 }
+.breeze-header{
+  width: 200px;
+ }
+
 .breeze-header .breeze-logo{
-  background-image: url("../images/hdr-logo.png");
-  background-position: center -169px;
-  width: 60px;
-  height: 60px;
+  background-image: url("../images/breez-logo200x46.png");
+  height: 70px;
   background-repeat: no-repeat;
-  float: left;
 }
-.breeze-header .breeze-logo-title{
-  float: left;
-  font-size: 16px;
-  font-weight:500;
-  line-height: 25px;
-  margin-top: 20px;
-}
+
 .breeze-header a{
   text-decoration: none;
   color: #000;
