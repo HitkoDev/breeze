@@ -116,6 +116,10 @@ You can get your questions answered on the WordPress support forums. If you are 
 
 == Changelog ==
 
+= 1.0.1-beta =
+* Fix : Purging issue to allow only admin users to Purge  
+* Add : feedback link 
+
 = 1.0.0 =
 * Add : First Beta release
 
