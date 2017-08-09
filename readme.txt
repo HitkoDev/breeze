@@ -13,6 +13,8 @@ Breeze is a WordPress Caching Plugin developed by Cloudways. Breeze uses advance
 
 Breeze is a free, simple (yet powerful) and user-friendly WordPress Caching Plugin developed by the Cloudways team. It offers various options to optimize WordPress performance at various levels. It works equally great with WordPress, WordPress with WooCommerce and WordPress Multisite.
 
+**Breeze is in beta phase, therefore we recommend testing it on a Staging website before deploying on a live website.**
+
 Breeze excels in the following areas:
 
 * **Performance:** Breeze improves website speed and resource optimization. Other features include file level cache system, database cleanup, minification, support for Varnish cache and simplified CDN integration options.
@@ -24,8 +26,6 @@ Breeze excels in the following areas:
 What makes Breeze WordPress Cache Plugin awesome is that it comes with builtin support for Varnish. If Varnish is not installed on your servers, Breeze will utilize its internal cache mechanism to boost up your WordPress site performance.
 
 **Support:** We love to provide support! Post your questions on the WordPress.org support forums, or if you are a Cloudways Customer you may ask questions on the <a href="https://community.cloudways.com/">Cloudways Community Forum</a>. 
-
-**Note:** This plugin is still in Beta phase and this plugin is tested on Cloudways WordPress hosting servers.
 
 **Special Thanks:** We would like to give special mention to WP Speed Of Light for being an inspiration for Breeze.
 
