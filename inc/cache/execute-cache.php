@@ -64,51 +64,11 @@ if (!empty($_COOKIE)) {
 $domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
 //decode url with russian language
 $current_url = $domain . rawurldecode($_SERVER['REQUEST_URI']);
-$check_url = array();
 $opts_config = $GLOBALS['breeze_config'];
-if (!empty($opts_config['exclude_url'])) {
-    foreach ($opts_config['exclude_url'] as $v) {
-        if ($v && $v[0] == '/') {
-            //part url
-            if (preg_match('[\*]', $v) == 1) {
-                $v = substr($v, 0, strpos($v, "/(.*)"));
+$check_exclude = check_exclude_page($opts_config, $current_url);
 
-                if (!empty($v)) {
-                    if (strpos($current_url, $v) != false) {
-                        $check_url[] = $current_url;
-                    }
-                }
-
-            } else {
-                if (!empty($v)) {
-                    if (strpos($current_url, $v) != false) {
-                        $url = $current_url;
-                    } else {
-                        $homepage = $opts_config['homepage'];
-                        $url = $homepage . $v;
-                    }
-                }
-
-                $check_url[] = $url;
-            }
-        } else {
-            if (preg_match('[\*]', $v) == 1) {
-                $v = substr($v, 0, strpos($v, "&(.*)"));
-                $v = substr($v, -10);
-                if (!empty($v)) {
-                    if (strpos($current_url, $v) != false) {
-                        $check_url[] = $current_url;
-                    }
-                }
-            } else {
-                //full url
-                $check_url[] = trim($v);
-            }
-        }
-    }
-}
 //load cache
-if (!in_array($current_url, $check_url)) {
+if (!$check_exclude) {
     $devices = $opts_config['cache_options'];
     $X1 = '';
     // Detect devices
@@ -375,3 +335,41 @@ function breeze_serve_cache($filename, $url_path, $X1,$opts)
     }
 }
 
+function check_exclude_page($opts_config,$current_url){
+	//check disable cache for page
+	if (!empty($opts_config['exclude_url'])) {
+		foreach ($opts_config['exclude_url'] as $v) {
+			// Clear blank character
+			$v = trim($v);
+			if( preg_match( '/(\&?\/?\(\.?\*\)|\/\*|\*)$/', $v , $matches)){
+				// End of rules is *, /*, [&][/](*) , [&][/](.*)
+				$pattent = substr($v , 0, strpos($v,$matches[0]));
+				if($v[0] == '/'){
+					// A path of exclude url with regex
+					if((@preg_match( '@'.$pattent.'@', $current_url, $matches ) > 0)){
+						return true;
+					}
+				}else{
+					// Full exclude url with regex
+					if(strpos( $current_url,$pattent) !== false){
+						return true;
+					}
+				}
+
+			}else{
+				if($v[0] == '/'){
+					// A path of exclude
+					if((@preg_match( '@'.$v.'@', $current_url, $matches ) > 0)){
+						return true;
+					}
+				} else { // Whole path
+					if($v == $current_url){
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}

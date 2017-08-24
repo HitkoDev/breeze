@@ -31,7 +31,7 @@ class Breeze_Minify {
         $check_url = $this->check_exclude_url($current_url);
 
         //load config file when redirect template
-        if (!in_array($current_url, $check_url)) {
+        if (!$check_url) {
             //cache html
             //cache minification
             if (Breeze_MinificationCache::create_cache_minification_folder()) {
@@ -209,47 +209,37 @@ class Breeze_Minify {
      * check url from Never cache the following pages area
      */
     public function check_exclude_url($current_url){
-
-        $check_url = array();
         $opts_config = get_option('breeze_advanced_settings');
-        if (!empty($opts_config['breeze-exclude-urls'])) {
-            foreach ($opts_config['breeze-exclude-urls'] as $v) {
-                if ($v && $v[0] == '/') {
-                    //part url
-                    if (preg_match('[\*]', $v) == 1) {
-                        $v = substr($v, 0, strpos($v, "/(.*)"));
-                        if(!empty($v)){
-                            if(strpos($current_url,$v) != false){
-                                $check_url[] = $current_url;
-                            }
-                        }
-                    } else {
-                        if(!empty($v)){
-                            if(strpos($current_url,$v) != false){
-                                $url = $current_url;
-                            }else{
-                                $url = BREEZE_SITEURL . $v;
-                            }
-                        }
-                        $check_url[] = $url;
-                    }
-                } else {
-                    if(preg_match('[\*]', $v) == 1){
-                        $v = substr($v, 0, strpos($v, "&(.*)"));
-                        $v = substr($v, -10);
-                        if(!empty($v)){
-                            if(strpos($current_url,$v) != false){
-                                $check_url[] = $current_url;
-                            }
-                        }
-                    }else{
-                        //full url
-                        $check_url[] = $v;
-                    }
-                }
-            }
-        }
+	    //check disable cache for page
+	    if (!empty($opts_config['breeze-exclude-urls'])) {
+		    foreach ($opts_config['breeze-exclude-urls'] as $v) {
+			    // Clear blank character
+			    $v = trim($v);
+			    if( preg_match( '/(\&?\/?\(\.?\*\)|\/\*|\*)$/', $v , $matches)){
+				    // End of rules is *, /*, [&][/](*) , [&][/](.*)
+				    $pattent = substr($v , 0, strpos($v,$matches[0]));
+				    if($v[0] == '/'){
+					    // A path of exclude url with regex
+					    if((@preg_match( '@'.$pattent.'@', $current_url, $matches ) > 0)){
+						    return true;
+					    }
+				    }else{
+					    // Full exclude url with regex
+					    if(strpos( $current_url,$pattent) !== false){
+						    return true;
+					    }
+				    }
 
-        return $check_url;
+			    }else{
+				    // Whole path
+				    if($v == $current_url){
+					    return true;
+				    }
+			    }
+		    }
+	    }
+
+	    return false;
+
     }
 }

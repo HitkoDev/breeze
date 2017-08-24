@@ -63,6 +63,7 @@ class Breeze_ConfigCache {
     public static function write_config_cache(){
         $settings = get_option('breeze_basic_settings');
         $config = get_option('breeze_advanced_settings');
+	    $ecommerce_exclude_urls = array();
 
         $storage = array(
             'homepage' => get_site_url(),
@@ -71,12 +72,14 @@ class Breeze_ConfigCache {
             'exclude_url' => array(),
         );
 
+        if( class_exists('WooCommerce')){
+		    $ecommerce_exclude_urls = Breeze_Ecommerce_Cache::factory()->ecommerce_exclude_pages();
+	    }
         if(!empty($settings['breeze-disable-admin'])){
             $storage['disable_per_adminuser'] = $settings['breeze-disable-admin'];
         }
-        if(!empty($config['breeze-exclude-urls'])){
-            $storage['exclude_url'] = $config['breeze-exclude-urls'];
-        }
+
+        $storage['exclude_url'] = array_merge($ecommerce_exclude_urls, $config['breeze-exclude-urls']);
 
         if(! self::write_config($storage)){
             return false;
