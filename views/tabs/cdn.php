@@ -22,7 +22,7 @@
     </tr>
     <tr>
         <td>
-            <label for="cdn-url" class="breeze_tool_tip"><?php _e('CDN Root URL', 'breeze')?></label>
+            <label for="cdn-url" class="breeze_tool_tip"><?php _e('CDN CNAME', 'breeze')?></label>
         </td>
         <td>
             <input type="text" id="cdn-url" name="cdn-url" size="50" placeholder="<?php _e('https://www.domain.com','breeze')?>" value="<?php echo (($cdn_integration['cdn-url'])?esc_html($cdn_integration['cdn-url']):''); ?>"/>

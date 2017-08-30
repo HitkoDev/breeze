@@ -95,6 +95,8 @@ if (!$check_exclude) {
     breeze_serve_cache($filename, $url_path, $X1,$devices);
     ob_start('breeze_cache');
 
+} else {
+	header('Cache-Control: no-cache');
 }
 
 /**

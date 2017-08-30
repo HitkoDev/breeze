@@ -26,6 +26,10 @@ class Breeze_Admin {
             load_plugin_textdomain('breeze', false, dirname(plugin_basename(__FILE__)) . '/languages/');
         });
 
+        // Add our custom action to clear cache
+        add_action('breeze_clear_all_cache', array($this, 'breeze_clear_all_cache'));
+        add_action('breeze_clear_varnish', array($this, 'breeze_clear_varnish'));
+
         add_action('admin_init', array($this, 'admin_init'));
         //register menu
         add_action('admin_menu', array($this, 'register_menu_page'));
@@ -302,9 +306,13 @@ class Breeze_Admin {
             update_option('breeze_varnish_cache', $varnish);
         }
 
-        //add header to htaccess by default
-        Breeze_Configuration::add_expires_header(TRUE);
-        Breeze_Configuration::add_gzip_htacess(TRUE);
+        //add header to htaccess if setting is enabled or by default if first installed
+	    if ($basic['breeze-browser-cache'] == 1) {
+		    Breeze_Configuration::add_expires_header( true );
+	    }
+	    if ($basic['breeze-gzip-compression'] == 1) {
+		    Breeze_Configuration::add_gzip_htacess( true );
+	    }
         //automatic config start cache
         Breeze_ConfigCache::factory()->write();
         Breeze_ConfigCache::factory()->write_config_cache();
@@ -322,7 +330,8 @@ class Breeze_Admin {
         Breeze_ConfigCache::factory()->clean_up();
         Breeze_ConfigCache::factory()->clean_config();
         Breeze_ConfigCache::factory()->toggle_caching(false);
-
+	    Breeze_Configuration::add_expires_header(false);
+	    Breeze_Configuration::add_gzip_htacess(false);
     }
 
     /*
@@ -348,6 +357,23 @@ class Breeze_Admin {
         );
         return array_merge( $mylinks,$links );
     }
+
+	// Clear all cache action
+	public function breeze_clear_all_cache() {
+		//delete minify
+		Breeze_MinificationCache::clear_minification();
+		//clear normal cache
+		Breeze_PurgeCache::breeze_cache_flush();
+		//clear varnish cache
+		$this->breeze_clear_varnish();
+	}
+
+	// Clear all varnish cache action
+	public function breeze_clear_varnish() {
+		$homepage = home_url().'/?breeze';
+		$main = new Breeze_PurgeVarnish();
+		$main->purge_cache($homepage);
+	}
 }
 
 $admin = new Breeze_Admin();

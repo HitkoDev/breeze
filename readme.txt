@@ -3,7 +3,7 @@ Contributors: Cloudways
 Tags: cache, caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers
 Requires at least: 4.5
 Tested up to: 4.8
-Stable tag: 1.0.2-beta
+Stable tag: 1.0.3-beta
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -115,6 +115,11 @@ However, major Breeze options such as Gzip, browser cache, minification, groupin
 You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
 
 == Changelog ==
+
+= 1.0.3-beta =
+* Fix : Disabled browser cache for WooCommerce cart, shop and account pages
+* Fix : Removal of htaccess when disabling browser cache and gzip compression options
+* Fix : CDN issues of not serving all the configured contents from CDN service
 
 = 1.0.2-beta =
 * Fix : Compatibility issues of WooCommerce

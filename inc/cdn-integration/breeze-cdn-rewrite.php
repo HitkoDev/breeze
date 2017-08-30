@@ -48,12 +48,20 @@ class Breeze_CDN_Rewrite {
         // regex rule start
         $regex_rule = '#(?<=[(\"\'])';
 
-        // check if relative paths
-        if ($this->relative) {
-            $regex_rule .= '(?:'.$blog_url.')?';
-        } else {
-            $regex_rule .= $blog_url;
-        }
+	    // create blog url without http or https
+	    $parseurl = parse_url($this->blog_url);
+	    $scheme = 'http:';
+	    if(!empty($parseurl['scheme'])){
+		    $scheme = $parseurl['scheme'].':';
+	    }
+	    $blog_url_short = str_replace($scheme, '',$this->blog_url);
+
+	    // check if relative paths
+	    if ($this->relative) {
+		    $regex_rule .= '(?:'.$blog_url.'|'.$blog_url_short.')?';
+	    } else {
+		    $regex_rule .= '('.$blog_url.'|'.$blog_url_short.')';
+	    }
 
         // regex rule end
         $regex_rule .= '/(?:((?:'.$dirs.')[^\"\')]+)|([^/\"\']+\.[^/\"\')]+))(?=[\"\')])#';
@@ -87,20 +95,20 @@ class Breeze_CDN_Rewrite {
         }
 
         $parseUrl = parse_url($this->blog_url);
-        $schema = 'http://';
+	    $scheme = 'http://';
         if(isset($parseUrl['scheme'])){
             $scheme = $parseUrl['scheme'].'://';
         }
         $host = $parseUrl['host'];
         //get domain
-        $domain = $scheme.$host;
+	    $domain = '//'.$host;
 
         // check if not a relative path
         if (!$this->relative || strstr($match[0], $this->blog_url)) {
-            return str_replace($domain, $this->cdn_url, $match[0]);
+	        $domain = $scheme.$host;
         }
 
-        return $this->cdn_url . $match[0];
+	    return str_replace($domain, $this->cdn_url, $match[0]);
 
     }
     /*

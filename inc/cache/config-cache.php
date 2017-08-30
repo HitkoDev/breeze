@@ -109,7 +109,7 @@ class Breeze_ConfigCache {
 
         return true;
     }
-    //turn on / of wp cahe
+    //turn on / off wp cache
     public function toggle_caching( $status ) {
 
         global $wp_filesystem;
