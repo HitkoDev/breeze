@@ -25,8 +25,6 @@ What makes Breeze WordPress Cache Plugin awesome is that it comes with builtin s
 
 **Support:** We love to provide support! Post your questions on the WordPress.org support forums, or if you are a Cloudways Customer you may ask questions on the <a href="https://community.cloudways.com/">Cloudways Community Forum</a>. 
 
-**Note:** This plugin is still in Beta phase and this plugin is tested on Cloudways WordPress hosting servers.
-
 **Special Thanks:** We would like to give special mention to WP Speed Of Light for being an inspiration for Breeze.
 
 == Installation ==
@@ -106,9 +104,7 @@ If Varnish is active, you will need to exclude URLs and file type(s) in the Varn
 
 = Does it work with all hosting providers? =
 
-Breeze is in Beta phase and has not yet been tested on hosting providers other than Cloudways. 
-However, major Breeze options such as Gzip, browser cache, minification, grouping, database optimization. CDN integration will work as expected on other hosting providers. 
-
+Breeze has been tested to work with all major hosting providers. In addition, major Breeze options such as Gzip, browser cache, minification, grouping, database optimization. CDN integration will work as expected on all hosting providers.
 
 = Where can I get support for Breeze? =
 
