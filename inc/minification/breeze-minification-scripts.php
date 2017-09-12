@@ -113,7 +113,8 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 					$tag='';
 					continue;
 				}
-				if(preg_match('#src=("|\')(.*)("|\')#Usmi',$tag,$source)) {
+				if(preg_match('/src=("|\')?(.*?(\ |\>))("|\')?/Usmi',$tag,$source)) {
+					$source[2] = substr($source[2], 0, -1);
 					if ($this->isremovable($tag,$this->jsremovables)) {
 						$this->content = str_replace($tag,'',$this->content);
 						continue;

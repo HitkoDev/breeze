@@ -1,6 +1,8 @@
 <?php
-    $varnish = get_option('breeze_varnish_cache');
-    $check_varnish = Breeze_Admin::check_varnish();
+defined('ABSPATH') or die;
+
+$varnish = get_option('breeze_varnish_cache');
+$check_varnish = Breeze_Admin::check_varnish();
 ?>
 <div class="breeze-top-notice">
    <label class="breeze_tool_tip"><?php _e('By default Varnish is enabled on all WordPress websites hosted on Cloudways.','breeze')?></label>

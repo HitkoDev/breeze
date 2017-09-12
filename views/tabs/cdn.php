@@ -1,4 +1,6 @@
 <?php
+    defined('ABSPATH') or die;
+
     $cdn_integration = get_option('breeze_cdn_integration');
 
     $cdn_content_value = '';
@@ -26,9 +28,9 @@
         </td>
         <td>
             <input type="text" id="cdn-url" name="cdn-url" size="50" placeholder="<?php _e('https://www.domain.com','breeze')?>" value="<?php echo (($cdn_integration['cdn-url'])?esc_html($cdn_integration['cdn-url']):''); ?>"/>
-            <label style="vertical-align: baseline" class="breeze_tool_tip"><?php _e('Enter the URL of CDN.', 'breeze')?></label>
+            <label style="vertical-align: baseline" class="breeze_tool_tip"><?php _e('Enter CDN CNAME.', 'breeze')?></label>
             <br>
-            <label class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e('Use double slash ‘//’ at the start or url, if you have some pages on  HTTP and some are on HTTPS.', 'breeze') ?></label>
+            <label class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e('Use double slash ‘//’ at the start of CDN CNAME, if you have some pages on  HTTP and some are on HTTPS.', 'breeze') ?></label>
         </td>
     </tr>
     <tr>

@@ -1,3 +1,6 @@
+<?php
+defined('ABSPATH') or die;
+?>
 <div class="breeze-top-notice">
     <label class="breeze_tool_tip"><?php _e('Important: Backup your databases before using the following options!','breeze')?></label>
 </div>

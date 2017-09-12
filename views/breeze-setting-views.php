@@ -1,10 +1,13 @@
 <?php
+defined('ABSPATH') or die;
+
 $tabs = array(
     'basic' => __('BASIC OPTIONS', 'breeze'),
     'advanced' => __('ADVANCED OPTIONS', 'breeze'),
     'database' => __('DATABASE', 'breeze'),
     'cdn' => __('CDN', 'breeze'),
     'varnish' => __('VARNISH', 'breeze'),
+    'faq' => __('FAQs', 'breeze'),
 );
 ?>
 <?php if (isset($_REQUEST['database-cleanup']) && $_REQUEST['database-cleanup'] == 'success'): ?>
@@ -21,10 +24,6 @@ $tabs = array(
         </a>
     </div>
 
-    <div class="breeze-desc" style="margin-bottom: 10px">
-        <span><?php _e('This plugin is in Beta phase. Please feel free to report any issues on the WordPress Support Forums or on', 'breeze'); ?></span>
-        <a href="https://community.cloudways.com/" target="_blank"><?php _e('Cloudways Community Forum', 'breeze') ?></a>
-    </div>
     <h1></h1>
 
     <div style="clear: both"></div>
@@ -52,13 +51,14 @@ $tabs = array(
                  <input type="submit" class="button button-primary" value="Optimize"/>
                      </p>';
             }else{
-                echo '<p class="submit">
-                 <input type="submit" class="button button-primary" value="Save Changes"/>
-                     </p>';
+                if ($key != 'faq') {
+	                echo '<p class="submit">
+                        <input type="submit" class="button button-primary" value="Save Changes"/>
+                        </p>';
+                }
             }
             echo '</form>';
             echo '</div>';
-
         }
         ?>
     </div>

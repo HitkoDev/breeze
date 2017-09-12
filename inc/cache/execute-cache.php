@@ -74,8 +74,8 @@ if (!$check_exclude) {
     // Detect devices
     if ($detect->isMobile() && !$detect->isTablet()) {
         //        The first X will be D for Desktop cache
-        //                                  M for Mobile cache
-        //                                  T for Tablet cache
+        //                            M for Mobile cache
+        //                            T for Tablet cache
         if ((int)$devices['breeze-mobile-cache'] == 1) {
             $X1 = 'D';
             $filename .= '_breeze_cache_desktop';

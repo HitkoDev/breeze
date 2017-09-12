@@ -90,3 +90,36 @@ label.breeze_tool_tip{
   vertical-align: middle !important;
 }
 
+.ui-accordion-header:after {
+  font-family: dashicons;
+  content: "\f347";
+  float: right;
+}
+.ui-accordion-header[aria-expanded='true']:after {
+  content: "\f343";
+}
+
+/*Style for FAQ tab*/
+#faq-content {
+  margin: 20px;
+}
+
+.faq-block {
+  border: 1px solid;
+  border-color: #eee transparent;
+  padding-bottom: 10px;
+}
+
+.faq-question {
+  cursor: pointer;
+  margin: 0;
+  padding: 1em 0;
+}
+
+.faq-question:focus {
+  outline: none;
+}
+
+.faq-answer * {
+  font-size: 14px;
+}

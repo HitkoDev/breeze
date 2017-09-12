@@ -51,4 +51,9 @@ jQuery(document).ready(function($){
 
     setTabFromCookie();
 
+    $('#faq-content').accordion({
+        collapsible: true,
+        animate: 200,
+        header: '.faq-question'
+    });
 });

@@ -1,4 +1,6 @@
 <?php
+defined('ABSPATH') or die;
+
 $basic = get_option('breeze_basic_settings');
 ?>
 <table cellspacing="15">

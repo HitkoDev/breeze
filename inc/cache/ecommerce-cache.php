@@ -36,7 +36,7 @@ class Breeze_Ecommerce_Cache {
 			}
 			Breeze_ConfigCache::write_config_cache();
 		}
-		if (!empty($check) && $check == 1) {
+		if (!empty($check)) {
 			global $wp_filesystem;
 			if ( empty( $wp_filesystem ) ) {
 				require_once( ABSPATH . '/wp-admin/includes/file.php' );
@@ -47,160 +47,119 @@ class Breeze_Ecommerce_Cache {
 		}
 	}
 
-	// Exclude pages of Ecommerce from cache
-	public function ecommerce_exclude_pages() {
+	/**
+	 * Exclude pages of e-commerce from cache
+	 */
+	public function ecommerce_exclude_pages(){
 		$urls = array();
+		$regex = '*';
 
-		// WooCommerce
-		if ( function_exists( 'WC' ) && function_exists( 'wc_get_page_id' ) ) {
-			if( wc_get_page_id( 'checkout' ) && wc_get_page_id( 'checkout' ) != '-1' ) {
-				$checkout_urls = $this->breeze_translated_post_urls( wc_get_page_id( 'checkout' ), 'page', '(.*)' );
-				$urls = array_merge( $urls, $checkout_urls );
-			}
-			if ( wc_get_page_id( 'cart' ) && wc_get_page_id( 'cart' ) != '-1' ) {
-				$cart_urls = $this->breeze_translated_post_urls( wc_get_page_id( 'cart' ) );
-				$urls = array_merge( $urls, $cart_urls );
-			}
+		if(class_exists('WooCommerce') && function_exists('wc_get_page_id')){
+			$cardId = wc_get_page_id('cart');
+			$checkoutId = wc_get_page_id('checkout');
+			$myaccountId = wc_get_page_id('myaccount');
 
-			if ( wc_get_page_id( 'myaccount' ) && wc_get_page_id( 'myaccount' ) != '-1' ) {
-				$cart_urls = $this->breeze_translated_post_urls( wc_get_page_id( 'myaccount' ), 'page', '(.*)' );
-				$urls = array_merge( $urls, $cart_urls );
-			}
-		}
-		return $urls;
-	}
-
-	/**
-	 * Check whether the plugin is active by checking the active_plugins list.
-	 */
-	public static function breeze_is_plugin_active( $plugin ) {
-		return in_array( $plugin, (array) get_option( 'active_plugins', array() ) ) || self::breeze_is_plugin_active_for_network( $plugin );
-	}
-
-	/**
-	 * Check whether the plugin is active for the entire network.
-	 */
-	public static function breeze_is_plugin_active_for_network( $plugin ) {
-		if ( !is_multisite() ) {
-			return false;
-		}
-
-		$plugins = get_site_option( 'active_sitewide_plugins');
-		if ( isset($plugins[$plugin]) ) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Get all translated path of a specific post with ID.
-	 *
-	 * @param 	int 	$post_id	Post ID
-	 * @param 	string 	$post_type 	Post Type
-	 * @param 	string 	$regex 		Regex to include at the end
-	 * @return 	array	$urls
-	 */
-	public function breeze_translated_post_urls( $post_id, $post_type = 'page', $regex = null ) {
-		$urls  = array();
-		$permark_link = get_option('permalink_structure');
-		if(empty($permark_link)){
-			if(!empty($regex)){
-				$urls[]= get_permalink( $post_id ).'&'. $regex;
-			}else{
-				$urls[]= get_permalink( $post_id );
-			}
-			return $urls;
-		}
-		$path  = parse_url( get_permalink( $post_id ), PHP_URL_PATH );
-		$langs = $this->get_all_languages();
-		if ( empty( $path ) ) {
-			return $urls;
-		}
-
-		// WPML
-		if ( self::breeze_is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) {
-			foreach( $langs as $lang ) {
-				$urls[] = parse_url( get_permalink( icl_object_id( $post_id, $post_type, true, $lang ) ), PHP_URL_PATH ) . $regex;
-			}
-		}
-
-		// qTranslate & qTranslate-x
-		if ( self::breeze_is_plugin_active( 'qtranslate/qtranslate.php' ) || self::breeze_is_plugin_active( 'qtranslate-x/qtranslate.php' ) ) {
-			$langs  = $GLOBALS['q_config']['enabled_languages'];
-			$langs  = array_diff( $langs, array( $GLOBALS['q_config']['default_language'] ) );
-			$url    = get_permalink( $post_id );
-			$urls[] = parse_url( get_permalink( $post_id ), PHP_URL_PATH ) . $regex;
-
-			foreach( $langs as $lang ) {
-				if ( self::breeze_is_plugin_active( 'qtranslate/qtranslate.php' ) ) {
-					$urls[] = parse_url( qtrans_convertURL( $url, $lang, true ), PHP_URL_PATH ) . $regex;
-				} else if ( self::breeze_is_plugin_active( 'qtranslate/qtranslate.php' ) ) {
-					$urls[] = parse_url( qtranxf_convertURL( $url, $lang, true ), PHP_URL_PATH ) . $regex;
-				}
-			}
-		}
-
-		// Polylang
-		if ( self::breeze_is_plugin_active( 'polylang/polylang.php' ) || self::breeze_is_plugin_active( 'polylang-pro/polylang.php' ) ) {
-			if ( function_exists( 'PLL' ) && is_object( PLL()->model ) ) {
-				$translations = pll_get_post_translations( $post_id );
-			} else if ( is_object( $GLOBALS['polylang']->model ) ) {
-				$translations = $GLOBALS['polylang']->model->get_translations( 'page', $post_id );
+			if($cardId > 0){
+				$urls[] = $this->get_basic_urls($cardId);
+				// Get url through multi-languages plugin
+				$urls = $this->get_translate_urls($urls, $cardId);
 			}
 
-			if ( ! empty( $translations ) ) {
-				foreach ( $translations as $post_id ) {
-					$urls[] = parse_url( get_permalink( $post_id ), PHP_URL_PATH ) . $regex;
-				}
+			if($checkoutId > 0){
+				$urls[] =  $this->get_basic_urls($checkoutId , $regex);
+				// Get url through multi-languages plugin
+				$urls = $this->get_translate_urls($urls, $checkoutId, $regex );
 			}
-		}
 
-		if ( trim( $path, '/' ) != '' ) {
-			$urls[] = $path . $regex;
+			if($myaccountId > 0){
+				$urls[] = $this->get_basic_urls($myaccountId , $regex);
+				// Get url through multi-languages plugin
+				$urls = $this->get_translate_urls($urls, $myaccountId, $regex );
+			}
+
+			// Process urls to return
+			$urls = array_unique($urls);
+			$urls = array_map(array($this,'rtrim_urls'),$urls);
 		}
-		$urls = array_unique( $urls );
 
 		return $urls;
 	}
 
-	/**
-	 * Check if a translation plugin is activated
-	 *
-	 * @return bool True if a plugin is activated
+	/*
+	 * Return basic url without translate plugin
 	 */
-	public static function check_trans_plugin() {
-		if ( self::breeze_is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' )  // WPML
-		     || self::breeze_is_plugin_active( 'qtranslate/qtranslate.php' )               // qTranslate
-		     || self::breeze_is_plugin_active( 'qtranslate-x/qtranslate.php' )			    // qTranslate-x
-		     || self::breeze_is_plugin_active( 'polylang/polylang.php' )                   // Polylang
-		     || self::breeze_is_plugin_active( 'polylang-pro/polylang.php' ) ) { 			// Polylang Pro
-			return true;
+	public function get_basic_urls($postID , $regex = null){
+		$permalink = get_option('permalink_structure');
+
+		if(!empty($permalink)) {
+			// Custom URL structure
+			$url = parse_url(get_permalink($postID),PHP_URL_PATH);
+		}else {
+			$url = get_permalink($postID);
 		}
 
-		return false;
+		return $url . $regex;
 	}
-	/**
-	 * Get info of all active languages
-	 *
-	 * @return array List of language code
+
+	/*
+	* Return translate url without translate plugin
+	*/
+
+	public function get_translate_urls($urls ,$postID , $regex = null){
+		// WPML plugin
+		if ( class_exists('SitePress')){
+			global $sitepress;
+			if(isset($sitepress)){
+				$active_languages = $sitepress->get_active_languages();
+
+				if(!empty($active_languages)){
+					$languages = array_keys($active_languages);
+					foreach ($languages as $language){
+						$translatedId = icl_object_id($postID, 'page', false, $language);
+
+						if(empty($translatedId)) continue;
+
+						$urls[] = $this->get_basic_urls($translatedId,$regex);
+					}
+				}
+			}
+		}
+
+		// Polylang plugin
+		if( class_exists('Polylang') && function_exists('pll_languages_list') && function_exists('PLL')){
+			$translatedId = pll_get_post_translations($postID);
+
+			if(!empty($translatedId)){
+				foreach ($translatedId as $id){
+					$urls[] = $this->get_basic_urls($id,$regex);
+				}
+			}
+		}
+
+		// qTranslate-x plugin
+		require_once (ABSPATH.'wp-admin/includes/plugin.php');
+		if(is_plugin_active('qtranslate-x/qtranslate.php')){
+			global $q_config;
+			if(isset($q_config) && function_exists('qtranxf_convertURL')){
+				$url = $this->get_basic_urls($postID);
+
+				if(!empty($q_config['enabled_languages'])){
+					foreach ($q_config['enabled_languages'] as $language){
+						$urls[] =  qtranxf_convertURL( $url, $language , true);
+					}
+				}
+
+			}
+		}
+
+		return $urls;
+	}
+
+	/*
+	 * Remove '/' chacracter of end url
 	 */
-	public static function get_all_languages() {
-		if( ! self::check_trans_plugin() ) {
-			return false;
-		}
-
-		if ( self::breeze_is_plugin_active( 'sitepress-multilingual-cms/sitepress.php' ) ) {
-			return array_keys( $GLOBALS['sitepress']->get_active_languages() );
-		}
-
-		if ( self::breeze_is_plugin_active( 'qtranslate/qtranslate.php' ) || self::breeze_is_plugin_active( 'qtranslate-x/qtranslate.php' ) ) {
-			return $GLOBALS['q_config']['enabled_languages'];
-		}
-
-		if ( self::breeze_is_plugin_active( 'polylang/polylang.php' ) || self::breeze_is_plugin_active( 'polylang-pro/polylang.php' ) ) {
-			return pll_languages_list();
-		}
+	public function rtrim_urls($url){
+		return rtrim($url,'/');
 	}
 
 	public static function factory() {
