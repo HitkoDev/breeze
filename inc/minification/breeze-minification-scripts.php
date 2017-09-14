@@ -113,7 +113,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 					$tag='';
 					continue;
 				}
-				if(preg_match('/src=("|\')?(.*?(\ |\>))("|\')?/Usmi',$tag,$source)) {
+				if(preg_match('/src=("|\')?(.*(\ |\>))("|\')?/Usmi',$tag,$source)) {
 					$source[2] = substr($source[2], 0, -1);
 					if ($this->isremovable($tag,$this->jsremovables)) {
 						$this->content = str_replace($tag,'',$this->content);
@@ -121,6 +121,13 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 					}
 					// External script
 					$url = current(explode('?',$source[2],2));
+					if ($url[0] == "'" || $url[0] == '"') {
+						$url = substr($url, 1);
+					}
+					if ($url[strlen($url) - 1] == '"' || $url[strlen($url) - 1] == "'") {
+						$url = substr($url, 0 , -1);
+					}
+
                     //exclude js
                     if(in_array($url,$this->custom_js_exclude)){
                         continue;

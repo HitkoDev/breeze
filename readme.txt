@@ -3,7 +3,7 @@ Contributors: Cloudways
 Tags: cache, caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers
 Requires at least: 4.5
 Tested up to: 4.8
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -111,6 +111,9 @@ Breeze has been tested to work with all major hosting providers. In addition, ma
 You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
 
 == Changelog ==
+
+= 1.0.5 =
+* Fix: Issue with JS minification
 
 = 1.0.4 =
 * Fix: Browser Cache issues with WooCommerce session
