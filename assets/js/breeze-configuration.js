@@ -34,8 +34,16 @@ jQuery(document).ready(function($){
         if (!active_tab){
             active_tab = 'basic';
         }
-        $("#tab-" + active_tab).addClass('active');
-        $("#tab-content-" + active_tab).addClass('active');
+
+        if ($("#tab-" + active_tab).length === 0) {
+            firstTab = $('#breeze-tabs').find('a:first-child');
+            tabType = firstTab.attr('id').replace('tab-', '');
+            firstTab.addClass('active');
+            $("#tab-content-" + tabType).addClass('active');
+        } else {
+            $("#tab-" + active_tab).addClass('active');
+            $("#tab-content-" + active_tab).addClass('active');
+        }
     }
 
     function getCookie(cname) {

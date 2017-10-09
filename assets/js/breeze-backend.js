@@ -1,5 +1,8 @@
 jQuery(document).ready(function ($) {
     // Topbar action
+    $('#wp-admin-bar-breeze-purge-all').click(function () {
+        window.location.href = breeze_token_name.purge_all_href;
+    });
     $('#wp-admin-bar-breeze-purge-varnish-group').click(function(){
         breeze_purgeVarnish_callAjax();
     });
@@ -50,11 +53,8 @@ jQuery(document).ready(function ($) {
             success : function(res){
                 current = location.href;
                 res = parseFloat(res) ;
-                if(current.indexOf("page=breeze_config") > 0){
-                    window.location.href = current+ "#breeze-msg=success-cleancache&file="+res;
-                }else{
-                    window.location.href = current+ "breeze-msg=success-cleancache&file="+res;
-                }
+
+                window.location.href = current+ "#breeze-msg=success-cleancache&file="+res;
                 location.reload();
             }
         });

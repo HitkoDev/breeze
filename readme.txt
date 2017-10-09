@@ -3,7 +3,7 @@ Contributors: Cloudways
 Tags: cache, caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers
 Requires at least: 4.5
 Tested up to: 4.8
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -67,6 +67,10 @@ Breeze is fully compatible with WooCommerce, out of the box. It does not require
 
 Breeze is fully compatible with WordPress Multisite without the need for any extra configuration. 
 
+= How does Breeze handle WordPress multisite? =
+
+Breeze handles all WordPress multisite instances globally. All the settings for multisite are now handled on the network level.
+
 = Is Breeze compatible with other WordPress Cache plugins? =
 
 We DO NOT recommend using two WordPress cache plugins at the same time on any WordPress website. 
@@ -101,7 +105,6 @@ You can exclude a file by mentioning its URL or file type (by mentioning file ex
 
 If Varnish is active, you will need to exclude URLs and file type(s) in the Varnish configuration. If you are hosting WordPress websites on Cloudways servers, follow <a href="https://support.cloudways.com/how-to-exclude-url-from-varnish/">this KB to exclude URLs from the Varnish cache</a>.
 
-
 = Does it work with all hosting providers? =
 
 Breeze has been tested to work with all major hosting providers. In addition, major Breeze options such as Gzip, browser cache, minification, grouping, database optimization. CDN integration will work as expected on all hosting providers.
@@ -110,7 +113,40 @@ Breeze has been tested to work with all major hosting providers. In addition, ma
 
 You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
 
+= How can I test and verify the results (mentioned on the page)? =
+
+You will be able to see the impact of the Breeze Cache Plugin almost immediately. We also recommend using the following tools for generating metrics:
+<a href="https://developers.google.com/speed/pagespeed/" target="_blank">Google Page Speed</a>
+<a href="https://www.webpagetest.org/test" target="_blank">WebPagetest</a>
+<a href="https://tools.pingdom.com/" target="_blank">Pingdom</a>
+
+= Does Breeze plugin work with Visual Builder(insert link)? =
+
+Yes, Breeze Plugin is compatible with Visual Builder.
+
+= What popular CDN are supported by Breze Plugin? =
+
+Breeze supports the following three popular CDNs:
+<a href="https://support.cloudways.com/how-to-use-breeze-with-maxcdn/" target="_blank">MaxCDN</a>
+<a href="https://support.cloudways.com/how-to-use-breeze-with-keycdn/" target="_blank">KeyCDN</a>
+<a href="https://support.cloudways.com/how-to-use-breeze-with-amazon-cloudfront/" target="_blank">Amazon Cloudfront</a>
+
+= Does Breeze support Push CDN? =
+
+No, Breeze does not support Push CDN. However, you could use Breeze with Push CDNs using third party plugins.
+
+= Does Breeze Work With CloudFlare? =
+
+Yes. The process of setting up CloudFlare with Breeze is easy. Check out the following <a href="https://support.cloudways.com/can-i-use-cloudflare-cdn/" target="_blank">KnowledgeBase article</a> for details.
+
+= How Breeze cache uses Gzip? =
+
+Using Gzip, Breeze compresses the request files, further reducing the size of the download files and speeding up the user experience.
+
 == Changelog ==
+
+= 1.0.6 =
+* Fix: All Multisite are now handled globally with settings being handled at network level
 
 = 1.0.5 =
 * Fix: Issue with JS minification

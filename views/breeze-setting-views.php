@@ -9,6 +9,12 @@ $tabs = array(
     'varnish' => __('VARNISH', 'breeze'),
     'faq' => __('FAQs', 'breeze'),
 );
+
+if (is_multisite() && get_current_screen()->base !== 'settings_page_breeze-network') {
+    $tabs = array(
+        'faq' => __('FAQs', 'breeze')
+    );
+}
 ?>
 <?php if (isset($_REQUEST['database-cleanup']) && $_REQUEST['database-cleanup'] == 'success'): ?>
     <div id="message-save-settings" class="notice notice-success" style="margin: 10px 0px 10px 0;padding: 10px;"><strong><?php _e('Database cleanup successful', 'breeze'); ?></strong></div>

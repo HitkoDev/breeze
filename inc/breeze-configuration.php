@@ -32,6 +32,7 @@ class Breeze_Configuration{
      */
     public function afterLoadConfigPage()
     {
+    	$sites = is_multisite() ? get_sites() : array();
         // Basic options tab
         if (isset($_REQUEST['breeze_basic_action']) && $_REQUEST['breeze_basic_action'] == 'breeze_basic_settings') {
             if (isset($_POST['breeze_settings_basic_nonce']) || wp_verify_nonce($_POST['breeze_settings_basic_nonce'], 'breeze_settings_basic')) {
@@ -51,6 +52,14 @@ class Breeze_Configuration{
                     'breeze-display-clean' => '1'
                 );
                 update_option('breeze_basic_settings',$basic);
+                // Update settings for network sites
+                if (is_multisite()) {
+                	foreach ($sites as $site) {
+                		switch_to_blog($site->blog_id);
+		                update_option('breeze_basic_settings',$basic);
+	                }
+	                restore_current_blog();
+                }
 
                 // Storage infomation to cache pages
                 Breeze_ConfigCache::factory()->write();
@@ -81,11 +90,8 @@ class Breeze_Configuration{
                     self::add_expires_header(false);
                 }
 
-                //delete minify
-                Breeze_MinificationCache::clear_minification();
-                Breeze_PurgeCache::breeze_cache_flush();
-                // Clear varnish cache after settings
-                $this->clear_varnish();
+	            //delete cache after settings
+	            do_action('breeze_clear_all_cache');
             }
         }
         // Advanced options tab
@@ -102,16 +108,21 @@ class Breeze_Configuration{
                     'breeze-exclude-js' => $exclude_js
                 );
                 update_option('breeze_advanced_settings',$advanced);
+	            // Update settings for network sites
+	            if (is_multisite()) {
+		            foreach ($sites as $site) {
+			            switch_to_blog($site->blog_id);
+			            update_option('breeze_advanced_settings',$advanced);
+		            }
+		            restore_current_blog();
+	            }
 
                 WP_Filesystem();
                 // Storage infomation to cache pages
                 Breeze_ConfigCache::factory()->write_config_cache();
 
-                //delete minify
-                Breeze_MinificationCache::clear_minification();
-                Breeze_PurgeCache::breeze_cache_flush();
-                // Clear varnish cache after settings
-                $this->clear_varnish();
+                //delete cache after settings
+                do_action('breeze_clear_all_cache');
             }
         }
 
@@ -119,9 +130,19 @@ class Breeze_Configuration{
         if (isset($_REQUEST['breeze_database_action']) && $_REQUEST['breeze_database_action'] == 'breeze_database_settings') {
             if (isset($_POST['breeze_settings_database_nonce']) || wp_verify_nonce($_POST['breeze_settings_database_nonce'], 'breeze_settings_database')) {
                 if(isset($_POST['clean'])){
-                    foreach ($_POST['clean'] as $item){
-                        $this->cleanSystem($item);
-                    }
+                	if (is_multisite()) {
+		                foreach ($sites as $site) {
+		                	switch_to_blog($site->blog_id);
+			                foreach ($_POST['clean'] as $item){
+				                $this->cleanSystem($item);
+			                }
+		                }
+		                restore_current_blog();
+	                } else {
+		                foreach ($_POST['clean'] as $item){
+			                $this->cleanSystem($item);
+		                }
+	                }
 
                     //return current page
                     if (!empty($_REQUEST['_wp_http_referer'])) {
@@ -155,12 +176,17 @@ class Breeze_Configuration{
                 );
 
                 update_option('breeze_cdn_integration', $cdn);
+	            // Update settings for network sites
+	            if (is_multisite()) {
+		            foreach ($sites as $site) {
+			            switch_to_blog($site->blog_id);
+			            update_option('breeze_cdn_integration',$cdn);
+		            }
+		            restore_current_blog();
+	            }
 
-                //delete minify && normal cache
-                Breeze_MinificationCache::clear_minification();
-                Breeze_PurgeCache::breeze_cache_flush();
-                // Clear varnish cache after settings
-               $this->clear_varnish();
+	            //delete cache after settings
+	            do_action('breeze_clear_all_cache');
             }
         }
 
@@ -172,9 +198,17 @@ class Breeze_Configuration{
                     'breeze-varnish-server-ip' => preg_replace('/[^a-zA-Z0-9\-\_\.]*/','',$_POST['varnish-server-ip'])
                 );
                 update_option('breeze_varnish_cache',$varnish);
+	            // Update settings for network sites
+	            if (is_multisite()) {
+		            foreach ($sites as $site) {
+			            switch_to_blog($site->blog_id);
+			            update_option('breeze_varnish_cache',$varnish);
+		            }
+		            restore_current_blog();
+	            }
 
                 // Clear varnish cache after settings
-                $this->clear_varnish();
+	            do_action('breeze_clear_varnish');
             }
         }
 
@@ -472,7 +506,7 @@ class Breeze_Configuration{
 
         //delete minify file
         Breeze_MinificationCache::clear_minification();
-       //delete all cache
+        //delete all cache
         Breeze_PurgeCache::breeze_cache_flush();
 
         return $result;
@@ -497,9 +531,7 @@ class Breeze_Configuration{
         //check security
         check_ajax_referer( '_breeze_purge_varnish', 'security' );
 
-        $homepage = home_url().'/?breeze';
-        $main = new Breeze_PurgeVarnish();
-        $main->purge_cache($homepage);
+	    do_action('breeze_clear_varnish');
 
         echo json_encode(array('clear' => true));
         exit;
@@ -535,22 +567,6 @@ class Breeze_Configuration{
         }
 
         return $bytes;
-    }
-
-    /*
-     * Clear varnish after settings
-     */
-
-    public function clear_varnish(){
-        // Clear varnish cache after settings
-        $varnish = get_option('breeze_varnish_cache');
-        if(!empty($varnish['auto-purge-varnish'])){
-            $homepage = home_url().'/?breeze';
-            $main = new Breeze_PurgeVarnish();
-            $main->purge_cache($homepage);
-        }
-
-        return true;
     }
 
 }

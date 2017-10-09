@@ -91,12 +91,7 @@ class Breeze_PurgeVarnish {
             $homepage = home_url().'/?breeze';
             if (isset($_REQUEST['breeze_action']) && $_REQUEST['breeze_action'] == 'breeze_settings') {
                 if (isset($_POST['_breeze_nonce']) || wp_verify_nonce($_POST['_breeze_nonce'], 'breeze_settings')) {
-                    //delete minify
-                    Breeze_MinificationCache::clear_minification();
-                    //clear normal cache
-                    Breeze_PurgeCache::breeze_cache_flush();
-                    //clear varnish cache
-                    $this->purge_cache($homepage);
+                    do_action('breeze_clear_all_cache');
                 }
             }
             if(isset($_GET['breeze_purge']) && check_admin_referer('breeze_purge_cache')){

@@ -26,6 +26,13 @@ wp_enqueue_script('jquery-ui', '//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/
     </div>
 
     <div class="faq-block">
+        <h3 class="faq-question"><?php _e('How does Breeze handle WordPress multisite?', 'breeze') ?></h3>
+        <div class="faq-answer">
+            <p><?php _e('Breeze handles all WordPress multisite instances globally. All the settings for multisite are now handled on the network level.', 'breeze') ?></p>
+        </div>
+    </div>
+
+    <div class="faq-block">
         <h3 class="faq-question"><?php _e('Is Breeze compatible with other WordPress Cache plugins?', 'breeze') ?></h3>
         <div class="faq-answer">
             <p><?php _e('We DO NOT recommend using two WordPress cache plugins at the same time on any WordPress website.', 'breeze') ?></p>
@@ -138,8 +145,8 @@ wp_enqueue_script('jquery-ui', '//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/
     <div class="faq-block">
         <h3 class="faq-question"><?php _e('Does Breeze Work With CloudFlare?', 'breeze') ?></h3>
         <div class="faq-answer">
-            <p><?php _e('Yes. The process of setting up CloudFlare with Breeze is easy. Check out the ', 'breeze') ?>
-                <a href="https://support.cloudways.com/can-i-use-cloudflare-cdn/" target="_blank"><?php _e('following KnowledgeBase article for details.', 'breeze') ?></a>
+            <p><?php _e('Yes. The process of setting up CloudFlare with Breeze is easy. Check out the following ', 'breeze') ?>
+                <a href="https://support.cloudways.com/can-i-use-cloudflare-cdn/" target="_blank"><?php _e('KnowledgeBase article for details.', 'breeze') ?></a>
             </p>
         </div>
     </div>
