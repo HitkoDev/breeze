@@ -271,7 +271,9 @@ class Breeze_Configuration{
                 return FALSE;
             }
 
-            $htaccessContent = str_replace($expires,'',$htaccessContent);
+            $pattern = '/#Expires headers configuration added by BREEZE WP CACHE plugin[\s\S]*#End of expires headers configuration/im';
+
+            $htaccessContent = preg_replace($pattern,'',$htaccessContent);
             file_put_contents(ABSPATH . DIRECTORY_SEPARATOR . '.htaccess', $htaccessContent);
             return TRUE;
         }
@@ -327,7 +329,9 @@ class Breeze_Configuration{
                 return FALSE;
             }
 
-            $htaccessContent = str_replace($data,'',$htaccessContent);
+	        $pattern = '/# Begin GzipofBreezeWPCache[\s\S]*# End GzipofBreezeWPCache/im';
+
+	        $htaccessContent = preg_replace($pattern,'',$htaccessContent);
             file_put_contents(ABSPATH . DIRECTORY_SEPARATOR . '.htaccess', $htaccessContent);
             return TRUE;
         }

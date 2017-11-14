@@ -170,6 +170,11 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 					}
 				} else {
 					// Inline script
+					if ($this->group_js) {
+						// Exclude inline JS while group minification files to avoid large caching size
+						continue;
+					}
+
 					if ($this->isremovable($tag,$this->jsremovables)) {
 						$this->content = str_replace($tag,'',$this->content);
 						continue;

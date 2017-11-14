@@ -81,13 +81,13 @@ class Breeze_PurgeCacheTime {
     public function schedule_varnish(){
         // Purge varnish cache
         if($this->varnishcache){
-            $homepage = home_url().'/?breeze';
-            $main = new Breeze_PurgeVarnish();
-            $main->purge_cache($homepage);
+            do_action('breeze_clear_varnish');
         }
+
         // Purge normal cache
         if($this->normalcache){
             Breeze_PurgeCache::breeze_cache_flush();
+	        Breeze_MinificationCache::clear_minification();
         }
 
     }

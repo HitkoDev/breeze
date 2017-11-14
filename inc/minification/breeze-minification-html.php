@@ -17,10 +17,10 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 		
 		// filter to add strings to be excluded from HTML minification
 		$excludeHTML = apply_filters( 'breeze_filter_html_exclude','' );
-                if ($excludeHTML!=="") {
-                        $exclHTMLArr = array_filter(array_map('trim',explode(",",$excludeHTML)));
-                        $this->exclude = array_merge($exclHTMLArr,$this->exclude);
-                }
+        if ($excludeHTML !== "") {
+            $exclHTMLArr = array_filter(array_map('trim',explode(",",$excludeHTML)));
+            $this->exclude = array_merge($exclHTMLArr, $this->exclude);
+        }
 		
 		// Nothing else for HTML
 		return true;
@@ -28,18 +28,18 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 	
 	//Joins and optimizes CSS
 	public function minify() {
-                $noptimizeHTML = apply_filters( 'breeze_filter_html_noptimize', false, $this->content );
-                if ($noptimizeHTML)
-                        return false;
+        $noptimizeHTML = apply_filters( 'breeze_filter_html_noptimize', false, $this->content );
+        if ($noptimizeHTML)
+                return false;
 		
 		if(class_exists('Minify_HTML')) {
 			// wrap the to-be-excluded strings in noptimize tags
-                        foreach ($this->exclude as $exclString) {
-                                if (strpos($this->content,$exclString)!==false) {
-                                        $replString="<!--noptimize-->".$exclString."<!--/noptimize-->";
-                                        $this->content=str_replace($exclString,$replString,$this->content);
-                                }
-                        }
+            foreach ($this->exclude as $exclString) {
+                if (strpos($this->content, $exclString)!==false) {
+                    $replString = "<!--noptimize-->".$exclString."<!--/noptimize-->";
+                    $this->content = str_replace($exclString, $replString, $this->content);
+                }
+            }
 
 			// noptimize me
 			$this->content = $this->hide_noptimize($this->content);
@@ -50,8 +50,8 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 				$options['xhtml'] = true;
 			}
 
-			if (@is_callable(array(new Minify_HTML,"minify"))) {
-				$tmp_content = Minify_HTML::minify($this->content,$options);
+			if (method_exists('Minify_HTML', 'minify')) {
+				$tmp_content = Minify_HTML::minify($this->content, $options);
 				if (!empty($tmp_content)) {
 					$this->content = $tmp_content;
 					unset($tmp_content);
@@ -62,12 +62,12 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 			$this->content = $this->restore_noptimize($this->content);
 			
 			// remove the noptimize-wrapper from around the excluded strings
-                        foreach ($this->exclude as $exclString) {
-                                $replString="<!--noptimize-->".$exclString."<!--/noptimize-->";
-                                if (strpos($this->content,$replString)!==false) {
-                                        $this->content=str_replace($replString,$exclString,$this->content);
-                                }
-                        }
+            foreach ($this->exclude as $exclString) {
+                $replString = "<!--noptimize-->".$exclString."<!--/noptimize-->";
+                if (strpos($this->content, $replString) !== false) {
+                    $this->content = str_replace($replString, $exclString, $this->content);
+                }
+            }
 
 			return true;
 		}

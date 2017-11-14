@@ -24,7 +24,7 @@ $basic = get_option('breeze_basic_settings');
             <input type="text" id="cache-ttl" size="5" name="cache-ttl"
                    value='<?php echo(!empty($basic['breeze-ttl']) ? (int)$basic['breeze-ttl'] : '1440'); ?>'/>
             <label class="breeze_tool_tip" style="vertical-align: baseline">
-                <?php _e('Automatically purge internal cache after X minutes. By default this is set to 1440 minutes', 'breeze') ?>
+                <?php _e('Automatically purge internal cache after X minutes. By default this is set to 1440 minutes (1 day)', 'breeze') ?>
             </label>
         </td>
     </tr>

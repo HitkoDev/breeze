@@ -268,8 +268,9 @@ function breeze_get_url_path()
 {
 
     $host = (isset($_SERVER['HTTP_HOST'])) ? $_SERVER['HTTP_HOST'] : '';
+    $domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? 'https://' : 'http://');
 
-    return "http://" . rtrim($host, '/') . $_SERVER['REQUEST_URI'];
+    return $domain . rtrim($host, '/') . $_SERVER['REQUEST_URI'];
 }
 
 /**

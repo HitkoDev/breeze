@@ -25,7 +25,7 @@ class Breeze_Minify {
     public function __construct()
     {
         //check disable cache for page
-        $domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off') || $_SERVER['SERVER_PORT']==443) ? 'https://':'http://' ).$_SERVER['HTTP_HOST'];
+        $domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS']!=='off') || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT']==443)) ? 'https://':'http://' ).$_SERVER['HTTP_HOST'];
         $current_url = $domain.$_SERVER['REQUEST_URI'];
 
         $check_url = $this->check_exclude_url($current_url);
