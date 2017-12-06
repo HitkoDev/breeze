@@ -92,11 +92,10 @@ if (!$check_exclude) {
         }
     }
 
-    breeze_serve_cache($filename, $url_path, $X1,$devices);
+    breeze_serve_cache($filename, $url_path, $X1, $devices);
     ob_start('breeze_cache');
-
 } else {
-	header('Cache-Control: no-cache');
+    header('Cache-Control: no-cache');
 }
 
 /**
@@ -109,6 +108,10 @@ if (!$check_exclude) {
  */
 function breeze_cache($buffer, $flags)
 {
+    // No cache for pages without 200 response status
+    if (http_response_code() !== 200) {
+        return $buffer;
+    }
 
     require_once 'Mobile-Detect-2.8.25/Mobile_Detect.php';
     $detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect;
