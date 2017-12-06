@@ -146,7 +146,7 @@ Using Gzip, Breeze compresses the request files, further reducing the size of th
 == Changelog ==
 
 = 1.0.8 =
-* Fix: Breeze also caches pages with Page Status 200
+* Fix: Cache exclusion for pages that returns status code other than 200
 
 = 1.0.7 =
 * Fix: Grouping and Minification issues for PHP 7.1
