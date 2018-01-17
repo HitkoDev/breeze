@@ -113,18 +113,18 @@ Breeze has been tested to work with all major hosting providers. In addition, ma
 
 You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
 
-= How can I test and verify the results (mentioned on the page)? =
+= How can I test and verify the results? =
 
 You will be able to see the impact of the Breeze Cache Plugin almost immediately. We also recommend using the following tools for generating metrics:
-<a href="https://developers.google.com/speed/pagespeed/" target="_blank">Google Page Speed</a>
+<a style="margin-top: 10px" href="https://developers.google.com/speed/pagespeed/" target="_blank">Google Page Speed</a>
 <a href="https://www.webpagetest.org/test" target="_blank">WebPagetest</a>
 <a href="https://tools.pingdom.com/" target="_blank">Pingdom</a>
 
-= Does Breeze plugin work with Visual Builder(insert link)? =
+= Does Breeze plugin work with Visual Builder? =
 
 Yes, Breeze Plugin is compatible with Visual Builder.
 
-= What popular CDN are supported by Breze Plugin? =
+= What popular CDN are supported by Breeze Plugin? =
 
 Breeze supports the following three popular CDNs:
 <a href="https://support.cloudways.com/how-to-use-breeze-with-maxcdn/" target="_blank">MaxCDN</a>
