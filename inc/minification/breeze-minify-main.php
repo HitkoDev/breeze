@@ -141,12 +141,17 @@ class Breeze_Minify {
 
         // Choose the classes
         $classes = array();
+        $js_include_inline = $css_include_inline = false;
         if (!empty($conf['breeze-minify-js']))
             $classes[] = 'Breeze_MinificationScripts';
         if (!empty($conf['breeze-minify-css']))
             $classes[] = 'Breeze_MinificationStyles';
         if (!empty($conf['breeze-minify-html']))
             $classes[] = 'Breeze_MinificationHtml';
+        if (!empty($conf['breeze-include-inline-js']))
+            $js_include_inline = true;
+        if (!empty($conf['breeze-include-inline-css']))
+            $css_include_inline = true;
         $groupcss = false;
         $groupjs = false;
         if (!empty($minify['breeze-group-css'])){
@@ -155,6 +160,7 @@ class Breeze_Minify {
         if (!empty($minify['breeze-group-js'])){
             $groupjs = true;
         }
+
         // Set some options
         $classoptions = array(
             'Breeze_MinificationScripts' => array(
@@ -163,9 +169,11 @@ class Breeze_Minify {
                 'trycatch' => false,
                 'js_exclude' => "s_sid, smowtion_size, sc_project, WAU_, wau_add, comment-form-quicktags, edToolbar, ch_client, seal.js",
                 'cdn_url' => "",
-                'include_inline' => true,
+                'include_inline' => $js_include_inline,
                 'group_js' => $groupjs,
-                'custom_js_exclude' => $minify['breeze-exclude-js']
+                'custom_js_exclude' => $minify['breeze-exclude-js'],
+                'move_to_footer_js' => $minify['breeze-move-to-footer-js'],
+                'defer_js' => $minify['breeze-defer-js']
             ),
             'Breeze_MinificationStyles' => array(
                 'justhead' => false,
@@ -175,7 +183,7 @@ class Breeze_Minify {
                 'inline' => false,
                 'css_exclude' => "admin-bar.min.css, dashicons.min.css",
                 'cdn_url' => "",
-                'include_inline' => true,
+                'include_inline' => $css_include_inline,
                 'nogooglefont' => false,
                 'groupcss' => $groupcss,
                 'custom_css_exclude' => $minify['breeze-exclude-css']

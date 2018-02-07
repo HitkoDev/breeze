@@ -1,7 +1,5 @@
 <?php
 defined('ABSPATH') or die;
-
-wp_enqueue_script('jquery-ui', '//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js');
 ?>
 <div id="faq-content">
 	<div class="faq-block">
@@ -105,10 +103,10 @@ wp_enqueue_script('jquery-ui', '//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/
     </div>
 
     <div class="faq-block">
-        <h3 class="faq-question"><?php _e('How can I test and verify the results (mentioned on the page)?', 'breeze') ?></h3>
+        <h3 class="faq-question"><?php _e('How can I test and verify the results?', 'breeze') ?></h3>
         <div class="faq-answer">
             <p><?php _e('You will be able to see the impact of the Breeze Cache Plugin almost immediately. We also recommend using the following tools for generating metrics:', 'breeze') ?></p>
-            <ul>
+            <ul style="margin-top: 10px">
                 <li><a href="https://developers.google.com/speed/pagespeed/" target="_blank"><?php _e('Google Page Speed', 'breeze') ?></a></li>
                 <li><a href="https://www.webpagetest.org/test" target="_blank"><?php _e('WebPagetest', 'breeze') ?></a></li>
                 <li><a href="https://tools.pingdom.com/" target="_blank"><?php _e('Pingdom', 'breeze') ?></a></li>
@@ -117,17 +115,17 @@ wp_enqueue_script('jquery-ui', '//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/
     </div>
 
     <div class="faq-block">
-        <h3 class="faq-question"><?php _e('Does Breeze plugin work with Visual Builder(insert link)?', 'breeze') ?></h3>
+        <h3 class="faq-question"><?php _e('Does Breeze plugin work with Visual Builder?', 'breeze') ?></h3>
         <div class="faq-answer">
             <p><?php _e('Yes, Breeze Plugin is compatible with Visual Builder.', 'breeze') ?></p>
         </div>
     </div>
 
     <div class="faq-block">
-        <h3 class="faq-question"><?php _e('What popular CDN are supported by Breze Plugin?', 'breeze') ?></h3>
+        <h3 class="faq-question"><?php _e('What popular CDN are supported by Breeze Plugin?', 'breeze') ?></h3>
         <div class="faq-answer">
             <p><?php _e('Breeze supports the following three popular CDNs:', 'breeze') ?></p>
-            <ul>
+            <ul style="margin-top: 10px">
                 <li><a href="https://support.cloudways.com/how-to-use-breeze-with-maxcdn/" target="_blank"><?php _e('MaxCDN', 'breeze') ?></a></li>
                 <li><a href="https://support.cloudways.com/how-to-use-breeze-with-keycdn/" target="_blank"><?php _e('KeyCDN', 'breeze') ?></a></li>
                 <li><a href="https://support.cloudways.com/how-to-use-breeze-with-amazon-cloudfront/" target="_blank"><?php _e('Amazon Cloudfront', 'breeze') ?></a></li>

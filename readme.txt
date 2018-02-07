@@ -3,7 +3,7 @@ Contributors: Cloudways
 Tags: cache, caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers
 Requires at least: 4.5
 Tested up to: 4.9.1
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -116,7 +116,7 @@ You can get your questions answered on the WordPress support forums. If you are 
 = How can I test and verify the results? =
 
 You will be able to see the impact of the Breeze Cache Plugin almost immediately. We also recommend using the following tools for generating metrics:
-<a style="margin-top: 10px" href="https://developers.google.com/speed/pagespeed/" target="_blank">Google Page Speed</a>
+<a href="https://developers.google.com/speed/pagespeed/" target="_blank">Google Page Speed</a>
 <a href="https://www.webpagetest.org/test" target="_blank">WebPagetest</a>
 <a href="https://tools.pingdom.com/" target="_blank">Pingdom</a>
 
@@ -144,6 +144,12 @@ Yes. The process of setting up CloudFlare with Breeze is easy. Check out the fol
 Using Gzip, Breeze compresses the request files, further reducing the size of the download files and speeding up the user experience.
 
 == Changelog ==
+
+= 1.0.9 =
+* Add: Option to move JS file to footer during minification
+* Add: Option to deffer loading for JS files
+* Add: Option to include inline CSS
+* Add: Option to include inline JS
 
 = 1.0.8 =
 * Fix: Cache exclusion for pages that returns status code other than 200

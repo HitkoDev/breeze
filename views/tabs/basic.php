@@ -11,9 +11,9 @@ $basic = get_option('breeze_basic_settings');
         <td>
             <input type="checkbox" id="cache-system" name="cache-system"
                    value='1' <?php checked($basic['breeze-active'], '1') ?>/>
-            <label class="breeze_tool_tip">
+            <span class="breeze_tool_tip">
                 <?php _e('This is the basic cache that we recommend should be kept enabled in all cases. Basic cache will build the internal and static caches for the WordPress websites.', 'breeze') ?>
-            </label>
+            </span>
         </td>
     </tr>
     <tr>
@@ -23,9 +23,9 @@ $basic = get_option('breeze_basic_settings');
         <td>
             <input type="text" id="cache-ttl" size="5" name="cache-ttl"
                    value='<?php echo(!empty($basic['breeze-ttl']) ? (int)$basic['breeze-ttl'] : '1440'); ?>'/>
-            <label class="breeze_tool_tip" style="vertical-align: baseline">
+            <span class="breeze_tool_tip" style="vertical-align: baseline">
                 <?php _e('Automatically purge internal cache after X minutes. By default this is set to 1440 minutes (1 day)', 'breeze') ?>
-            </label>
+            </span>
         </td>
     </tr>
     <tr>
@@ -35,26 +35,46 @@ $basic = get_option('breeze_basic_settings');
         <td>
             <ul>
                 <li>
-                    <input type="checkbox" name="minification-html"
+                    <input type="checkbox" name="minification-html" id="minification-html"
                            value="1" <?php checked($basic['breeze-minify-html'], '1') ?>/>
-                    <label class="breeze_tool_tip"><?php _e('HTML', 'breeze') ?></label>
-                </li>
-                <li>
-                    <input type="checkbox" name="minification-css"
-                           value="1" <?php checked($basic['breeze-minify-css'], '1') ?>/>
-                    <label class="breeze_tool_tip"><?php _e('CSS', 'breeze') ?></label>
-                </li>
-                <li>
-                    <input type="checkbox" name="minification-js"
-                           value="1" <?php checked($basic['breeze-minify-js'], '1') ?>/>
-                    <label class="breeze_tool_tip"><?php _e('JS', 'breeze') ?></label>
-                </li>
-                <li>
-                    <label><?php _e('Check the above boxes to minify HTML, CSS, or JS files.', 'breeze') ?></label>
-                    <br>
-                    <label><b>Note:&nbsp;</b>
-                        <span style="color: #ff0000"><?php _e('We recommend testing minification on a staging website before deploying it on a live website. Minification is known to cause issues on the frontend.', 'breeze') ?></span>
+                    <label class="breeze_tool_tip" for="minification-html">
+                        <?php _e('HTML', 'breeze') ?>
                     </label>
+                </li>
+                <li>
+                    <input type="checkbox" name="minification-css" id="minification-css"
+                           value="1" <?php checked($basic['breeze-minify-css'], '1') ?>/>
+                    <label class="breeze_tool_tip" for="minification-css">
+                        <?php _e('CSS', 'breeze') ?>
+                    </label>
+                </li>
+                <li>
+                    <input type="checkbox" name="minification-js" id="minification-js"
+                           value="1" <?php checked($basic['breeze-minify-js'], '1') ?>/>
+                    <label class="breeze_tool_tip" for="minification-js">
+                        <?php _e('JS', 'breeze') ?>
+                    </label>
+                </li>
+                <li>
+                    <input type="checkbox" name="include-inline-js" id="include-inline-js"
+                           value="1" <?php checked($basic['breeze-include-inline-js'], '1') ?>/>
+                    <label class="breeze_tool_tip" for="include-inline-js">
+                        <?php _e('Include inline JS', 'breeze') ?>
+                    </label>
+                </li>
+                <li>
+                    <input type="checkbox" name="include-inline-css" id="include-inline-css"
+                           value="1" <?php checked($basic['breeze-include-inline-css'], '1') ?>/>
+                    <label class="breeze_tool_tip" for="include-inline-css">
+                        <?php _e('Include inline CSS', 'breeze') ?>
+                    </label>
+                </li>
+                <li>
+                    <span><?php _e('Check the above boxes to minify HTML, CSS, or JS files.', 'breeze') ?></span>
+                    <br>
+                    <span><b>Note:&nbsp;</b>
+                        <span style="color: #ff0000"><?php _e('We recommend testing minification on a staging website before deploying it on a live website. Minification is known to cause issues on the frontend.', 'breeze') ?></span>
+                    </span>
                 </li>
             </ul>
 
@@ -67,7 +87,7 @@ $basic = get_option('breeze_basic_settings');
         <td>
             <input type="checkbox" id="gzip-compression" name="gzip-compression"
                    value='1' <?php checked($basic['breeze-gzip-compression'], '1') ?>/>
-            <label class="breeze_tool_tip"><?php _e('Enable this to compress your files making HTTP requests fewer and faster.', 'breeze') ?></label>
+            <span class="breeze_tool_tip"><?php _e('Enable this to compress your files making HTTP requests fewer and faster.', 'breeze') ?></span>
         </td>
     </tr>
     <tr>
@@ -77,7 +97,7 @@ $basic = get_option('breeze_basic_settings');
         <td>
             <input type="checkbox" id="browser-cache" name="browser-cache"
                    value='1' <?php checked($basic['breeze-browser-cache'], '1') ?>/>
-            <label class="breeze_tool_tip"><?php _e('Enable this to add expires headers to static files. This will ask browsers to either request a file from server or fetch from the browser’s cache.', 'breeze') ?></label>
+            <span class="breeze_tool_tip"><?php _e('Enable this to add expires headers to static files. This will ask browsers to either request a file from server or fetch from the browser’s cache.', 'breeze') ?></span>
         </td>
     </tr>
 

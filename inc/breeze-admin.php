@@ -219,18 +219,6 @@ class Breeze_Admin {
                     'target' => '_blank'),
             );
             $wp_admin_bar->add_node( $args );
-
-	        // add feedback item
-	        $args = array(
-		        'id'     => 'breeze-feedback',
-		        'title'  => esc_html(__('Feedback', 'breeze')),
-		        'href' => 'https://www.surveymonkey.com/r/YNV2XVL',
-		        'parent' => 'breeze-topbar',
-		        'meta'   => array( 'class' => 'breeze-toolbar-group',
-		                           'target' => '_blank'),
-	        );
-	        $wp_admin_bar->add_node( $args );
-
         }
     }
 
@@ -271,6 +259,8 @@ class Breeze_Admin {
             'breeze-mobile-cache' => '1',
             'breeze-disable-admin' => '1',
             'breeze-display-clean' => '1',
+            'breeze-include-inline-js' => '0',
+            'breeze-include-inline-css' => '0',
         );
         $basic= array_merge($default_basic,$basic);
 
@@ -282,7 +272,9 @@ class Breeze_Admin {
             'breeze-group-css' => '0',
             'breeze-group-js' => '0',
             'breeze-exclude-css' => array(),
-            'breeze-exclude-js' => array()
+            'breeze-exclude-js' => array(),
+            'breeze-move-to-footer-js' => array(),
+            'breeze-defer-js' => array()
         );
         $advanced= array_merge($default_advanced,$advanced);
 

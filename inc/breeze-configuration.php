@@ -49,9 +49,12 @@ class Breeze_Configuration{
                     'breeze-desktop-cache' => (int)$_POST['desktop-cache'],
                     'breeze-mobile-cache' => (int)$_POST['mobile-cache'],
                     'breeze-disable-admin' => '1',
-                    'breeze-display-clean' => '1'
+                    'breeze-display-clean' => '1',
+                    'breeze-include-inline-js' => (isset($_POST['include-inline-js']) ? '1' : '0'),
+                    'breeze-include-inline-css' => (isset($_POST['include-inline-css']) ? '1' : '0'),
                 );
                 update_option('breeze_basic_settings',$basic);
+
                 // Update settings for network sites
                 if (is_multisite()) {
                 	foreach ($sites as $site) {
@@ -100,12 +103,32 @@ class Breeze_Configuration{
                 $exclude_urls = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-urls']));
                 $exclude_css = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-css']));
                 $exclude_js = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-js']));
+                $move_to_footer_js = $defer_js = array();
+
+                if (!empty($_POST['move-to-footer-js'])) {
+                    foreach ($_POST['move-to-footer-js'] as $url) {
+                        if (trim($url) == '') continue;
+                        $url = current(explode('?', $url, 2));
+                        $move_to_footer_js[sanitize_text_field($url)] = sanitize_text_field($url);
+                    }
+                }
+
+                if (!empty($_POST['defer-js'])) {
+                    foreach ($_POST['defer-js'] as $url) {
+                        if (trim($url) == '') continue;
+                        $url = current(explode('?', $url, 2));
+                        $defer_js[sanitize_text_field($url)] = sanitize_text_field($url);
+                    }
+                }
+
                 $advanced = array(
                     'breeze-exclude-urls' => $exclude_urls,
                     'breeze-group-css' => (isset($_POST['group-css']) ? '1' : '0'),
                     'breeze-group-js' => (isset($_POST['group-js']) ? '1' : '0'),
                     'breeze-exclude-css' => $exclude_css,
-                    'breeze-exclude-js' => $exclude_js
+                    'breeze-exclude-js' => $exclude_js,
+                    'breeze-move-to-footer-js' => $move_to_footer_js,
+                    'breeze-defer-js' => $defer_js
                 );
                 update_option('breeze_advanced_settings',$advanced);
 	            // Update settings for network sites
