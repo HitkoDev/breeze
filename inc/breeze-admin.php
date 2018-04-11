@@ -144,7 +144,7 @@ class Breeze_Admin {
      */
     function register_admin_bar_menu(WP_Admin_Bar $wp_admin_bar)
     {
-        if (current_user_can('manage_options')) {
+        if (current_user_can('manage_options') || current_user_can('editor')) {
             // add a parent item
             $args = array(
                 'id' => 'breeze-topbar',
@@ -163,6 +163,9 @@ class Breeze_Admin {
                 'meta'   => array( 'class' => 'breeze-toolbar-group' ),
             );
             $wp_admin_bar->add_node( $args );
+
+            // Editor role can only use Purge all cache option
+            if (current_user_can('editor')) return $wp_admin_bar;
 
             // add purge modules group
             $args = array(
