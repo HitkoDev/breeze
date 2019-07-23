@@ -169,7 +169,7 @@ class Breeze_Configuration{
 
                     //return current page
                     if (!empty($_REQUEST['_wp_http_referer'])) {
-                        wp_redirect($_REQUEST['_wp_http_referer'].'&database-cleanup=success');
+                        wp_safe_redirect($_REQUEST['_wp_http_referer'].'&database-cleanup=success');
                         exit;
                     }
                 }
@@ -238,7 +238,7 @@ class Breeze_Configuration{
 
         //return current page
         if (!empty($_REQUEST['_wp_http_referer'])) {
-            wp_redirect($_REQUEST['_wp_http_referer'].'&save-settings=success');
+            wp_safe_redirect($_REQUEST['_wp_http_referer'].'&save-settings=success');
             exit;
         }
 
