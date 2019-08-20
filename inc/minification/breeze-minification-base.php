@@ -123,10 +123,10 @@ abstract class Breeze_MinificationBase {
 		if ( preg_match( '/<!--\s?noptimize\s?-->/', $noptimize_in ) ) { 
 			$noptimize_out = preg_replace_callback(
 				'#<!--\s?noptimize\s?-->.*?<!--\s?/\s?noptimize\s?-->#is',
-				create_function(
-					'$matches',
-					'return "%%NOPTIMIZE".breeze_HASH."%%".base64_encode($matches[0])."%%NOPTIMIZE%%";'
-				),
+
+                function($matches){
+                    return "%%NOPTIMIZE".breeze_HASH."%%".base64_encode($matches[0])."%%NOPTIMIZE%%";
+                },
 				$noptimize_in
 			);
 		} else {
@@ -140,10 +140,10 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $noptimize_in, '%%NOPTIMIZE%%' ) !== false ) { 
 			$noptimize_out = preg_replace_callback(
 				'#%%NOPTIMIZE'.breeze_HASH.'%%(.*?)%%NOPTIMIZE%%#is',
-				create_function(
-					'$matches',
-					'return base64_decode($matches[1]);'
-				),
+
+                function($matches){
+                    return base64_decode($matches[1]);
+                },
 				$noptimize_in
 			);
 		} else {
@@ -156,10 +156,11 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $iehacks_in, '<!--[if' ) !== false ) { 
 			$iehacks_out = preg_replace_callback(
 				'#<!--\[if.*?\[endif\]-->#is',
-				create_function(
-					'$matches',
-					'return "%%IEHACK".breeze_HASH."%%".base64_encode($matches[0])."%%IEHACK%%";'
-				),
+
+                function($matches){
+                    return "%%IEHACK".breeze_HASH."%%".base64_encode($matches[0])."%%IEHACK%%";
+                },
+
 				$iehacks_in
 			);
 		} else {
@@ -172,10 +173,10 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $iehacks_in, '%%IEHACK%%' ) !== false ) { 
 			$iehacks_out = preg_replace_callback(
 				'#%%IEHACK'.breeze_HASH.'%%(.*?)%%IEHACK%%#is',
-				create_function(
-					'$matches',
-					'return base64_decode($matches[1]);'
-				),
+
+                function($matches){
+                    return base64_decode($matches[1]);
+                },
 				$iehacks_in
 			);
 		} else {
@@ -188,10 +189,10 @@ abstract class Breeze_MinificationBase {
                 if ( strpos( $comments_in, '<!--' ) !== false ) {
                         $comments_out = preg_replace_callback(
                                 '#<!--.*?-->#is',
-                                create_function(
-                                        '$matches',
-                                        'return "%%COMMENTS".breeze_HASH."%%".base64_encode($matches[0])."%%COMMENTS%%";'
-                                ),
+
+                            function($matches){
+                                return "%%COMMENTS".breeze_HASH."%%".base64_encode($matches[0])."%%COMMENTS%%";
+                            },
                                 $comments_in
                         );
                 } else {
@@ -204,10 +205,10 @@ abstract class Breeze_MinificationBase {
                 if ( strpos( $comments_in, '%%COMMENTS%%' ) !== false ) {
                         $comments_out = preg_replace_callback(
                                 '#%%COMMENTS'.breeze_HASH.'%%(.*?)%%COMMENTS%%#is',
-                                create_function(
-                                        '$matches',
-                                        'return base64_decode($matches[1]);'
-                                ),
+
+                            function($matches){
+                                return base64_decode($matches[1]);
+                            },
                                 $comments_in
                         );
                 } else {
@@ -278,9 +279,9 @@ abstract class Breeze_MinificationBase {
         if ( strpos( $in, '%%INJECTLATER%%' ) !== false ) {
             $out = preg_replace_callback(
                 '#%%INJECTLATER'.breeze_HASH.'%%(.*?)%%INJECTLATER%%#is',
-                create_function(
-                    '$matches',
-                    '$filepath=base64_decode(strtok($matches[1],"|"));
+
+                function($matches){
+                    $filepath=base64_decode(strtok($matches[1],"|"));
                     $filecontent=file_get_contents($filepath);
 
                     // remove BOM
@@ -307,9 +308,9 @@ abstract class Breeze_MinificationBase {
                         $filecontent=Breeze_MinificationStyles::fixurls($filepath,$filecontent);
                     }
 
-                    // return 
-                    return "\n".$filecontent;'
-                ),
+                    // return
+                    return "\n".$filecontent;
+                },
                 $in
             );
         } else {
