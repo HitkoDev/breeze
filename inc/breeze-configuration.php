@@ -35,7 +35,7 @@ class Breeze_Configuration{
     	$sites = is_multisite() ? get_sites() : array();
         // Basic options tab
         if (isset($_REQUEST['breeze_basic_action']) && $_REQUEST['breeze_basic_action'] == 'breeze_basic_settings') {
-            if (isset($_POST['breeze_settings_basic_nonce']) || wp_verify_nonce($_POST['breeze_settings_basic_nonce'], 'breeze_settings_basic')) {
+            if (isset($_POST['breeze_settings_basic_nonce']) && wp_verify_nonce($_POST['breeze_settings_basic_nonce'], 'breeze_settings_basic')) {
                 WP_Filesystem();
 
                 $basic = array(
@@ -99,7 +99,7 @@ class Breeze_Configuration{
         }
         // Advanced options tab
         if (isset($_REQUEST['breeze_advanced_action']) && $_REQUEST['breeze_advanced_action'] == 'breeze_advanced_settings') {
-            if (isset($_POST['breeze_settings_advanced_nonce']) || wp_verify_nonce($_POST['breeze_settings_advanced_nonce'], 'breeze_settings_advanced')) {
+            if (isset($_POST['breeze_settings_advanced_nonce']) && wp_verify_nonce($_POST['breeze_settings_advanced_nonce'], 'breeze_settings_advanced')) {
                 $exclude_urls = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-urls']));
                 $exclude_css = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-css']));
                 $exclude_js = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-js']));
@@ -151,7 +151,7 @@ class Breeze_Configuration{
 
         // Database option tab
         if (isset($_REQUEST['breeze_database_action']) && $_REQUEST['breeze_database_action'] == 'breeze_database_settings') {
-            if (isset($_POST['breeze_settings_database_nonce']) || wp_verify_nonce($_POST['breeze_settings_database_nonce'], 'breeze_settings_database')) {
+            if (isset($_POST['breeze_settings_database_nonce']) && wp_verify_nonce($_POST['breeze_settings_database_nonce'], 'breeze_settings_database')) {
                 if(isset($_POST['clean'])){
                 	if (is_multisite()) {
 		                foreach ($sites as $site) {
@@ -178,7 +178,7 @@ class Breeze_Configuration{
 
         // Cdn option tab
         if (isset($_REQUEST['breeze_cdn_action']) && $_REQUEST['breeze_cdn_action'] == 'breeze_cdn_settings') {
-            if (isset($_POST['breeze_settings_cdn_nonce']) || wp_verify_nonce($_POST['breeze_settings_cdn_nonce'], 'breeze_settings_cdn')) {
+            if (isset($_POST['breeze_settings_cdn_nonce']) && wp_verify_nonce($_POST['breeze_settings_cdn_nonce'], 'breeze_settings_cdn')) {
                 $cdn_content = array();
                 $exclude_content = array();
                 if(!empty($_POST['cdn-content'])){
@@ -215,7 +215,7 @@ class Breeze_Configuration{
 
         // Varnish option tab
         if (isset($_REQUEST['breeze_varnish_action']) && $_REQUEST['breeze_varnish_action'] == 'breeze_varnish_settings') {
-            if (isset($_POST['breeze_settings_varnish_nonce']) || wp_verify_nonce($_POST['breeze_settings_varnish_nonce'], 'breeze_settings_varnish')) {
+            if (isset($_POST['breeze_settings_varnish_nonce']) && wp_verify_nonce($_POST['breeze_settings_varnish_nonce'], 'breeze_settings_varnish')) {
                 $varnish = array(
                     'auto-purge-varnish' => (isset($_POST['auto-purge-varnish']) ? '1' : '0'),
                     'breeze-varnish-server-ip' => preg_replace('/[^a-zA-Z0-9\-\_\.]*/','',$_POST['varnish-server-ip'])
