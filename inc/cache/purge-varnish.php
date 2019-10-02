@@ -31,9 +31,7 @@ class Breeze_PurgeVarnish {
         'switch_theme',                        // After a theme is changed
         'save_post',                            // Save a post
         'deleted_post',                        // Delete a post
-        'trashed_post',                        // Empty Trashed post
         'edit_post',                            // Edit a post - includes leaving comments
-        'delete_attachment',                    // Delete an attachment - includes re-uploading
     );
 
     protected $actionsNoId = array('switch_theme');
@@ -174,6 +172,11 @@ class Breeze_PurgeVarnish {
      */
     public function purge_post($postId)
     {
+		if ( 'save_post' === current_action() && did_action( 'edit_post' ) ) {
+			// Prevent triggering this method twice when posts are updated.
+			return;
+		}
+
         $this->pushUrl($postId);
     }
     /*
@@ -320,11 +323,15 @@ class Breeze_PurgeVarnish {
 
         // Now flush all the URLs we've collected provided the array isn't empty
         if (!empty($listofurls)) {
-            $purgeurls = array_unique($listofurls, SORT_REGULAR);
-
-            foreach ($purgeurls as $url) {
-                array_push($this->urlsPurge, $url);
-            }
+			$this->urlsPurge = array_filter(
+				array_unique(
+					array_merge(
+						$this->urlsPurge,
+						$listofurls
+					),
+					SORT_REGULAR
+				)
+			);
         }
 
     }
