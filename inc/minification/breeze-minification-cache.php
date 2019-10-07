@@ -1,14 +1,14 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
-/* 
- *  Based on some work of autoptimize plugin 
+/*
+ *  Based on some work of autoptimize plugin
  */
 class Breeze_MinificationCache {
     private $filename;
 	private $mime;
 	private $cachedir;
 	private $delayed;
-	
+
 	public function __construct($md5,$ext='php') {
 		$this->cachedir = BREEZE_MINIFICATION_CACHE;
         if(is_multisite()){
@@ -29,7 +29,7 @@ class Breeze_MinificationCache {
 
 
 	}
-        
+
       public function check() {
 		if(!file_exists($this->cachedir.$this->filename)) {
 			// No cached file, sorry
@@ -68,7 +68,7 @@ class Breeze_MinificationCache {
      public function getname() {
 	        apply_filters('breeze_filter_cache_getname',breeze_CACHE_URL.$this->filename);
 		return $this->filename;
-	} 
+	}
     //create folder cache
      public static function create_cache_minification_folder(){
             if(!defined('BREEZE_MINIFICATION_CACHE')) {
@@ -108,13 +108,13 @@ class Breeze_MinificationCache {
              }
 
 	        if(!is_file($htAccess)) {
-			/** 
-			 * create wp-content/AO_htaccess_tmpl with 
+			/**
+			 * create wp-content/AO_htaccess_tmpl with
 			 * whatever htaccess rules you might need
 			 * if you want to override default AO htaccess
 			 */
 			$htaccess_tmpl=WP_CONTENT_DIR."/AO_htaccess_tmpl";
-			if (is_file($htaccess_tmpl)) { 
+			if (is_file($htaccess_tmpl)) {
 				$htAccessContent=file_get_contents($htaccess_tmpl);
 			} else if (is_multisite()) {
 				$htAccessContent='<IfModule mod_headers.c>
@@ -176,7 +176,7 @@ class Breeze_MinificationCache {
 		}
                  // All OK
         return true;
-                  
+
       }
 //      check dir cache
       static function checkCacheDir($dir) {
@@ -198,13 +198,32 @@ class Breeze_MinificationCache {
 		if(!is_file($indexFile)) {
 			@file_put_contents($indexFile,'<html><head><meta name="robots" content="noindex, nofollow"></head><body></body></html>');
 		}
-		
+
 		return true;
 	}
-      public static function clear_minification() {
-		if(!Breeze_MinificationCache::create_cache_minification_folder()) {
+
+	public static function clear_minification() {
+		if ( is_multisite() && is_network_admin() ) {
+			$sites = get_sites(
+				array(
+					'fields' => 'ids',
+				)
+			);
+			foreach ( $sites as $blog_id ) {
+				switch_to_blog( $blog_id );
+				self::clear_site_minification();
+			}
+			restore_current_blog();
+		} else {
+			self::clear_site_minification();
+		}
+	}
+
+	public static function clear_site_minification() {
+		if ( ! isset( $_GET['breeze_purge'] ) && ! Breeze_MinificationCache::create_cache_minification_folder() ) {
 			return false;
 		}
+
 	    if(is_multisite()){
             $blog_id = get_current_blog_id();
             // scan the cachedirs
@@ -240,7 +259,7 @@ class Breeze_MinificationCache {
         }
 		return true;
 	}
-      
+
       public static function factory() {
 
 		static $instance;
@@ -253,4 +272,3 @@ class Breeze_MinificationCache {
 		return $instance;
 	}
 }
-

@@ -30,7 +30,7 @@ class Breeze_CDN_Integration{
      * Execute rewrite cdn
      */
     public function handle_rewrite_cdn(){
-        $cdn_integration = get_option('breeze_cdn_integration');
+        $cdn_integration = breeze_get_option( 'cdn_integration' );
 
         if(empty($cdn_integration) || empty($cdn_integration['cdn-active'])){
             return;

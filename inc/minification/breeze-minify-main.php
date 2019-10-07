@@ -31,11 +31,11 @@ class Breeze_Minify {
         $check_url = $this->check_exclude_url($current_url);
 
         //load config file when redirect template
-        if (!$check_url) {
+        if ( ! $check_url && self::should_cache() ) {
             //cache html
             //cache minification
             if (Breeze_MinificationCache::create_cache_minification_folder()) {
-                $conf = get_option('breeze_basic_settings');
+                $conf = breeze_get_option( 'basic_settings' );
                 if ( !empty($conf['breeze-minify-html']) || !empty($conf['breeze-minify-css']) || !empty($conf['breeze-minify-js']) ) {
                     if (defined('breeze_INIT_EARLIER')) {
                         add_action('init', array($this,'breeze_start_buffering'), -1);
@@ -46,7 +46,20 @@ class Breeze_Minify {
             }
         }
 
-    }
+	}
+
+	/**
+	 * Check whether to execute caching functions or not.
+	 * Will not execute for purge cache or heartbeat actions.
+	 */
+	public static function should_cache() {
+		if ( isset( $_GET['breeze_purge'] ) || ( isset( $_POST['action'] ) && 'heartbeat' === $_POST['action'] ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
     /*
      * Start buffer
      */
@@ -61,7 +74,7 @@ class Breeze_Minify {
         $ao_noptimize = (bool) apply_filters('breeze_filter_noptimize', $ao_noptimize);
         if (!is_feed() && !$ao_noptimize && !is_admin()) {
             // Config element
-            $conf = get_option('breeze_basic_settings');
+            $conf = breeze_get_option( 'basic_settings' );
             // Load our base class
             include_once(BREEZE_PLUGIN_DIR . 'inc/minification/breeze-minification-base.php');
 
@@ -136,8 +149,8 @@ class Breeze_Minify {
 
         define('breeze_HASH',wp_hash(breeze_CACHE_URL));
         // Config element
-        $conf = get_option('breeze_basic_settings');
-        $minify = get_option('breeze_advanced_settings');
+        $conf = breeze_get_option( 'basic_settings' );
+        $minify = breeze_get_option( 'advanced_settings' );
 
         // Choose the classes
         $classes = array();
@@ -217,7 +230,7 @@ class Breeze_Minify {
      * check url from Never cache the following pages area
      */
     public function check_exclude_url($current_url){
-        $opts_config = get_option('breeze_advanced_settings');
+        $opts_config = breeze_get_option( 'advanced_settings' );
 	    //check disable cache for page
 	    if (!empty($opts_config['breeze-exclude-urls'])) {
 		    foreach ($opts_config['breeze-exclude-urls'] as $v) {

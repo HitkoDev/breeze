@@ -19,33 +19,25 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 defined('ABSPATH') || die('No direct script access allowed!');
-
 class Breeze_PurgeVarnish {
     protected $blogId;
-
     protected $urlsPurge = array();
-
     protected $autoPurge = false;
-
     protected $actions = array(
         'switch_theme',                        // After a theme is changed
         'save_post',                            // Save a post
         'deleted_post',                        // Delete a post
         'edit_post',                            // Edit a post - includes leaving comments
     );
-
     protected $actionsNoId = array('switch_theme');
-
     public function __construct(){
         global $blog_id;
         $this->blogId = $blog_id;
-        $settings = get_option('breeze_varnish_cache');
+        $settings = breeze_get_option( 'varnish_cache' );
         //storage config
         if(!empty($settings['auto-purge-varnish'])) $this->autoPurge = (int)$settings['auto-purge-varnish'];
-
         add_action('init', array($this, 'init'));
     }
-
     public function init()
     {
         //Push urlsPurge
@@ -62,17 +54,13 @@ class Breeze_PurgeVarnish {
                     }
                 }
             }
-
             //Pust urlsPurge after comment
             add_action('comment_post',array($this,'purge_post_on_comment'),10,3);
             add_action('wp_set_comment_status', array($this, 'purge_post_on_comment_status'), 10, 2);
         }
-
         //Execute Purge
         add_action('shutdown', array($this, 'breeze_execute_purge'));
-
     }
-
     /**
      * Execute Purge
      *
@@ -80,7 +68,6 @@ class Breeze_PurgeVarnish {
     public function breeze_execute_purge()
     {
         $urlsPurge = array_unique($this->urlsPurge);
-
         if (!empty($urlsPurge)) {
             foreach ($urlsPurge as $url) {
                 $this->purge_cache($url);
@@ -94,10 +81,10 @@ class Breeze_PurgeVarnish {
             }
             if(isset($_GET['breeze_purge']) && check_admin_referer('breeze_purge_cache')){
                 //clear varnish cache
-                $this->purge_cache($homepage);
+				$admin = new Breeze_Admin();
+                $admin->breeze_clear_varnish();
                 //clear static cache
                 $size_cache = Breeze_Configuration::breeze_clean_cache();
-
                 if((int)$size_cache > 0){
                     echo '<div id="message-clear-cache-top" style="margin: 10px 0px 10px 0;padding: 10px;" class="notice notice-success" ><strong>'.__('Cache data has been purged: ','breeze') .$size_cache.__(' Kb static cache cleaned','breeze').'</strong></div>';
                 }else{
@@ -106,7 +93,6 @@ class Breeze_PurgeVarnish {
             }
         }
     }
-
     /**
      * Purge varnish cache
      *
@@ -115,41 +101,32 @@ class Breeze_PurgeVarnish {
     {
         $parseUrl = parse_url($url);
         $pregex = '';
-
         // Default method is URLPURGE to purge only one object, this method is specific to cloudways configuration
         $purge_method = 'URLPURGE';
-
         // Use PURGE method when purging all site
         if (isset($parseUrl['query']) && ($parseUrl['query'] == 'breeze')) {
             // The regex is not needed as cloudways configuration purge all the cache of the domain when a PURGE is done
             $pregex = '.*';
             $purge_method = 'PURGE';
         }
-
         // Determine the path
         $path = '';
         if (isset($parseUrl['path'])) {
             $path = $parseUrl['path'];
         }
-
         // Determine the schema
         $schema = 'http://';
         if (isset($parseUrl['scheme'])) {
             $schema = $parseUrl['scheme'] . '://';
         }
-
         // Determine the host
         $host = $parseUrl['host'];
-
-        $config = get_option('breeze_varnish_cache');
+        $config = breeze_get_option( 'varnish_cache' );
         $varnish_host = isset($config['breeze-varnish-server-ip'])?$config['breeze-varnish-server-ip']:'127.0.0.1';
-
         $purgeme = $varnish_host . $path . $pregex;
-
         if (!empty($parseUrl['query']) && $parseUrl['query'] != 'breeze') {
             $purgeme .= '?' . $parseUrl['query'];
         }
-
         $request_args = array('method' => $purge_method, 'headers' => array('Host' => $host, 'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'), 'sslverify' => false);
         $response = wp_remote_request($schema . $purgeme, $request_args);
         if(is_wp_error($response) || $response['response']['code']!='200') {
@@ -161,7 +138,6 @@ class Breeze_PurgeVarnish {
             $response = wp_remote_request($schema . $purgeme, $request_args);
         }
     }
-
     //check permission
     public function check_permission()
     {
@@ -172,11 +148,10 @@ class Breeze_PurgeVarnish {
      */
     public function purge_post($postId)
     {
-		if ( 'save_post' === current_action() && did_action( 'edit_post' ) ) {
+        if ( 'save_post' === current_action() && did_action( 'edit_post' ) ) {
 			// Prevent triggering this method twice when posts are updated.
-			return;
+		return;
 		}
-
         $this->pushUrl($postId);
     }
     /*
@@ -207,24 +182,19 @@ class Breeze_PurgeVarnish {
         // the home page and any associated tags and categories
         $valid_post_status = array('publish', 'private', 'trash');
         $this_post_status = get_post_status($postId);
-
         // Not all post types are created equal
         $invalid_post_type = array('nav_menu_item', 'revision');
         $noarchive_post_type = array('post', 'page');
         $this_post_type = get_post_type($postId);
-
         // Determine the route for the rest API
         // This will need to be revisted if WP updates the version.
         $rest_api_route = 'wp/v2';
-
         // array to collect all our URLs
         $listofurls = array();
-
         // Verify we have a permalink and that we're a valid post status and a not an invalid post type
         if (get_permalink($postId) == true && in_array($this_post_status, $valid_post_status) && !in_array($this_post_type, $invalid_post_type)) {
             // Post URL
             array_push($listofurls, get_permalink($postId));
-
             // JSON API Permalink for the post based on type
             // We only want to do this if the rest_base exists
             $post_type_object = get_post_type_object($this_post_type);
@@ -237,22 +207,18 @@ class Breeze_PurgeVarnish {
             }
             if(isset($rest_permalink))
             array_push($listofurls, $rest_permalink);
-
             // Add in AMP permalink if Automattic's AMP is installed
             if (function_exists('amp_get_permalink')) {
                 array_push($listofurls, amp_get_permalink($postId));
             }
-
             // Regular AMP url for posts
             array_push($listofurls, get_permalink($postId) . 'amp/');
-
             // Also clean URL for trashed post.
             if ($this_post_status == 'trash') {
                 $trashpost = get_permalink($postId);
                 $trashpost = str_replace('__trashed', '', $trashpost);
                 array_push($listofurls, $trashpost, $trashpost . 'feed/');
             }
-
             // Category purge based on Donnacha's work in WP Super Cache
             $categories = get_the_category($postId);
             if ($categories) {
@@ -273,7 +239,6 @@ class Breeze_PurgeVarnish {
                     );
                 }
             }
-
             // Author URL
             $author_id = get_post_field('post_author', $postId);
             array_push($listofurls,
@@ -281,8 +246,6 @@ class Breeze_PurgeVarnish {
                 get_author_feed_link($author_id),
                 get_rest_url() . $rest_api_route . '/users/' . $author_id . '/'
             );
-
-
             // Archives and their feeds
             if ($this_post_type && !in_array($this_post_type, $noarchive_post_type)) {
                 array_push($listofurls,
@@ -291,8 +254,6 @@ class Breeze_PurgeVarnish {
                 // Need to add in JSON?
                 );
             }
-
-
             // Feeds
             array_push($listofurls,
                 get_bloginfo_rss('rdf_url'),
@@ -302,39 +263,33 @@ class Breeze_PurgeVarnish {
                 get_bloginfo_rss('comments_rss2_url'),
                 get_post_comments_feed_link($postId)
             );
-
             // Home Pages and (if used) posts page
             array_push($listofurls,
                 get_rest_url(),
                 home_url() . '/'
             );
-
             if (get_option('show_on_front') == 'page') {
                 // Ensure we have a page_for_posts setting to avoid empty URL
                 if (get_option('page_for_posts')) {
                     array_push($listofurls, get_permalink(get_option('page_for_posts')));
                 }
             }
-
         } else {
             // Nothing
             return;
         }
-
         // Now flush all the URLs we've collected provided the array isn't empty
-        if (!empty($listofurls)) {
-			$this->urlsPurge = array_filter(
-				array_unique(
-					array_merge(
-						$this->urlsPurge,
-						$listofurls
-					),
+        if (!empty($listofurls)) { 
+            $this->urlsPurge = array_filter(
+			array_unique(
+				array_merge(
+					$this->urlsPurge,
+					$listofurls
+   					),
 					SORT_REGULAR
-				)
+                			)
 			);
         }
-
     }
 }
-
 new Breeze_PurgeVarnish();

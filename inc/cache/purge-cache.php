@@ -38,7 +38,7 @@ class Breeze_PurgeCache {
      * @since  1.3
      */
     public function set_comment_cookie_exceptions($comment, $user) {
-        $config = get_option('breeze_basic_settings');
+        $config = breeze_get_option( 'basic_settings' );
         // File based caching only
         if (!empty($config['breeze-active'])) {
 
@@ -57,7 +57,7 @@ class Breeze_PurgeCache {
             return;
         }
 
-        $config = get_option('breeze_basic_settings');
+        $config = breeze_get_option( 'basic_settings' );
 
         // File based caching only
         if (!empty($config['breeze-active'])) {
@@ -69,7 +69,7 @@ class Breeze_PurgeCache {
         if (empty($approved)) {
             return;
         }
-        $config = get_option('breeze_basic_settings');
+        $config = breeze_get_option( 'basic_settings' );
         // File based caching only
         if (!empty($config['breeze-active'])) {
             $post_id = $commentdata['comment_post_ID'];
@@ -82,15 +82,15 @@ class Breeze_PurgeCache {
             }
 
             $url_path =  get_permalink($post_id);
-            if ( $wp_filesystem->exists( untrailingslashit( WP_CONTENT_DIR ) . '/cache/breeze/' .  md5($url_path) ) ) {
-                $wp_filesystem->rmdir(  untrailingslashit( WP_CONTENT_DIR ) . '/cache/breeze/' .  md5($url_path), true );
+            if ( $wp_filesystem->exists( breeze_get_cache_base_path() . md5( $url_path ) ) ) {
+                $wp_filesystem->rmdir( breeze_get_cache_base_path() . md5( $url_path ), true );
             }
         }
     }
 
 //            if a comments status changes, purge it's parent posts cache
     public function purge_post_on_comment_status_change($comment_ID, $comment_status) {
-        $config = get_option('breeze_basic_settings');
+        $config = breeze_get_option( 'basic_settings' );
 
         // File based caching only
         if (!empty($config['breeze-active'])) {
@@ -104,8 +104,8 @@ class Breeze_PurgeCache {
 
                 $url_path =  get_permalink($post_id);
 
-                if ( $wp_filesystem->exists( untrailingslashit( WP_CONTENT_DIR ) . '/cache/breeze/' .  md5($url_path) ) ) {
-                    $wp_filesystem->rmdir(  untrailingslashit( WP_CONTENT_DIR ) . '/cache/breeze/' .  md5($url_path), true );
+                if ( $wp_filesystem->exists( breeze_get_cache_base_path() . md5( $url_path ) ) ) {
+                    $wp_filesystem->rmdir( breeze_get_cache_base_path() . md5( $url_path ), true );
                 }
             }
         }
@@ -117,9 +117,10 @@ class Breeze_PurgeCache {
 
         require_once( ABSPATH . 'wp-admin/includes/file.php');
 
-        WP_Filesystem();
+		WP_Filesystem();
 
-        $wp_filesystem->rmdir( untrailingslashit( WP_CONTENT_DIR ) . '/cache/breeze', true );
+		$cache_path = breeze_get_cache_base_path( is_network_admin() );
+        $wp_filesystem->rmdir( untrailingslashit( $cache_path ), true );
 
         if ( function_exists( 'wp_cache_flush' ) ) {
             wp_cache_flush();
@@ -139,7 +140,7 @@ class Breeze_PurgeCache {
             $ret = false;
         }
 
-        $folder = untrailingslashit( WP_CONTENT_DIR )  . '/cache/breeze';
+        $folder = untrailingslashit( breeze_get_cache_base_path() );
 
         if ( ! $wp_filesystem->delete( $folder, true ) ) {
             $ret = false;
@@ -166,7 +167,7 @@ class Breeze_PurgeCache {
     }
 
 }
-$settings = get_option('breeze_basic_settings');
-if($settings['breeze-active']){
-    Breeze_PurgeCache::factory();
+$settings = breeze_get_option( 'basic_settings' );
+if ( isset( $settings['breeze-active'] ) && $settings['breeze-active'] ) {
+	Breeze_PurgeCache::factory();
 }

@@ -44,7 +44,7 @@ class Breeze_Admin {
 		    add_action('admin_notices', array($this, 'installing_notices'));
 	    }
 
-        $config = get_option('breeze_basic_settings');
+        $config = breeze_get_option( 'basic_settings' );
 
         if(isset($config['breeze-display-clean']) && $config['breeze-display-clean']){
             //register top bar menu
@@ -115,7 +115,6 @@ class Breeze_Admin {
             'breeze_purge_varnish' => wp_create_nonce("_breeze_purge_varnish"),
             'breeze_purge_database' => wp_create_nonce("_breeze_purge_database"),
             'breeze_purge_cache' => wp_create_nonce("_breeze_purge_cache"),
-            'purge_all_href' => wp_nonce_url(add_query_arg('breeze_purge', 1), 'breeze_purge_cache'),
         );
 
         wp_localize_script('breeze-backend','breeze_token_name',$token_name);
@@ -138,92 +137,92 @@ class Breeze_Admin {
     }
 
 
-    /**
-     * Register bar menu
-     *
-     */
-    function register_admin_bar_menu(WP_Admin_Bar $wp_admin_bar)
-    {
-        if (current_user_can('manage_options') || current_user_can('editor')) {
-            // add a parent item
-            $args = array(
-                'id' => 'breeze-topbar',
-                'title' => esc_html(__('Breeze', 'breeze')),
-                'meta' => array(
-                    'classname' => 'breeze',
-                ),
-            );
-            $wp_admin_bar->add_node( $args );
+	/**
+	 * Register bar menu
+	 *
+	 * @param WP_Admin_Bar $wp_admin_bar
+	 */
+	function register_admin_bar_menu( WP_Admin_Bar $wp_admin_bar ) {
+		if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'editor' ) ) {
+			return;
+		}
 
-            // add purge all item
-            $args = array(
-                'id'     => 'breeze-purge-all',
-                'title'  => esc_html(__('Purge All Cache', 'breeze')),
-                'parent' => 'breeze-topbar',
-                'meta'   => array( 'class' => 'breeze-toolbar-group' ),
-            );
-            $wp_admin_bar->add_node( $args );
+		$is_network = is_multisite() && is_network_admin();
 
-            // Editor role can only use Purge all cache option
-            if (current_user_can('editor')) return $wp_admin_bar;
+		// add parent item
+		$args = array(
+			'id'    => 'breeze-topbar',
+			'title' => esc_html__( 'Breeze', 'breeze' ),
+			'meta'  => array(
+				'classname' => 'breeze',
+			),
+		);
+		$wp_admin_bar->add_node( $args );
 
-            // add purge modules group
-            $args = array(
-                'id'     => 'breeze-purge-modules',
-                'title'  => esc_html(__('Purge Modules', 'breeze')),
-                'parent' => 'breeze-topbar',
-                'meta'   => array( 'class' => 'breeze-toolbar-group' ),
-            );
-            $wp_admin_bar->add_node( $args );
+		// add purge all item
+		$args = array(
+			'id'     => 'breeze-purge-all',
+			'title'  => ( ! is_multisite() || $is_network ) ? esc_html__( 'Purge All Cache', 'breeze' ) : esc_html__( 'Purge Site Cache', 'breeze' ),
+			'parent' => 'breeze-topbar',
+			'href'   => wp_nonce_url( add_query_arg( 'breeze_purge', 1, $is_network ? network_admin_url() : admin_url() ), 'breeze_purge_cache' ),
+			'meta'   => array( 'class' => 'breeze-toolbar-group' ),
+		);
+		$wp_admin_bar->add_node( $args );
+
+		// Editor role can only use Purge all cache option
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		// add purge modules group
+		$args = array(
+			'id'     => 'breeze-purge-modules',
+			'title'  => esc_html__( 'Purge Modules', 'breeze' ),
+			'parent' => 'breeze-topbar',
+			'meta'   => array( 'class' => 'breeze-toolbar-group' ),
+		);
+		$wp_admin_bar->add_node( $args );
 
 
-            // add child item (Purge Modules)
-            $args = array(
-                'id'     => 'breeze-purge-varnish-group',
-                'title'  => esc_html(__('Purge Varnish Cache', 'breeze')),
-                'parent' => 'breeze-purge-modules',
-            );
-            $wp_admin_bar->add_node( $args );
+		// add child item (Purge Modules)
+		$args = array(
+			'id'     => 'breeze-purge-varnish-group',
+			'title'  => esc_html__( 'Purge Varnish Cache', 'breeze' ),
+			'parent' => 'breeze-purge-modules',
+		);
+		$wp_admin_bar->add_node( $args );
 
-            // add child item (Purge Modules)
-            $args = array(
-                'id'     => 'breeze-purge-file-group',
-                'title'  => esc_html(__('Purge Internal Cache', 'breeze')),
-                'parent' => 'breeze-purge-modules',
-            );
-            $wp_admin_bar->add_node( $args );
+		// add child item (Purge Modules)
+		$args = array(
+			'id'     => 'breeze-purge-file-group',
+			'title'  => esc_html__( 'Purge Internal Cache', 'breeze' ),
+			'parent' => 'breeze-purge-modules',
+		);
+		$wp_admin_bar->add_node( $args );
 
-            // add settings item
-            $args = array(
-                'id'     => 'breeze-settings',
-                'title'  => esc_html(__('Settings', 'breeze')),
-                'parent' => 'breeze-topbar',
-                'href' => 'options-general.php?page=breeze',
-                'meta'   => array( 'class' => 'breeze-toolbar-group' ),
-            );
-            $network_settings_url = network_admin_url('settings.php?page=breeze');
-            if (is_multisite())
-            	$args = array(
-		            'id'     => 'breeze-settings',
-		            'title'  => esc_html(__('Settings', 'breeze')),
-		            'parent' => 'breeze-topbar',
-		            'href' => $network_settings_url,
-		            'meta'   => array( 'class' => 'breeze-toolbar-group' ),
-	            );
-            $wp_admin_bar->add_node( $args );
+		// add settings item
+		$args = array(
+			'id'     => 'breeze-settings',
+			'title'  => esc_html__( 'Settings', 'breeze' ),
+			'parent' => 'breeze-topbar',
+			'href'   => $is_network ? network_admin_url( 'settings.php?page=breeze' ) : admin_url( 'options-general.php?page=breeze' ),
+			'meta'   => array( 'class' => 'breeze-toolbar-group' ),
+		);
+		$wp_admin_bar->add_node( $args );
 
-            // add support item
-            $args = array(
-                'id'     => 'breeze-support',
-                'title'  => esc_html(__('Support', 'breeze')),
-                'href' => 'https://support.cloudways.com/breeze-wordpress-cache-configuration',
-                'parent' => 'breeze-topbar',
-                'meta'   => array( 'class' => 'breeze-toolbar-group',
-                    'target' => '_blank'),
-            );
-            $wp_admin_bar->add_node( $args );
-        }
-    }
+		// add support item
+		$args = array(
+			'id'     => 'breeze-support',
+			'title'  => esc_html__( 'Support', 'breeze' ),
+			'href'   => 'https://support.cloudways.com/breeze-wordpress-cache-configuration',
+			'parent' => 'breeze-topbar',
+			'meta'   => array(
+				'class'  => 'breeze-toolbar-group',
+				'target' => '_blank',
+			),
+		);
+		$wp_admin_bar->add_node( $args );
+	}
 
     function breeze_load_page()
     {
@@ -248,7 +247,7 @@ class Breeze_Admin {
     public static function plugin_active_hook(){
         WP_Filesystem();
         // Default basic
-        $basic = get_option('breeze_basic_settings');
+        $basic = breeze_get_option( 'basic_settings' );
         if(empty($basic)) $basic = array();
         $default_basic = array(
             'breeze-active' => '1',
@@ -268,7 +267,7 @@ class Breeze_Admin {
         $basic= array_merge($default_basic,$basic);
 
         // Default Advanced
-        $advanced = get_option('breeze_advanced_settings');
+        $advanced = breeze_get_option( 'advanced_settings' );
         if(empty($advanced)) $advanced = array();
         $default_advanced = array(
             'breeze-exclude-urls' => array(),
@@ -282,7 +281,7 @@ class Breeze_Admin {
         $advanced= array_merge($default_advanced,$advanced);
 
         //CDN default
-        $cdn = get_option('breeze_cdn_integration');
+        $cdn = breeze_get_option( 'cdn_integration' );
         if(empty($cdn)) $cdn = array();
         $wp_content = substr(WP_CONTENT_DIR,strlen(ABSPATH));
         $default_cdn = array(
@@ -295,7 +294,7 @@ class Breeze_Admin {
         $cdn= array_merge($default_cdn,$cdn);
 
         // Varnish default
-        $varnish = get_option('breeze_varnish_cache');
+        $varnish = breeze_get_option( 'varnish_cache' );
         if(empty($varnish)) $varnish = array();
         $default_varnish = array(
             'auto-purge-varnish' => '1',
@@ -318,12 +317,7 @@ class Breeze_Admin {
         }
 
         //add header to htaccess if setting is enabled or by default if first installed
-	    if ($basic['breeze-browser-cache'] == 1) {
-		    Breeze_Configuration::add_expires_header( true );
-	    }
-	    if ($basic['breeze-gzip-compression'] == 1) {
-		    Breeze_Configuration::add_gzip_htacess( true );
-	    }
+		Breeze_Configuration::update_htaccess();
         //automatic config start cache
         Breeze_ConfigCache::factory()->write();
         Breeze_ConfigCache::factory()->write_config_cache();
@@ -341,8 +335,7 @@ class Breeze_Admin {
         Breeze_ConfigCache::factory()->clean_up();
         Breeze_ConfigCache::factory()->clean_config();
         Breeze_ConfigCache::factory()->toggle_caching(false);
-	    Breeze_Configuration::add_expires_header(false);
-	    Breeze_Configuration::add_gzip_htacess(false);
+	    Breeze_Configuration::update_htaccess( true );
     }
 
     /*
@@ -392,14 +385,16 @@ class Breeze_Admin {
 	public function breeze_clear_varnish() {
 		$main = new Breeze_PurgeVarnish();
 
-		if (is_multisite()) {
+		$is_network   = ( is_network_admin() || ( ! empty( $_POST['is_network'] ) && 'true' === $_POST['is_network'] ) );
+
+		if ( is_multisite() && $is_network ) {
 			$sites = get_sites();
 			foreach ($sites as $site) {
 				switch_to_blog($site->blog_id);
 				$homepage = home_url().'/?breeze';
 				$main->purge_cache($homepage);
+				restore_current_blog();
 			}
-			restore_current_blog();
 		} else {
 			$homepage = home_url() . '/?breeze';
 			$main->purge_cache( $homepage );

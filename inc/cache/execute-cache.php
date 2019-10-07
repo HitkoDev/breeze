@@ -1,10 +1,13 @@
 <?php
-/* 
+/*
  *  Based on some work of https://github.com/tlovett1/simple-cache/blob/master/inc/dropins/file-based-page-cache.php
  */
 defined('ABSPATH') || exit;
-// Include and instantiate the class.
 
+// Load helper functions.
+require_once dirname( __DIR__ ) . '/functions.php';
+
+// Include and instantiate the class.
 require_once 'Mobile-Detect-2.8.25/Mobile_Detect.php';
 $detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect;
 
@@ -27,10 +30,16 @@ if (!preg_match('#index\.php$#i', $_SERVER['REQUEST_URI']) && in_array($file_ext
     return;
 }
 
+// @TODO: Remove debugging code.
+if ( isset( $_GET['debug_config'] ) ) {
+	var_dump( $GLOBALS['breeze_config'] );
+	exit;
+}
+
 $url_path = breeze_get_url_path();
 $user_logged = false;
 $filename = $url_path . 'guest';
-// Don't cache 
+// Don't cache
 if (!empty($_COOKIE)) {
     $wp_cookies = array('wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_');
 
@@ -136,31 +145,18 @@ function breeze_cache($buffer, $flags)
         require_once(ABSPATH . '/wp-admin/includes/file.php');
         WP_Filesystem();
     }
-    $url_path = breeze_get_url_path();
+	$url_path = breeze_get_url_path();
 
-    // Make sure we can read/write files and that proper folders exist
-    if (!$wp_filesystem->exists(untrailingslashit(WP_CONTENT_DIR) . '/cache')) {
-        if (!$wp_filesystem->mkdir(untrailingslashit(WP_CONTENT_DIR) . '/cache')) {
-            // Can not cache!
-            return $buffer;
-        }
-    }
+	$cache_base_path = breeze_get_cache_base_path();
 
-    if (!$wp_filesystem->exists(untrailingslashit(WP_CONTENT_DIR) . '/cache/breeze')) {
-        if (!$wp_filesystem->mkdir(untrailingslashit(WP_CONTENT_DIR) . '/cache/breeze')) {
-            // Can not cache!
-            return $buffer;
-        }
-    }
+	$path = $cache_base_path . md5( $url_path );
 
-    if (!$wp_filesystem->exists(untrailingslashit(WP_CONTENT_DIR) . '/cache/breeze/' . md5($url_path))) {
-        if (!$wp_filesystem->mkdir(untrailingslashit(WP_CONTENT_DIR) . '/cache/breeze/' . md5($url_path))) {
-            // Can not cache!
-            return $buffer;
-        }
-    }
-
-    $path = untrailingslashit(WP_CONTENT_DIR) . '/cache/breeze/' . md5($url_path) . '/';
+	// Make sure we can read/write files and that proper folders exist
+	if ( ! wp_mkdir_p( $path ) ) {
+		// Can not cache!
+		return $buffer;
+	}
+	$path .= '/';
 
     $modified_time = time(); // Make sure modified time is consistent
 
@@ -294,7 +290,7 @@ function breeze_serve_cache($filename, $url_path, $X1,$opts)
     }
 
 
-    $path = rtrim(WP_CONTENT_DIR, '/') . '/cache/breeze/' . md5($url_path) . '/' . $file_name;
+    $path = breeze_get_cache_base_path() . md5($url_path) . '/' . $file_name;
 
     $modified_time = (int)@filemtime($path);
 

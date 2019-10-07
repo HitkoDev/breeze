@@ -101,8 +101,8 @@ class Breeze_PurgeCacheTime {
     }
 }
 
-$basic = get_option('breeze_basic_settings');
-$varnish = get_option('breeze_varnish_cache');
+$basic = breeze_get_option( 'basic_settings' );
+$varnish = breeze_get_option( 'varnish_cache' );
 //Enabled auto purge the varnish caching by time life
 $params = array(
     'breeze-active' => (isset($basic['breeze-active'])?(int)$basic['breeze-active']:0),
@@ -113,4 +113,3 @@ $params = array(
 if($params['breeze-active'] || $params['breeze-varnish-purge']){
     $purgeTime = new Breeze_PurgeCacheTime($params);
 }
-
