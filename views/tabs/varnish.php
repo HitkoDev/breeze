@@ -1,7 +1,7 @@
 <?php
 defined('ABSPATH') or die;
 
-$varnish = get_option('breeze_varnish_cache');
+$varnish = breeze_get_option( 'varnish_cache', true );
 $check_varnish = Breeze_Admin::check_varnish();
 ?>
 <div class="breeze-top-notice">

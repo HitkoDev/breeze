@@ -1,7 +1,7 @@
 <?php
     defined('ABSPATH') or die;
 
-    $cdn_integration = get_option('breeze_cdn_integration');
+    $cdn_integration = breeze_get_option( 'cdn_integration', true );
 
     $cdn_content_value = '';
     $cdn_exclude_content_value = '';

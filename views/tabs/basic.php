@@ -1,7 +1,7 @@
 <?php
 defined('ABSPATH') or die;
 
-$basic = get_option('breeze_basic_settings');
+$basic = breeze_get_option( 'basic_settings', true );
 ?>
 <table cellspacing="15">
     <tr>
@@ -72,7 +72,8 @@ $basic = get_option('breeze_basic_settings');
                 <li>
                     <span><?php _e('Check the above boxes to minify HTML, CSS, or JS files.', 'breeze') ?></span>
                     <br>
-                    <span><b>Note:&nbsp;</b>
+                    <span>
+						<b><?php esc_html_e( 'Note', 'breeze' ); ?>:&nbsp;</b>
                         <span style="color: #ff0000"><?php _e('We recommend testing minification on a staging website before deploying it on a live website. Minification is known to cause issues on the frontend.', 'breeze') ?></span>
                     </span>
                 </li>
@@ -80,26 +81,48 @@ $basic = get_option('breeze_basic_settings');
 
         </td>
     </tr>
-    <tr>
-        <td>
-            <label for="gzip-compression"><?php _e('Gzip Compression', 'breeze') ?></label>
-        </td>
-        <td>
-            <input type="checkbox" id="gzip-compression" name="gzip-compression"
-                   value='1' <?php checked($basic['breeze-gzip-compression'], '1') ?>/>
-            <span class="breeze_tool_tip"><?php _e('Enable this to compress your files making HTTP requests fewer and faster.', 'breeze') ?></span>
-        </td>
-    </tr>
-    <tr>
-        <td style="vertical-align: middle">
-            <label for="browser-cache"><?php _e('Browser Cache', 'breeze') ?></label>
-        </td>
-        <td>
-            <input type="checkbox" id="browser-cache" name="browser-cache"
-                   value='1' <?php checked($basic['breeze-browser-cache'], '1') ?>/>
-            <span class="breeze_tool_tip"><?php _e('Enable this to add expires headers to static files. This will ask browsers to either request a file from server or fetch from the browser’s cache.', 'breeze') ?></span>
-        </td>
-    </tr>
+
+	<?php
+
+	$htaccess_options = array(
+		'gzip-compression' => array(
+			'label' => __( 'Gzip Compression', 'breeze' ),
+			'desc'  => __( 'Enable this to compress your files making HTTP requests fewer and faster.', 'breeze' ),
+		),
+		'browser-cache'    => array(
+			'label' => __( 'Browser Cache', 'breeze' ),
+			'desc'  => __( 'Enable this to add expires headers to static files. This will ask browsers to either request a file from server or fetch from the browser’s cache.', 'breeze' ),
+		),
+	);
+
+	$supports_conditionals = breeze_is_supported( 'conditional_htaccess' );
+
+	foreach ( $htaccess_options as $fid => $field ) {
+		$is_disabled = is_multisite() && ! is_network_admin() && ! $supports_conditionals;
+		$is_checked  = isset( $basic[ 'breeze-' . $fid ] ) && '1' === $basic[ 'breeze-' . $fid ] && ! $is_disabled;
+
+		?>
+		<tr>
+			<td>
+				<label for="<?php echo esc_attr( $fid ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
+			</td>
+			<td>
+				<input type="checkbox" id="<?php echo esc_attr( $fid ); ?>" name="<?php echo esc_attr( $fid ); ?>"
+					value='1' <?php checked( $is_checked, true ); ?> <?php echo $is_disabled ? 'disabled="disabled"' : ''; ?>/>
+				<span class="breeze_tool_tip"><?php echo esc_html( $field['desc'] ); ?></span>
+				<?php if ( $is_disabled ) { ?>
+					<br>
+					<span>
+						<b><?php esc_html_e( 'Note', 'breeze' ); ?>:&nbsp;</b>
+						<span style="color: #ff0000"><?php printf( esc_html__( 'Enabling/disabling %s for subsites is only available for Apache 2.4 and above. For lower versions, the Network-level settings will apply.', 'breeze' ), $field['label'] ); ?></span>
+					</span>
+				<?php } ?>
+			</td>
+		</tr>
+		<?php
+	}
+
+	?>
 
     <tr style="display: none;">
         <td style="vertical-align: middle">
