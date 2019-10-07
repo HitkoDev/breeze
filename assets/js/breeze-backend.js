@@ -1,8 +1,5 @@
 jQuery(document).ready(function ($) {
     // Topbar action
-    $('#wp-admin-bar-breeze-purge-all').click(function () {
-        window.location.href = breeze_token_name.purge_all_href;
-    });
     $('#wp-admin-bar-breeze-purge-varnish-group').click(function(){
         breeze_purgeVarnish_callAjax();
     });
@@ -22,6 +19,7 @@ jQuery(document).ready(function ($) {
             method:'POST',
             data:{
                 action:'breeze_purge_varnish',
+				is_network: $('body').hasClass( 'network-admin' ),
                 security : breeze_token_name.breeze_purge_varnish
             },
             success : function(res){

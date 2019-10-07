@@ -166,5 +166,98 @@ jQuery(document).ready(function($){
         return "";
     }
 
-    setTabFromCookie();
+	setTabFromCookie();
+
+	// Sub-site settings toggle.
+	var global_tabs = [
+		'faq'
+	];
+	var save_settings_inherit_form_on_submit = true;
+	var settings_inherit_form_did_change = false;
+	var $settings_inherit_form = $( '#breeze-inherit-settings-toggle' );
+	if ( $settings_inherit_form.length ) {
+		$( 'input', $settings_inherit_form ).on( 'change', function() {
+			var inherit = $( this ).val() == '1';
+
+			$( '#breeze-tabs' ).toggleClass( 'tabs-hidden', inherit );
+			$( '#breeze-tabs-content' ).toggleClass( 'tabs-hidden', inherit );
+
+			$( '#breeze-tabs .nav-tab' ).each( function() {
+				var tab_id = $( this ).data( 'tab-id' );
+
+				if ( $.inArray( tab_id, global_tabs ) === -1 ) {
+					$( this ).toggleClass( 'inactive', inherit );
+					$( '#breeze-tabs-content #tab-content-' + tab_id ).toggleClass( 'inactive', inherit );
+				}
+			} );
+
+			settings_inherit_form_did_change = ! $( this ).parents( '.radio-field' ).hasClass( 'active' );
+
+			$( 'p.disclaimer', $settings_inherit_form ).toggle( settings_inherit_form_did_change );
+		} );
+
+		$( '#breeze-tabs-content form' ).on( 'submit', function( event ) {
+			var $form = $( this );
+
+			if ( save_settings_inherit_form_on_submit && settings_inherit_form_did_change ) {
+				event.preventDefault();
+
+				$.ajax( {
+					url: window.location,
+					method: 'post',
+					data: $settings_inherit_form.serializeArray(),
+
+					beforeSend: function() {
+						$settings_inherit_form.addClass( 'loading' );
+					},
+
+					complete: function() {
+						$settings_inherit_form.removeClass( 'loading' );
+
+						// Continue form submit.
+						settings_inherit_form_did_change = false;
+						$form.submit();
+					},
+
+					success: function() {
+						$( 'input:checked', $settings_inherit_form ).parents( '.radio-field' ).addClass( 'active' ).siblings().removeClass( 'active' );
+					}
+				} );
+			} else {
+				return;
+			}
+		} );
+	}
+
+	// Database optimization.
+	$( '#breeze-database-optimize' ).on( 'click', function( event ) {
+		save_settings_inherit_form_on_submit = false;
+	} );
+	$( '#tab-content-database .submit input' ).on( 'click', function( event ) {
+		$( '#tab-content-database input[type=checkbox]' ).attr( 'checked', false );
+	} );
+
+	function remove_query_arg( url, arg ) {
+		var urlparts = url.split( '?' );
+		if ( urlparts.length >= 2 ) {
+			var prefix = encodeURIComponent( arg ) + '=';
+			var pars = urlparts[1].split( /[&;]/g );
+
+			for ( var i = pars.length; i-- > 0; ) {
+				if ( pars[i].lastIndexOf( prefix, 0 ) !== -1 ) {
+					pars.splice( i, 1 );
+				}
+			}
+
+			return urlparts[0] + ( pars.length > 0 ? '?' + pars.join( '&' ) : '' );
+		}
+		return url;
+	}
+
+	// Remove notice query args from URL.
+	if ( window.history && typeof window.history.pushState === 'function' ) {
+		var clean_url = remove_query_arg( window.location.href, 'save-settings' );
+		clean_url = remove_query_arg( clean_url, 'database-cleanup' );
+		window.history.pushState( null, null, clean_url );
+	}
 });

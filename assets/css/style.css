@@ -25,6 +25,85 @@
     color: #000;
 }
 
+#breeze-inherit-settings-toggle .radio-field {
+	margin-bottom: 20px;
+}
+#breeze-inherit-settings-toggle .radio-field input,
+#breeze-inherit-settings-toggle .radio-field strong {
+	vertical-align: bottom;
+}
+#breeze-inherit-settings-toggle.loading .radio-field {
+	opacity: 0.4;
+	pointer-events: none;
+}
+#breeze-inherit-settings-toggle label {
+	display: block;
+	margin-bottom: 5px;
+}
+#breeze-inherit-settings-toggle .radio-field strong {
+	font-weight: 500;
+}
+#breeze-inherit-settings-toggle .radio-field.active strong:after {
+	content: ' [ACTIVE]';
+	font-weight: bold;
+}
+#breeze-inherit-settings-toggle small {
+	display: block;
+	font-size: inherit;
+	margin-left: 24px;
+	max-width: 804px;
+}
+#breeze-inherit-settings-toggle p.disclaimer {
+	display: none;
+	color: #ff0000;
+}
+
+#breeze-tabs.tabs-hidden .nav-tab.inactive,
+#breeze-tabs.tabs-hidden .nav-tab.inactive:not(.active):hover {
+	color: #888;
+	background: #f4f4f4;
+}
+
+#breeze-tabs-content.tabs-hidden .tab-pane.inactive,
+#breeze-tabs-content.tabs-hidden .tab-pane.inactive .tab-child {
+	min-height: 180px;
+	position: relative;
+}
+#breeze-tabs-content.tabs-hidden .tab-pane.inactive .tab-child:after {
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #fff;
+	background-color: rgba( 255, 255, 255, 0.95 );
+}
+#breeze-tabs-content .tab-pane .hidden-text {
+	display: none;
+}
+#breeze-tabs-content.tabs-hidden .tab-pane.inactive .hidden-text {
+	position: absolute;
+	top: 100px;
+	left: 0;
+	right: 0;
+	text-align: center;
+	color: #ff0000;
+	display: block;
+}
+#tab-content-database .tab-child {
+	padding-bottom: 0;
+}
+#breeze-database-optimize {
+	margin-top: 5px;
+}
+#breeze-database-optimize[disabled] {
+	color: #fff !important;
+	border-color: #ddd !important;
+	background-color: #e0e0e0 !important;
+	text-shadow: none !important;
+}
+
 #breeze-tabs {
     border-bottom: none;
 }
@@ -67,6 +146,20 @@
 
 .tab-content > .active {
     display: block;
+}
+
+.breeze-form .multisite-inherit-disclaimer {
+	margin-top: 35px;
+	margin-bottom: 0;
+	color: #ff0000;
+}
+
+.breeze-form .multisite-inherit-disclaimer + .submit {
+	margin-top: 0;
+}
+
+.breeze-form .submit {
+	margin-top: 35px;
 }
 
 /*Table*/
