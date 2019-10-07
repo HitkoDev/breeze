@@ -2,12 +2,13 @@
 /**
  * Plugin Name: Breeze
  * Description: Breeze is a WordPress cache plugin with extensive options to speed up your website. All the options including Varnish Cache are compatible with Cloudways hosting.
- * Version: 1.0.13
+ * Version: 1.1.0
  * Text Domain: breeze
  * Domain Path: /languages
  * Author: Cloudways
  * Author URI: https://www.cloudways.com
  * License: GPL2
+ * Network: true
  */
 
 /**
@@ -52,6 +53,11 @@ if (!defined('BREEZE_BASENAME'))
 define('BREEZE_CACHE_DELAY', true);
 define('BREEZE_CACHE_NOGZIP', true);
 define('BREEZE_ROOT_DIR', str_replace(BREEZE_WP_CONTENT_NAME, '', WP_CONTENT_DIR));
+
+// Helper functions.
+require_once BREEZE_PLUGIN_DIR . 'inc/helpers.php';
+require_once BREEZE_PLUGIN_DIR . 'inc/functions.php';
+
 //action to purge cache
 require_once(BREEZE_PLUGIN_DIR . 'inc/cache/purge-varnish.php');
 require_once(BREEZE_PLUGIN_DIR . 'inc/cache/purge-cache.php');
@@ -73,8 +79,8 @@ if(is_admin()){
 	require_once( BREEZE_PLUGIN_DIR . 'inc/cache/ecommerce-cache.php');
 	new Breeze_Ecommerce_Cache();
 }else{
-    $cdn_conf = get_option('breeze_cdn_integration');
-    $basic_conf = get_option('breeze_basic_settings');
+    $cdn_conf   = breeze_get_option( 'cdn_integration' );
+    $basic_conf = breeze_get_option( 'basic_settings' );
 
     if(!empty($cdn_conf['cdn-active']) || !empty($basic_conf['breeze-minify-js']) || !empty($basic_conf['breeze-minify-css']) || !empty($basic_conf['breeze-minify-html'])) {
         // Call back ob start
@@ -84,7 +90,7 @@ if(is_admin()){
 
 // Call back ob start - stack
 function breeze_ob_start_callback($buffer){
-    $conf = get_option('breeze_cdn_integration');
+    $conf = breeze_get_option( 'cdn_integration' );
     // Get buffer from minify
     $buffer = apply_filters('breeze_minify_content_return',$buffer);
 
@@ -105,4 +111,39 @@ if( !class_exists('Breeze_CDN_Integration')){
     require_once ( BREEZE_PLUGIN_DIR. 'inc/cdn-integration/breeze-cdn-integration.php');
     require_once ( BREEZE_PLUGIN_DIR. 'inc/cdn-integration/breeze-cdn-rewrite.php');
     new Breeze_CDN_Integration();
+}
+
+// @TODO: remove debug code.
+if ( isset( $_GET['settings_debug'] ) ) {
+	$settings = array(
+		'basic_settings',
+		'advanced_settings',
+		'cdn_integration',
+		'varnish_cache',
+	);
+
+	echo '<h1>Is multisite: ' . ( is_multisite() ? 'YES' : 'NO' ) . '</h1>';
+
+	if ( is_multisite() ) {
+		$inherit_option = get_option( 'breeze_inherit_settings' );
+		$inherit        = true;
+
+		if ( ! is_network_admin() && '0' === $inherit_option ) {
+			$inherit = false;
+		}
+
+		echo '<h1>Using global settings: ' . ( $inherit ? 'YES' : 'NO' ) . '</h1>';
+	}
+
+	foreach ( $settings as $setting ) {
+		echo '<h2>' . $setting . '</h2>';
+		echo '<pre>';
+		print_r( breeze_get_option( $setting ) );
+		echo '</pre>';
+	}
+
+	echo '<h2>Gzip enabled: ' . ( getenv( 'BREEZE_GZIP_ON' ) ? 'YES' : 'NO' ) . '</h2>';
+	echo '<h2>Browser cache enabled: ' . ( getenv( 'BREEZE_BROWSER_CACHE_ON' ) ? 'YES' : 'NO' ) . '</h2>';
+
+	exit;
 }
