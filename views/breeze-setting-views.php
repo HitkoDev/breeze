@@ -15,7 +15,6 @@ $global_tabs = array(
 	'faq',
 );
 
-wp_enqueue_script('jquery-ui', '//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js');
 ?>
 <?php if (isset($_REQUEST['database-cleanup']) && $_REQUEST['database-cleanup'] == 'success'): ?>
     <div id="message-save-settings" class="notice notice-success is-dismissible" style="margin: 10px 0px 10px 0;padding: 10px;"><strong><?php _e('Database cleanup successful', 'breeze'); ?></strong></div>
