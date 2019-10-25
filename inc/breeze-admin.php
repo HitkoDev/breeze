@@ -100,7 +100,9 @@ class Breeze_Admin {
 
 
 	function loadAdminScripts() {
-        wp_enqueue_script('jquery');
+		if ( ! wp_script_is( 'jquery', 'enqueued' ) ) {
+			wp_enqueue_script( 'jquery' );
+		}
         wp_enqueue_script('breeze-backend', plugins_url('assets/js/breeze-backend.js', dirname(__FILE__)), array('jquery'), BREEZE_VERSION, true);
         wp_enqueue_style('breeze-topbar', plugins_url('assets/css/topbar.css', dirname(__FILE__)));
         $current_screen = get_current_screen();
@@ -109,6 +111,13 @@ class Breeze_Admin {
             wp_enqueue_style('breeze-style', plugins_url('assets/css/style.css', dirname(__FILE__)));
             //js
             wp_enqueue_script('breeze-configuration', plugins_url('assets/js/breeze-configuration.js', dirname(__FILE__)), array('jquery'), BREEZE_VERSION, true);
+
+			// Include the required jQuery UI Core & Libraries
+	        wp_enqueue_script( 'jquery-ui-core' );
+	        wp_enqueue_script( 'jquery-ui-tabs' );
+	        wp_enqueue_script( 'jquery-ui-accordion' );
+	        wp_enqueue_script( 'jquery-ui-sortable' );
+	        wp_enqueue_script( 'jquery-ui-widget' );
         }
 
         $token_name = array(
