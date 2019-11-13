@@ -168,10 +168,12 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                         $url = substr($url, 0 , -1);
                     }
 
+					// Let's check if this file is in the excluded list.
+	                $is_excluded = breeze_is_string_in_array_values( $url, $this->custom_js_exclude );
                     //exclude js
-                    if(in_array($url,$this->custom_js_exclude)){
-                        continue;
-                    }
+	                if ( ! empty( $is_excluded ) ) {
+		                continue;
+	                }
 
                     $path = $this->getpath($url);
                     if($path !== false && preg_match('#\.js$#',$path)) {

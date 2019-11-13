@@ -103,6 +103,14 @@ class Breeze_Configuration{
                 $exclude_js = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-js']));
                 $move_to_footer_js = $defer_js = array();
 
+                if(!empty($exclude_js)){
+	                $exclude_js = array_unique($exclude_js);
+                }
+
+                if(!empty($exclude_css)){
+	                $exclude_css = array_unique($exclude_css);
+                }
+
                 if (!empty($_POST['move-to-footer-js'])) {
                     foreach ($_POST['move-to-footer-js'] as $url) {
                         if (trim($url) == '') continue;
@@ -228,17 +236,20 @@ class Breeze_Configuration{
 			$args['content'] = 'SetEnv BREEZE_BROWSER_CACHE_ON 1' . PHP_EOL .
 				'<IfModule mod_expires.c>' . PHP_EOL .
 				'   ExpiresActive On' . PHP_EOL .
-				'   ExpiresDefault A2592000' . PHP_EOL .
-				'   ExpiresByType application/javascript "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType text/javascript "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType text/css "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType image/jpeg "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType image/png "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType image/gif "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType image/ico "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType image/x-icon "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType image/svg+xml "access plus 7 days"' . PHP_EOL .
-				'   ExpiresByType image/bmp "access plus 7 days"' . PHP_EOL .
+				'   ExpiresByType image/gif "access 1 year"' . PHP_EOL .
+				'   ExpiresByType image/jpg "access 1 year"' . PHP_EOL .
+				'   ExpiresByType image/jpeg "access 1 year"' . PHP_EOL .
+				'   ExpiresByType image/png "access 1 year"' . PHP_EOL .
+				'   ExpiresByType image/x-icon "access 1 year"' . PHP_EOL .
+				'   ExpiresByType text/css "access 1 month"' . PHP_EOL .
+				'   ExpiresByType text/javascript "access 1 month"' . PHP_EOL .
+				'   ExpiresByType text/html "access 1 month"' . PHP_EOL .
+				'   ExpiresByType application/javascript "access 1 month"' . PHP_EOL .
+				'   ExpiresByType application/x-javascript "access 1 month"' . PHP_EOL .
+				'   ExpiresByType application/xhtml-xml "access 1 month"' . PHP_EOL .
+				'   ExpiresByType application/pdf "access 1 month"' . PHP_EOL .
+				'   ExpiresByType application/x-shockwave-flash "access 1 month"' . PHP_EOL .
+				'   ExpiresDefault "access 1 month"' . PHP_EOL .
 				'</IfModule>' . PHP_EOL;
 
 			$args['conditions'] = array(
