@@ -1,6 +1,6 @@
 <?php
 /**
- *  @copyright 2017  Cloudways  https://www.cloudways.com
+ * @copyright 2017  Cloudways  https://www.cloudways.com
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,17 +22,20 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
  * Get base path for the page cache directory.
  *
  * @param bool $is_network Whether to include the blog ID in the path on multisite.
+ *
  * @return string
  */
 function breeze_get_cache_base_path( $is_network = false ) {
-	$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
 
 	if ( ! $is_network && is_multisite() ) {
 		global $blog_id;
+		$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
 
 		if ( ! empty( $blog_id ) ) {
 			$path .= abs( intval( $blog_id ) ) . DIRECTORY_SEPARATOR;
 		}
+	} else {
+		$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
 	}
 
 	return $path;
@@ -42,7 +45,8 @@ function breeze_get_cache_base_path( $is_network = false ) {
  * Get the total size of a directory (including subdirectories).
  *
  * @param string $dir
- * @param array  $exclude
+ * @param array $exclude
+ *
  * @return int
  */
 function breeze_get_directory_size( $dir, $exclude = array() ) {
@@ -61,4 +65,31 @@ function breeze_get_directory_size( $dir, $exclude = array() ) {
 	}
 
 	return $size;
+}
+
+function breeze_current_user_type( $as_dir = true ) {
+
+	if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) {
+		if ( current_user_can( 'administrator' ) ) {
+			return 'administrator' . ( true === $as_dir ? '/' : '' );
+		} elseif ( current_user_can( 'editor' ) ) {
+			return 'editor' . ( true === $as_dir ? '/' : '' );
+		} elseif ( current_user_can( 'author' ) ) {
+			return 'author' . ( true === $as_dir ? '/' : '' );
+		} elseif ( current_user_can( 'contributor' ) ) {
+			return 'contributor' . ( true === $as_dir ? '/' : '' );
+		}
+	}
+
+	return '';
+}
+
+function breeze_all_user_folders() {
+	return array(
+		'',
+		'administrator',
+		'editor',
+		'author',
+		'contributor',
+	);
 }

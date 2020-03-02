@@ -22,9 +22,9 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 
 class Breeze_PurgeVarnish {
 	protected $blogId;
-	protected $urlsPurge   = array();
-	protected $auto_purge  = false;
-	protected $actions     = array(
+	protected $urlsPurge = array();
+	protected $auto_purge = false;
+	protected $actions = array(
 		'switch_theme',                        // After a theme is changed
 		'save_post',                            // Save a post
 		'deleted_post',                        // Delete a post
@@ -39,12 +39,17 @@ class Breeze_PurgeVarnish {
 		//storage config
 		if ( ! empty( $settings['auto-purge-varnish'] ) ) {
 			$this->auto_purge = (int) $settings['auto-purge-varnish'];
+			if ( $this->auto_purge && ! isset( $_GET['breeze_check_cache_available'] ) ) {
+				// before sending the requests, we need to make sure Varnish is actually enabled.
+				// If Varnish is disabled, the requests will take longer to finish and will affect
+				// the WordPress performance.
+				#$this->auto_purge = is_varnish_cache_started();
+			}
 		}
 		add_action( 'init', array( $this, 'init' ) );
 	}
 
 	public function init() {
-		//Push urlsPurge
 		if ( $this->auto_purge ) {
 			if ( ! empty( $this->actions ) ) {
 				//if enabled auto purge option , this action will start
@@ -74,12 +79,21 @@ class Breeze_PurgeVarnish {
 	 *
 	 */
 	public function breeze_execute_purge() {
-		$urlsPurge = array_unique( $this->urlsPurge );
 
-		if ( ! empty( $urlsPurge ) ) {
-			foreach ( $urlsPurge as $url ) {
-				$this->purge_cache( $url );
+		if ( ! empty( $this->urlsPurge ) ) {
+			$urlsPurge = array_unique( $this->urlsPurge );
+
+			// before sending the requests, we need to make sure Varnish is actually enabled.
+			// If Varnish is disabled, the requests will take longer to finish and will affect
+			// the WordPress performance.
+			$do_purge = is_varnish_cache_started();
+
+			if ( true === $do_purge ) {
+				foreach ( $urlsPurge as $url ) {
+					$this->purge_cache( $url );
+				}
 			}
+
 		} else {
 			$homepage = home_url() . '/?breeze';
 			if ( isset( $_REQUEST['breeze_action'] ) && $_REQUEST['breeze_action'] == 'breeze_settings' ) {
@@ -274,7 +288,7 @@ class Breeze_PurgeVarnish {
 					$listofurls,
 					get_post_type_archive_link( get_post_type( $postId ) ),
 					get_post_type_archive_feed_link( get_post_type( $postId ) )
-					// Need to add in JSON?
+				// Need to add in JSON?
 				);
 			}
 			// Feeds

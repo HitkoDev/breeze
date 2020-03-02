@@ -28,25 +28,41 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 	private $css_min_arr = array();
 	private $issetminfile = false;
 	private $url_group_arr = array();
+	private $include_imported_css = false;
+	private $original_content = '';
+	private $show_original_content = 0;
+	private $do_process = false;
+
 
 	//Reads the page and collects style tags
 	public function read( $options ) {
+		$this->include_imported_css = filter_var( $options['include_imported_css'], FILTER_VALIDATE_BOOLEAN );
+
+		$this_path_url = $this->get_cache_file_url( 'css' );
+		if ( false === breeze_is_process_locked( $this_path_url ) ) {
+			$this->do_process = breeze_lock_cache_process( $this_path_url );
+		} else {
+			$this->original_content = $this->content;
+
+			return true;
+		}
+
 		$noptimizeCSS = apply_filters( 'breeze_filter_css_noptimize', false, $this->content );
 		if ( $noptimizeCSS ) {
 			return false;
 		}
 		$whitelistCSS = apply_filters( 'breeze_filter_css_whitelist', '' );
 		if ( ! empty( $whitelistCSS ) ) {
-			$this->whitelist = array_filter( array_map( 'trim', explode( ",", $whitelistCSS ) ) );
+			$this->whitelist = array_filter( array_map( 'trim', explode( ',', $whitelistCSS ) ) );
 		}
 		if ( $options['nogooglefont'] == true ) {
-			$removableCSS = "fonts.googleapis.com";
+			$removableCSS = 'fonts.googleapis.com';
 		} else {
-			$removableCSS = "";
+			$removableCSS = '';
 		}
 		$removableCSS = apply_filters( 'breeze_filter_css_removables', $removableCSS );
 		if ( ! empty( $removableCSS ) ) {
-			$this->cssremovables = array_filter( array_map( 'trim', explode( ",", $removableCSS ) ) );
+			$this->cssremovables = array_filter( array_map( 'trim', explode( ',', $removableCSS ) ) );
 		}
 		$this->cssinlinesize = apply_filters( 'breeze_filter_css_inlinesize', 256 );
 		// filter to "late inject minified CSS", default to true for now (it is faster)
@@ -67,15 +83,15 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 		}
 		//custom js exclude
 		if ( ! empty( $options['custom_css_exclude'] ) ) {
-			$this->custom_css_exclude = $options['custom_css_exclude'];
+			$this->custom_css_exclude = array_merge( $this->custom_css_exclude, $options['custom_css_exclude'] );
 		}
 		// what CSS shouldn't be autoptimized
 		$excludeCSS = $options['css_exclude'];
 		$excludeCSS = apply_filters( 'breeze_filter_css_exclude', $excludeCSS );
-		if ( $excludeCSS !== "" ) {
-			$this->dontmove = array_filter( array_map( 'trim', explode( ",", $excludeCSS ) ) );
+		if ( $excludeCSS !== '' ) {
+			$this->dontmove = array_filter( array_map( 'trim', explode( ',', $excludeCSS ) ) );
 		} else {
-			$this->dontmove = "";
+			$this->dontmove = '';
 		}
 		// should we defer css?
 		// value: true/ false
@@ -99,7 +115,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 			$this->content = preg_replace_callback(
 				'#<(?:no)?script.*?<\/(?:no)?script>#is',
 				function ( $matches ) {
-					return "%%SCRIPT" . breeze_HASH . "%%" . base64_encode( $matches[0] ) . "%%SCRIPT%%";
+					return '%%SCRIPT' . breeze_HASH . '%%' . base64_encode( $matches[0] ) . '%%SCRIPT%%';
 				},
 				$this->content
 			);
@@ -113,7 +129,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 			foreach ( $matches[0] as $tag ) {
 				if ( $this->isremovable( $tag, $this->cssremovables ) ) {
 					$this->content = str_replace( $tag, '', $this->content );
-				} else if ( $this->ismovable( $tag ) ) {
+				} elseif ( $this->ismovable( $tag ) ) {
 					// Get the media
 					if ( strpos( $tag, 'media=' ) !== false ) {
 						preg_match( '#media=(?:"|\')([^>]*)(?:"|\')#Ui', $tag, $medias );
@@ -121,7 +137,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 						$media  = array();
 						foreach ( $medias as $elem ) {
 							if ( empty( $elem ) ) {
-								$elem = "all";
+								$elem = 'all';
 							}
 							$media[] = $elem;
 						}
@@ -132,13 +148,20 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 					$media = apply_filters( 'breeze_filter_css_tagmedia', $media, $tag );
 					if ( preg_match( '#<link.*href=("|\')(.*)("|\')#Usmi', $tag, $source ) ) {
 						// <link>
-						$url         = current( explode( '?', $source[2], 2 ) );
+						$url = current( explode( '?', $source[2], 2 ) );
 						// Let's check if this file is in the excluded list.
 						$is_excluded = breeze_is_string_in_array_values( $url, $this->custom_css_exclude );
 						//exclude css file
 						if ( ! empty( $is_excluded ) ) {
 							continue;
 						}
+
+						// Treat special exceptions that might break front-end for admin/editor/author/contributor.
+						$is_an_exception = $this->breeze_css_files_exceptions( $url );
+						if ( true === $is_an_exception ) {
+							continue;
+						}
+
 						$path = $this->getpath( $url );
 						if ( $path !== false && preg_match( '#\.css$#', $path ) ) {
 							// Good link
@@ -154,7 +177,22 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 						// and re-hide them to be able to to the removal based on tag
 						$tag = $this->hide_comments( $tag );
 						if ( $this->include_inline ) {
-							$code        = preg_replace( '#^.*<!\[CDATA\[(?:\s*\*/)?(.*)(?://|/\*)\s*?\]\]>.*$#sm', '$1', $code[1] );
+							$code = preg_replace( '#^.*<!\[CDATA\[(?:\s*\*/)?(.*)(?://|/\*)\s*?\]\]>.*$#sm', '$1', $code[1] );
+							if ( true == $this->group_css ) {
+								if ( isset( $media[0] ) && 'print' === trim( $media[0] ) ) {
+									if ( false === strpos( $code, '@media' ) ) {
+										$code = '@media print{' . $code . '}';
+									}
+								} elseif ( isset( $media[0] ) && 'speech' === trim( $media[0] ) ) {
+									if ( false === strpos( $code, '@media' ) ) {
+										$code = '@media speech{' . $code . '}';
+									}
+								} elseif ( isset( $media[0] ) && 'screen' === trim( $media[0] ) ) {
+									if ( false === strpos( $code, '@media' ) ) {
+										$code = '@media screen{' . $code . '}';
+									}
+								}
+							}
 							$this->css[] = array( $media, 'INLINE;' . $code );
 						} else {
 							$tag = '';
@@ -174,13 +212,18 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 
 	// Joins and optimizes CSS
 	public function minify() {
+
+		if ( false === $this->do_process ) {
+			return true;
+		}
+
 		foreach ( $this->css as $group ) {
 			list( $media, $css ) = $group;
 			if ( preg_match( '#^INLINE;#', $css ) ) {
 				// <style>
 				$css      = preg_replace( '#^INLINE;#', '', $css );
 				$css      = $this->fixurls( ABSPATH . '/index.php', $css );
-				$tmpstyle = apply_filters( 'breeze_css_individual_style', $css, "" );
+				$tmpstyle = apply_filters( 'breeze_css_individual_style', $css, '' );
 				if ( has_filter( 'breeze_css_individual_style' ) && ! empty( $tmpstyle ) ) {
 					$css                   = $tmpstyle;
 					$this->alreadyminified = true;
@@ -195,8 +238,8 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 					if ( has_filter( 'breeze_css_individual_style' ) && ! empty( $tmpstyle ) ) {
 						$css                   = $tmpstyle;
 						$this->alreadyminified = true;
-					} else if ( $this->can_inject_late( $cssPath, $css ) ) {
-						$css = "%%INJECTLATER" . breeze_HASH . "%%" . base64_encode( $cssPath ) . "|" . md5( $css ) . "%%INJECTLATER%%";
+					} elseif ( $this->can_inject_late( $cssPath, $css ) ) {
+						$css = '%%INJECTLATER' . breeze_HASH . '%%' . base64_encode( $cssPath ) . '|' . md5( $css ) . '%%INJECTLATER%%';
 					}
 				} else {
 					// Couldn't read CSS. Maybe getpath isn't working?
@@ -212,7 +255,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 				}
 			} else {
 				foreach ( $media as $elem ) {
-					$this->css_group_val[] = $elem . "_breezecssgroup_" . $css;
+					$this->css_group_val[] = $elem . '_breezecssgroup_' . $css;
 				}
 			}
 		}
@@ -241,25 +284,29 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 			foreach ( $this->csscode as &$thiscss ) {
 				// Flag to trigger import reconstitution and var to hold external imports
 				$fiximports       = false;
-				$external_imports = "";
+				$external_imports = '';
 				while ( preg_match_all( '#^(/*\s?)@import.*(?:;|$)#Um', $thiscss, $matches ) ) {
 					foreach ( $matches[0] as $import ) {
+
 						if ( $this->isremovable( $import, $this->cssremovables ) ) {
+
 							$thiscss   = str_replace( $import, '', $thiscss );
 							$import_ok = true;
 						} else {
 							$url       = trim( preg_replace( '#^.*((?:https?:|ftp:)?//.*\.css).*$#', '$1', trim( $import ) ), " \t\n\r\0\x0B\"'" );
 							$path      = $this->getpath( $url );
 							$import_ok = false;
-							if ( file_exists( $path ) && is_readable( $path ) ) {
-								$code     = addcslashes( $this->fixurls( $path, file_get_contents( $path ) ), "\\" );
+
+							if ( true === $this->include_imported_css && file_exists( $path ) && is_readable( $path ) ) { // add settings for this
+
+								$code     = addcslashes( $this->fixurls( $path, file_get_contents( $path ) ), '\\' );
 								$code     = preg_replace( '/\x{EF}\x{BB}\x{BF}/', '', $code );
-								$tmpstyle = apply_filters( 'breeze_css_individual_style', $code, "" );
+								$tmpstyle = apply_filters( 'breeze_css_individual_style', $code, '' );
 								if ( has_filter( 'breeze_css_individual_style' ) && ! empty( $tmpstyle ) ) {
 									$code                  = $tmpstyle;
 									$this->alreadyminified = true;
-								} else if ( $this->can_inject_late( $path, $code ) ) {
-									$code = "%%INJECTLATER" . breeze_HASH . "%%" . base64_encode( $path ) . "|" . md5( $code ) . "%%INJECTLATER%%";
+								} elseif ( $this->can_inject_late( $path, $code ) ) {
+									$code = '%%INJECTLATER' . breeze_HASH . '%%' . base64_encode( $path ) . '|' . md5( $code ) . '%%INJECTLATER%%';
 								}
 								if ( ! empty( $code ) ) {
 									$tmp_thiscss = preg_replace( '#(/\*FILESTART\*/.*)' . preg_quote( $import, '#' ) . '#Us', '/*FILESTART2*/' . $code . '$1', $thiscss );
@@ -313,9 +360,9 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 						$ipath            = $this->getpath( $iurl );
 						$datauri_max_size = 4096;
 						$datauri_max_size = (int) apply_filters( 'breeze_filter_css_datauri_maxsize', $datauri_max_size );
-						$datauri_exclude  = apply_filters( 'breeze_filter_css_datauri_exclude', "" );
+						$datauri_exclude  = apply_filters( 'breeze_filter_css_datauri_exclude', '' );
 						if ( ! empty( $datauri_exclude ) ) {
-							$no_datauris = array_filter( array_map( 'trim', explode( ",", $datauri_exclude ) ) );
+							$no_datauris = array_filter( array_map( 'trim', explode( ',', $datauri_exclude ) ) );
 							foreach ( $no_datauris as $no_datauri ) {
 								if ( strpos( $iurl, $no_datauri ) !== false ) {
 									$ipath = false;
@@ -329,7 +376,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 							if ( $icheck->check() ) {
 								// we have the base64 image in cache
 								$headAndData = $icheck->retrieve();
-								$_base64data = explode( ";base64,", $headAndData );
+								$_base64data = explode( ';base64,', $headAndData );
 								$base64data  = $_base64data[1];
 							} else {
 								// It's an image and we don't have it in cache, get the type
@@ -358,7 +405,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 								$base64data  = base64_encode( file_get_contents( $ipath ) );
 								$headAndData = $dataurihead . $base64data;
 								// Save in cache
-								$icheck->cache( $headAndData, "text/plain" );
+								$icheck->cache( $headAndData, 'text/plain' );
 							}
 							unset( $icheck );
 							// Add it to the list for replacement
@@ -375,7 +422,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 							}
 						}
 					}
-				} else if ( ( is_array( $matches ) ) && ( ! empty( $this->cdn_url ) ) ) {
+				} elseif ( ( is_array( $matches ) ) && ( ! empty( $this->cdn_url ) ) ) {
 					// change background image urls to cdn-url
 					foreach ( $matches[2] as $count => $quotedurl ) {
 						$url                                 = trim( $quotedurl, " \t\n\r\0\x0B\"'" );
@@ -403,14 +450,14 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 					}
 				}
 				// Minify
-				if ( ( $this->alreadyminified !== true ) && ( apply_filters( "breeze_css_do_minify", true ) ) ) {
+				if ( ( $this->alreadyminified !== true ) && ( apply_filters( 'breeze_css_do_minify', true ) ) ) {
 					if ( class_exists( 'Minify_CSS_Compressor' ) ) {
 						$tmp_code = trim( Minify_CSS_Compressor::process( $code ) );
-					} else if ( class_exists( 'CSSmin' ) ) {
+					} elseif ( class_exists( 'CSSmin' ) ) {
 						$cssmin = new CSSmin();
-						if ( method_exists( $cssmin, "run" ) ) {
+						if ( method_exists( $cssmin, 'run' ) ) {
 							$tmp_code = trim( $cssmin->run( $code ) );
-						} elseif ( @is_callable( array( $cssmin, "minify" ) ) ) {
+						} elseif ( @is_callable( array( $cssmin, 'minify' ) ) ) {
 							$tmp_code = trim( CssMin::minify( $code ) );
 						}
 					}
@@ -436,18 +483,18 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 				$ccheck = new Breeze_MinificationCache( $hash, 'css' );
 				if ( $ccheck->check() ) {
 					$css_exist           = $ccheck->retrieve();
-					$this->css_min_arr[] = $media . "_breezemedia_" . $hash . "_breezekey_" . $css_exist;
+					$this->css_min_arr[] = $media . '_breezemedia_' . $hash . '_breezekey_' . $css_exist;
 					continue;
 				}
 				unset( $ccheck );
 				// Minify
 				if ( class_exists( 'Minify_CSS_Compressor' ) ) {
 					$tmp_code = trim( Minify_CSS_Compressor::process( $css ) );
-				} else if ( class_exists( 'CSSmin' ) ) {
+				} elseif ( class_exists( 'CSSmin' ) ) {
 					$cssmin = new CSSmin();
-					if ( method_exists( $cssmin, "run" ) ) {
+					if ( method_exists( $cssmin, 'run' ) ) {
 						$tmp_code = trim( $cssmin->run( $css ) );
-					} elseif ( @is_callable( array( $cssmin, "minify" ) ) ) {
+					} elseif ( @is_callable( array( $cssmin, 'minify' ) ) ) {
 						$tmp_code = trim( CssMin::minify( $css ) );
 					}
 				}
@@ -457,7 +504,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 				}
 				$css                 = $this->inject_minified( $css );
 				$css                 = apply_filters( 'breeze_css_after_minify', $css );
-				$this->css_min_arr[] = $media . "_breezemedia_" . $hash . "_breezekey_" . $css;
+				$this->css_min_arr[] = $media . '_breezemedia_' . $hash . '_breezekey_' . $css;
 			}
 			unset( $css );
 		}
@@ -467,6 +514,10 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 
 	//Caches the CSS in uncompressed, deflated and gzipped form.
 	public function cache() {
+		if ( false === $this->do_process ) {
+			return true;
+		}
+
 		if ( $this->datauris ) {
 			// MHTML Preparation
 			$this->mhtml = "/*\r\nContent-Type: multipart/related; boundary=\"_\"\r\n\r\n" . $this->mhtml . "*/\r\n";
@@ -476,24 +527,41 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 				// Cache our images for IE
 				$cache->cache( $this->mhtml, 'text/plain' );
 			}
-			$mhtml = breeze_CACHE_URL . $cache->getname();
+			$mhtml = breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
+
 		}
 		if ( $this->group_css == true ) {
+			$whole_css_file = '';
 			// CSS cache
 			foreach ( $this->csscode as $media => $code ) {
-				$md5 = $this->hashmap[ md5( $code ) ];
+
 				if ( $this->datauris ) {
 					// Images for ie! Get the right url
 					$code = str_replace( '%%MHTML%%', $mhtml, $code );
 				}
-				$cache = new Breeze_MinificationCache( $md5, 'css' );
-				if ( ! $cache->check() ) {
-					// Cache our code
-					$cache->cache( $code, 'text/css' );
-				}
-				$this->url[ $media ] = breeze_CACHE_URL . $cache->getname();
+				// compile all the CSS together to create a single file.
+				$whole_css_file .= $code;
 			}
+
+			$md5   = md5( $whole_css_file );
+			$cache = new Breeze_MinificationCache( $md5, 'css' );
+			if ( ! $cache->check() ) {
+				// Cache our code
+				$cache->cache( $whole_css_file, 'text/css' );
+			}
+
+			$cache_file_url  = breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
+			$cache_directory = $cache->get_cache_dir();
+
+			if ( $this->is_cache_file_present( $cache_directory . $cache->get_file_name() ) ) {
+				$this->url['all'] = $cache_file_url;
+			} else {
+				$this->show_original_content = 1;
+				$this->clear_cache_data();
+			}
+
 		} else {
+			$url_exists = true;
 			foreach ( $this->css_min_arr as $value ) {
 				$media = substr( $value, 0, strpos( $value, '_breezemedia_' ) );
 				$code  = substr( $value, strpos( $value, '_breezemedia_' ) + strlen( '_breezemedia_' ) );
@@ -504,13 +572,29 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 					// Cache our code
 					$cache->cache( $css, 'text/css' );
 				}
-				$this->url_group_arr[] = $media . "_breezemedia_" . $hash . "_breezekey_" . breeze_CACHE_URL . $cache->getname();
+
+				$cache_directory = $cache->get_cache_dir();
+
+				if ( ! file_exists( $cache_directory . $cache->get_file_name() ) ) {
+					$url_exists = false;
+				} else {
+					$this->url_group_arr[] = $media . "_breezemedia_" . $hash . "_breezekey_" . breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
+				}
+			}
+
+			if ( false === $url_exists ) {
+				$this->show_original_content = 1;
+				$this->clear_cache_data();
 			}
 		}
 	}
 
 	//Returns the content
 	public function getcontent() {
+
+		if ( ! empty( $this->show_original_content ) ) {
+			return $this->original_content;
+		}
 		// restore IE hacks
 		$this->content = $this->restore_iehacks( $this->content );
 		// restore comments
@@ -534,7 +618,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 			$this->restofcontent = '';
 		}
 		// Inject the new stylesheets
-		$replaceTag = array( "<title", "before" );
+		$replaceTag = array( '<title', 'before' );
 		$replaceTag = apply_filters( 'breeze_filter_css_replacetag', $replaceTag );
 		if ( $this->group_css == true ) {
 			if ( $this->inline == true ) {
@@ -544,7 +628,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 			} else {
 				if ( $this->defer == true ) {
 					$deferredCssBlock  = "<script data-cfasync='false'>function lCss(url,media) {var d=document;var l=d.createElement('link');l.rel='stylesheet';l.type='text/css';l.href=url;l.media=media;aoin=d.getElementsByTagName('noscript')[0];aoin.parentNode.insertBefore(l,aoin.nextSibling);}function deferredCSS() {";
-					$noScriptCssBlock  = "<noscript>";
+					$noScriptCssBlock  = '<noscript>';
 					$defer_inline_code = $this->defer_inline;
 					$defer_inline_code = apply_filters( 'breeze_filter_css_defer_inline', $defer_inline_code );
 					if ( ! empty( $defer_inline_code ) ) {
@@ -556,13 +640,13 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 						} else {
 							if ( class_exists( 'Minify_CSS_Compressor' ) ) {
 								$tmp_code = trim( Minify_CSS_Compressor::process( $this->defer_inline ) );
-							} else if ( class_exists( 'CSSmin' ) ) {
+							} elseif ( class_exists( 'CSSmin' ) ) {
 								$cssmin   = new CSSmin();
 								$tmp_code = trim( $cssmin->run( $defer_inline_code ) );
 							}
 							if ( ! empty( $tmp_code ) ) {
 								$defer_inline_code = $tmp_code;
-								$iCssCache->cache( $defer_inline_code, "text/css" );
+								$iCssCache->cache( $defer_inline_code, 'text/css' );
 								unset( $tmp_code );
 							}
 						}
@@ -579,14 +663,14 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 					} else {
 						if ( strlen( $this->csscode[ $media ] ) > $this->cssinlinesize ) {
 							$this->inject_in_html( '<link type="text/css" media="' . $media . '" href="' . $url . '" rel="stylesheet" />', $replaceTag );
-						} else if ( strlen( $this->csscode[ $media ] ) > 0 ) {
+						} elseif ( strlen( $this->csscode[ $media ] ) > 0 ) {
 							$this->inject_in_html( '<style type="text/css" media="' . $media . '">' . $this->csscode[ $media ] . '</style>', $replaceTag );
 						}
 					}
 				}
 				if ( $this->defer == true ) {
 					$deferredCssBlock .= "}if(window.addEventListener){window.addEventListener('DOMContentLoaded',deferredCSS,false);}else{window.onload = deferredCSS;}</script>";
-					$noScriptCssBlock .= "</noscript>";
+					$noScriptCssBlock .= '</noscript>';
 					$this->inject_in_html( $noScriptCssBlock, $replaceTag );
 					$this->inject_in_html( $deferredCssBlock, array( '</body>', 'before' ) );
 				}
@@ -599,7 +683,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 			} else {
 				if ( $this->defer == true ) {
 					$deferredCssBlock  = "<script data-cfasync='false'>function lCss(url,media) {var d=document;var l=d.createElement('link');l.rel='stylesheet';l.type='text/css';l.href=url;l.media=media;aoin=d.getElementsByTagName('noscript')[0];aoin.parentNode.insertBefore(l,aoin.nextSibling);}function deferredCSS() {";
-					$noScriptCssBlock  = "<noscript>";
+					$noScriptCssBlock  = '<noscript>';
 					$defer_inline_code = $this->defer_inline;
 					$defer_inline_code = apply_filters( 'breeze_filter_css_defer_inline', $defer_inline_code );
 					if ( ! empty( $defer_inline_code ) ) {
@@ -611,13 +695,13 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 						} else {
 							if ( class_exists( 'Minify_CSS_Compressor' ) ) {
 								$tmp_code = trim( Minify_CSS_Compressor::process( $this->defer_inline ) );
-							} else if ( class_exists( 'CSSmin' ) ) {
+							} elseif ( class_exists( 'CSSmin' ) ) {
 								$cssmin   = new CSSmin();
 								$tmp_code = trim( $cssmin->run( $defer_inline_code ) );
 							}
 							if ( ! empty( $tmp_code ) ) {
 								$defer_inline_code = $tmp_code;
-								$iCssCache->cache( $defer_inline_code, "text/css" );
+								$iCssCache->cache( $defer_inline_code, 'text/css' );
 								unset( $tmp_code );
 							}
 						}
@@ -642,22 +726,30 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 						if ( strlen( $csscode ) > $this->cssinlinesize ) {
 							$url = $this->url_replace_cdn( $url );
 							$this->inject_in_html( '<link type="text/css" media="' . $media . '" href="' . $url . '" rel="stylesheet" />', $replaceTag );
-						} else if ( strlen( $csscode ) > 0 ) {
+						} elseif ( strlen( $csscode ) > 0 ) {
 							$this->inject_in_html( '<style type="text/css" media="' . $media . '">' . $csscode . '</style>', $replaceTag );
 						}
 					}
 				}
 				if ( $this->defer == true ) {
 					$deferredCssBlock .= "}if(window.addEventListener){window.addEventListener('DOMContentLoaded',deferredCSS,false);}else{window.onload = deferredCSS;}</script>";
-					$noScriptCssBlock .= "</noscript>";
+					$noScriptCssBlock .= '</noscript>';
 					$this->inject_in_html( $noScriptCssBlock, $replaceTag );
 					$this->inject_in_html( $deferredCssBlock, array( '</body>', 'before' ) );
 				}
 			}
 		}
 
+		if ( true === $this->do_process ) {
+			$this_path_url = $this->get_cache_file_url( 'css' );
+			breeze_unlock_process( $this_path_url );
+
+			return $this->content;
+		} else {
+			return $this->original_content;
+		}
 		//Return the modified stylesheet
-		return $this->content;
+		//return $this->content;
 	}
 
 	static function fixurls( $file, $code ) {
@@ -682,7 +774,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 					continue;
 				} else {
 					// relative URL
-					$newurl = preg_replace( '/https?:/', '', str_replace( " ", "%20", breeze_WP_ROOT_URL . str_replace( '//', '/', $dir . '/' . $url ) ) );
+					$newurl = preg_replace( '/https?:/', '', str_replace( ' ', '%20', breeze_WP_ROOT_URL . str_replace( '//', '/', $dir . '/' . $url ) ) );
 					$hash   = md5( $url );
 					$code   = str_replace( $matches[0][ $k ], $hash, $code );
 					if ( ! empty( $removedQuotes ) ) {
@@ -725,21 +817,49 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 	}
 
 	private function can_inject_late( $cssPath, $css ) {
-		if ( ( strpos( $cssPath, "min.css" ) === false ) || ( $this->inject_min_late !== true ) ) {
+		if ( ( strpos( $cssPath, 'min.css' ) === false ) || ( $this->inject_min_late !== true ) ) {
 			// late-inject turned off or file not minified based on filename
 			return false;
-		} else if ( strpos( $css, "@import" ) !== false ) {
-			// can't late-inject files with imports as those need to be aggregated 
+		} elseif ( strpos( $css, '@import' ) !== false ) {
+			// can't late-inject files with imports as those need to be aggregated
 			return false;
-		} else if ( ( strpos( $css, "@font-face" ) !== false ) && ( apply_filters( "breeze_filter_css_fonts_cdn", false ) === true ) && ( ! empty( $this->cdn_url ) ) ) {
+		} elseif ( ( strpos( $css, '@font-face' ) !== false ) && ( apply_filters( 'breeze_filter_css_fonts_cdn', false ) === true ) && ( ! empty( $this->cdn_url ) ) ) {
 			// don't late-inject CSS with font-src's if fonts are set to be CDN'ed
 			return false;
-		} else if ( ( ( $this->datauris == true ) || ( ! empty( $this->cdn_url ) ) ) && preg_match( "#background[^;}]*url\(#Ui", $css ) ) {
+		} elseif ( ( ( $this->datauris == true ) || ( ! empty( $this->cdn_url ) ) ) && preg_match( '#background[^;}]*url\(#Ui', $css ) ) {
 			// don't late-inject CSS with images if CDN is set OR is image inlining is on
 			return false;
 		} else {
 			// phew, all is safe, we can late-inject
 			return true;
 		}
+	}
+
+
+	/**
+	 * Search for specific exceptions.
+	 * Files that should not be included in grouping.
+	 *
+	 * @param $needle
+	 *
+	 * @return bool
+	 * @since 1.1.3
+	 */
+	private function breeze_css_files_exceptions( $needle ) {
+		$search_patterns = array(
+			'huebert\.[a-zA-Z0-9]*\.css',
+			'app\.[a-zA-Z0-9]*\.css',
+		);
+
+		$needle = trim( $needle );
+		foreach ( $search_patterns as $pattern ) {
+			preg_match( '/(' . $pattern . ')/i', $needle, $output_array );
+			if ( ! empty( $output_array ) ) { // is found ?
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

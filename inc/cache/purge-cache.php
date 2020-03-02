@@ -119,7 +119,7 @@ class Breeze_PurgeCache {
 
 		WP_Filesystem();
 
-		$cache_path = breeze_get_cache_base_path( is_network_admin() );
+		$cache_path = breeze_get_cache_base_path( is_network_admin(), true );
         $wp_filesystem->rmdir( untrailingslashit( $cache_path ), true );
 
         if ( function_exists( 'wp_cache_flush' ) ) {

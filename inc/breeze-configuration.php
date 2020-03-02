@@ -64,7 +64,7 @@ class Breeze_Configuration{
                     'breeze-browser-cache' => (isset($_POST['browser-cache']) ? '1' : '0'),
                     'breeze-desktop-cache' => (int)$_POST['desktop-cache'],
                     'breeze-mobile-cache' => (int)$_POST['mobile-cache'],
-                    'breeze-disable-admin' => '1',
+                    'breeze-disable-admin' => (isset($_POST['breeze-admin-cache']) ? '0' : '1'), // 0 is enable, 1 is disable in this case.
                     'breeze-display-clean' => '1',
                     'breeze-include-inline-js' => (isset($_POST['include-inline-js']) ? '1' : '0'),
                     'breeze-include-inline-css' => (isset($_POST['include-inline-css']) ? '1' : '0'),
@@ -93,6 +93,7 @@ class Breeze_Configuration{
 
 	            //delete cache after settings
 	            do_action('breeze_clear_all_cache');
+
             }
         }
         // Advanced options tab
@@ -145,6 +146,7 @@ class Breeze_Configuration{
 
                 //delete cache after settings
                 do_action('breeze_clear_all_cache');
+
             }
         }
 
@@ -192,6 +194,7 @@ class Breeze_Configuration{
 
 	            //delete cache after settings
 	            do_action('breeze_clear_all_cache');
+
             }
         }
 

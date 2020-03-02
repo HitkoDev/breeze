@@ -100,7 +100,7 @@ $global_tabs = array(
 					echo '<p class="multisite-inherit-disclaimer">' . __( '* Any change here will also be applied to all the sub-sites that are using Network level settings.', 'wpr' ) . '</p>';
 				}
 				echo '<p class="submit">' . PHP_EOL .
-					'<input type="submit" class="button button-primary" value="'. __('Save Changes', 'breeze') .'"/>' . PHP_EOL .
+					'<input type="submit" class="button button-primary breeze-submit-btn" value="'. __('Save Changes', 'breeze') .'"/>' . PHP_EOL .
 				'</p>';
 			}
 			if ( ! in_array( $key, $global_tabs ) ) {

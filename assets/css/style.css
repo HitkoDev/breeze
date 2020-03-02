@@ -325,3 +325,7 @@
     color: #fff;
     text-decoration: none;
 }
+
+.wp-core-ui .button-primary.focus, .wp-core-ui .button-primary.breeze-submit-btn:focus{
+    box-shadow:none;
+}

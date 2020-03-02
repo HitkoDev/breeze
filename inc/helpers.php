@@ -112,9 +112,9 @@ function breeze_is_supported( $check ) {
  * @param array $url_list
  * @param string $extension
  *
+ * @return bool
  * @since 1.1.0
  *
- * @return bool
  */
 function breeze_validate_urls( $url_list = array() ) {
 	if ( ! is_array( $url_list ) ) {
@@ -205,12 +205,12 @@ function breeze_get_file_extension_from_url( $url_given = '' ) {
  * if found, will result in an array with all entries found
  * if not found, an empty array will be resulted.
  *
- * @since 1.1.0
- *
  * @param string $needle
  * @param array $haystack
  *
  * @return array
+ * @since 1.1.0
+ *
  */
 function breeze_is_string_in_array_values( $needle = '', $haystack = array() ) {
 	if ( empty( $needle ) || empty( $haystack ) ) {
@@ -334,7 +334,6 @@ function breeze_file_match_pattern( $file_url, $pattern ) {
 	return $result;
 }
 
-
 /**
  * Will return true/false if the cache headers exist and
  * have values HIT or MISS.
@@ -343,37 +342,65 @@ function breeze_file_match_pattern( $file_url, $pattern ) {
  * This method will request only the current url homepage headers
  * and if the first time is a MISS, it will try again.
  *
- * @param int $retry
+ * @param int $retry how many retries count.
+ * @param int $time_fresh current time to make a fresh connect.
+ * @param bool $use_headers To use get_headers or cURL.
  *
  * @return bool
  */
-function is_varnish_cache_started( $retry = 1 ) {
-	// Making sure the request is only for HEADER info without getting the content from the page
-	$context_options = array(
-		'http' => array(
-			'method'          => 'HEAD',
-			'follow_location' => 1,
-		),
-		'ssl'  => array(
-			'verify_peer' => false
-		),
-	);
-	$context         = stream_context_create( $context_options );
+function is_varnish_cache_started( $retry = 1, $time_fresh = 0, $use_headers = false ) {
+	if ( empty( $time_fresh ) ) {
+		$time_fresh = time();
+	}
 
-	$url_ping = trim( home_url() . '?breeze_check_cache_available=' . time() );
-	$headers  = get_headers( $url_ping, 1, $context );
+	// Code specific for Cloudways Server.
+	if ( 1 === $retry ) {
+		$check_local_server = is_varnish_layer_started();
+		if ( true === $check_local_server ) {
+			return true;
+		}
+	}
+
+	$url_ping = trim( home_url() . '?breeze_check_cache_available=' . $time_fresh );
+
+	if ( true === $use_headers ) {
+		// Making sure the request is only for HEADER info without getting the content from the page
+		$context_options = array(
+			'http' => array(
+				'method'          => 'HEAD',
+				'follow_location' => 1,
+			),
+			'ssl'  => array(
+				'verify_peer' => false,
+			),
+		);
+		$context         = stream_context_create( $context_options );
+		$headers         = get_headers( $url_ping, 1, $context );
+
+		if ( empty( $headers ) ) {
+			$use_headers = false;
+		} else {
+			$headers = array_change_key_case( $headers, CASE_LOWER );
+		}
+	}
+
+	if ( false === $use_headers ) {
+		$headers = breeze_get_headers_via_curl( $url_ping );
+	}
 
 	if ( empty( $headers ) ) {
 		return false;
 	}
 
-	$headers = array_change_key_case( $headers, CASE_LOWER );
+	if ( true === $headers ) {
+		return true;
+	}
 
 	if ( ! isset( $headers['x-cache'] ) ) {
 		if ( 1 === $retry ) {
 			$retry ++;
 
-			return is_varnish_cache_started( $retry );
+			return is_varnish_cache_started( $retry, $time_fresh, $use_headers );
 		}
 
 		return false;
@@ -384,20 +411,176 @@ function is_varnish_cache_started( $retry = 1 ) {
 		// After the first header requests, the cache headers are formed.
 		// Checking the second time will give better results.
 		if ( 1 === $retry ) {
-			if ( 'hit' === $cache_header ) {
+			if ( substr_count( $cache_header, 'hit' ) > 0 ) {
 				return true;
 			} else {
 				$retry ++;
 
-				return is_varnish_cache_started( $retry );
+				return is_varnish_cache_started( $retry, $time_fresh, $use_headers );
 			}
 		} else {
 
-			if ( 'hit' === $cache_header ) {
+			if ( substr_count( $cache_header, 'hit' ) > 0 ) {
 				return true;
 			}
 
 			return false;
 		}
 	}
+}
+
+/**
+ * Fallback function to fetch headers.
+ *
+ * @param string $url_ping URL from where to get the headers.
+ *
+ * @return array|bool
+ */
+function breeze_get_headers_via_curl( $url_ping = '' ) {
+	$connection = curl_init();
+	$headers    = array();
+	curl_setopt( $connection, CURLOPT_URL, $url_ping );
+	curl_setopt( $connection, CURLOPT_NOBODY, true );
+	curl_setopt( $connection, CURLOPT_RETURNTRANSFER, true );
+	curl_setopt( $connection, CURLOPT_FOLLOWLOCATION, true ); // follow redirects
+	curl_setopt( $connection, CURLOPT_SSL_VERIFYPEER, false ); // if the SSL is invalid, curl will have trouble giving the correct response.
+	curl_setopt( $connection, CURLOPT_HEADER, true );// return just headers
+	curl_setopt( $connection, CURLOPT_TIMEOUT, 1 );
+	// this function is called by curl for each header received
+	curl_setopt(
+		$connection,
+		CURLOPT_HEADERFUNCTION,
+		function ( $curl, $header ) use ( &$headers ) {
+			$len    = strlen( $header );
+			$header = explode( ':', $header, 2 );
+			if ( count( $header ) < 2 ) { // ignore invalid headers
+				return $len;
+			}
+
+			$headers[ strtolower( trim( $header[0] ) ) ][] = trim( $header[1] );
+
+			return $len;
+		}
+	);
+
+	curl_exec( $connection );
+	curl_close( $connection );
+
+	// x-cacheable
+	if ( isset( $headers['x-cacheable'] ) ) {
+		$x_cacheable_value = array_pop( $headers['x-cacheable'] );
+		if ( 'yes' === strtolower( $x_cacheable_value ) || 'short' === strtolower( $x_cacheable_value ) ) {
+			return true;
+		}
+	}
+
+	if ( isset( $headers['x-cache'] ) ) {
+		$x_cache_value = array_pop( $headers['x-cache'] );
+
+		return array( 'x-cache' => $x_cache_value );
+	}
+
+	return false;
+
+}
+
+/**
+ * Determine if the Varnish server is up and running.
+ *
+ * CloudWays:
+ * At server root level Varnish being disabled.
+ * HTTP_X_VARNISH - does not exist or is NULL
+ * HTTP_X_APPLICATION - contains varnishpass
+ *
+ * At Application level ( WP install ) - Varnish ON
+ * At server level is ON
+ * HTTP_X_VARNISH - has random numerical value
+ * HTTP_X_APPLICATION - contains value different from varnishpass, usually application name.
+ *
+ * At Application level ( WP install ) - Varnish OFF
+ * At server level is ON
+ * HTTP_X_VARNISH - has random numerical value
+ * HTTP_X_APPLICATION - contains value varnishpass
+ *
+ * @since 1.1.3
+ */
+function is_varnish_layer_started() {
+	$data = $_SERVER;
+
+	if ( ! isset( $data['HTTP_X_VARNISH'] ) ) {
+		return false;
+	}
+
+	if ( isset( $data['HTTP_X_VARNISH'] ) && isset( $data['HTTP_X_APPLICATION'] ) ) {
+
+		if ( 'varnishpass' === trim( $data['HTTP_X_APPLICATION'] ) ) {
+			return false;
+		} elseif ( 'bypass' === trim( $data['HTTP_X_APPLICATION'] ) ) {
+			return false;
+		} elseif ( is_null( $data['HTTP_X_APPLICATION'] ) ) {
+			return false;
+		}
+	}
+
+	if ( ! isset( $data['HTTP_X_APPLICATION'] ) ) {
+		return false;
+	}
+
+
+	return true;
+}
+
+/**
+ * Handles file writing.
+ * Using fopen() si a lot faster than file_put_contents().
+ *
+ * @param string $file_path
+ * @param string $content
+ *
+ * @return bool
+ * @since 1.1.3
+ */
+function breeze_read_write_file( $file_path = '', $content = '' ) {
+	if ( empty( $file_path ) ) {
+		return false;
+	}
+
+	if ( ( $handler = @fopen( $file_path, 'w' ) ) !== false ) { // phpcs:ignore
+		if ( ( @fwrite( $handler, $content ) ) !== false ) { // phpcs:ignore
+			@fclose( $handler ); // phpcs:ignore
+		}
+	}
+
+}
+
+
+function breeze_lock_cache_process( $path = '' ) {
+	$filename    = 'process.lock';
+	$create_lock = fopen( $path . $filename, 'w' );
+	if ( false === $create_lock ) {
+		return false;
+	}
+	fclose( $create_lock );
+
+	return true;
+}
+
+function breeze_is_process_locked( $path = '' ) {
+	$filename = 'process.lock';
+	if ( file_exists( $path . $filename ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+function breeze_unlock_process( $path = '' ) {
+	$filename = 'process.lock';
+	if ( file_exists( $path . $filename ) ) {
+		@unlink( $path . $filename );
+
+		return true;
+	}
+
+	return false;
 }

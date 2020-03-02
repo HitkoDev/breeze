@@ -34,7 +34,25 @@ class Breeze_CDN_Rewrite {
         $this->dirs = $option['cdn-content'];
         $this->excludes = $option['cdn-exclude-content'];
         $this->relative = $option['cdn-relative-path'];
+
+        $this->hardcoded_exceptions_to_ignore();
     }
+
+	/**
+	 * Handles extra exceptions which need to be excluded
+	 * and instead use local URL instead of CDN.
+	 *
+	 * @since 1.1.3
+	 */
+	private function hardcoded_exceptions_to_ignore() {
+		if ( ! array( $this->excludes ) || empty( $this->excludes ) ) {
+			$this->excludes = array();
+		}
+		$this->excludes [] = 'download_file';
+		// Allow users to use filter and add exceptions from CDN url.
+		$this->excludes = apply_filters( 'breeze_cdn_exclude_paths', $this->excludes );
+	}
+
     /*
      * Replace cdn on html raw
      */
