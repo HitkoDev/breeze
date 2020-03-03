@@ -33,7 +33,7 @@ class Breeze_Admin {
 		add_action( 'breeze_clear_all_cache', array( $this, 'breeze_clear_all_cache' ) );
 		add_action( 'breeze_clear_varnish', array( $this, 'breeze_clear_varnish' ) );
 
-		if ( is_admin() ) {
+		if ( is_admin() || 'cli' === php_sapi_name() ) {
 			add_action( 'admin_init', array( $this, 'admin_init' ) );
 
 			//register menu
