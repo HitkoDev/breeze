@@ -259,6 +259,12 @@ class Breeze_Minify {
 	 */
 	public function check_exclude_url( $current_url ) {
 		$opts_config = breeze_get_option( 'advanced_settings' );
+
+		$is_exclude = breeze_is_string_in_array_values( $current_url, $opts_config['breeze-exclude-urls'] );
+		if ( ! empty( $is_exclude ) ) {
+			return true;
+		}
+
 		//check disable cache for page
 		if ( ! empty( $opts_config['breeze-exclude-urls'] ) ) {
 			foreach ( $opts_config['breeze-exclude-urls'] as $v ) {
