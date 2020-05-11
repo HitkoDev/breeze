@@ -44,6 +44,10 @@ class Breeze_CDN_Integration{
             return;
         }
 
+	    if ( isset( $_GET['action'] ) && 'edit' === $_GET['action'] && isset( $_GET['job_id'] ) && ! empty( $_GET['job_id'] ) ) {
+		    return;
+	    }
+	    
         $rewrite = new Breeze_CDN_Rewrite($cdn_integration);
 
         //rewrite CDN Url to html raw
