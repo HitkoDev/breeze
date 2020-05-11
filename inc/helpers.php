@@ -128,6 +128,10 @@ function breeze_validate_urls( $url_list = array() ) {
 			if ( false === $is_valid ) {
 				$is_valid = breeze_validate_url_via_regexp( $url );
 			}
+
+			if ( false === $is_valid ) {
+				$is_valid = breeze_string_contains_exclude_regexp( $url );
+			}
 		}
 
 		if ( false === $is_valid ) {
@@ -307,7 +311,7 @@ function breeze_string_contains_exclude_regexp( $file_url, $validate = '(.*)' ) 
 
 	$valid = false;
 
-	if ( strpos( $file_url, $validate ) !== false ) {
+	if ( substr_count( $file_url, $validate ) !== 0 ) {
 		$valid = true; // 0 or false
 	}
 
