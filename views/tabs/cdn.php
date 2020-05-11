@@ -27,10 +27,30 @@
             <label for="cdn-url" class="breeze_tool_tip"><?php _e('CDN CNAME', 'breeze')?></label>
         </td>
         <td>
-            <input type="text" id="cdn-url" name="cdn-url" size="50" placeholder="<?php _e('https://www.domain.com','breeze')?>" value="<?php echo (($cdn_integration['cdn-url'])?esc_html($cdn_integration['cdn-url']):''); ?>"/>
+	        <?php
+	        $cdn_url            = ( ( $cdn_integration['cdn-url'] ) ? esc_html( $cdn_integration['cdn-url'] ) : '' );
+	        $cdn_url_validation = breeze_validate_url_via_regexp( $cdn_url );
+	        ?>
+            <input type="text" id="cdn-url" name="cdn-url" size="50" placeholder="<?php _e('https://www.domain.com','breeze')?>" value="<?php echo $cdn_url; ?>"/>
             <span style="vertical-align: baseline" class="breeze_tool_tip"><?php _e('Enter CDN CNAME.', 'breeze')?></span>
             <br>
             <span class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e('Use double slash ‘//’ at the start of CDN CNAME, if you have some pages on  HTTP and some are on HTTPS.', 'breeze') ?></span>
+	        <?php
+	        if ( false === $cdn_url_validation && ! empty( $cdn_url ) ) {
+		        ?>
+                <br/>
+                <span>
+					<b><?php esc_html_e( 'Note', 'breeze' ); ?>:&nbsp;</b>
+					<span style="color: #ff0000">
+						<?php
+						echo $cdn_url . ' ';
+						echo esc_html__( 'is not a valid CDN url.', 'breeze' );
+						?>
+					</span>
+				</span>
+		        <?php
+	        }
+	        ?>
         </td>
     </tr>
     <tr>
