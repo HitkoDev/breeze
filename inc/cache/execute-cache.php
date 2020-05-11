@@ -126,11 +126,12 @@ function breeze_cache( $buffer, $flags ) {
 	$detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect;
 	//not cache per administrator if option disable optimization for admin users clicked
 	if ( ! empty( $GLOBALS['breeze_config'] ) && (int) $GLOBALS['breeze_config']['disable_per_adminuser'] ) {
-
-        $current_user = wp_get_current_user();
-        if (in_array('administrator', $current_user->roles)) {
-            return $buffer;
-        }
+		if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) {
+			$current_user = wp_get_current_user();
+			if ( in_array( 'administrator', $current_user->roles ) ) {
+				return $buffer;
+			}
+		}
 	}
 
 	if ( strlen( $buffer ) < 255 ) {
