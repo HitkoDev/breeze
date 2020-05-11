@@ -182,9 +182,15 @@ class Breeze_Configuration{
                     $exclude_content = array_unique($exclude_content);
                 }
 
+	            $cdn_url = ( isset( $_POST['cdn-url'] ) ? sanitize_text_field( $_POST['cdn-url'] ) : '' );
+	            if ( ! empty( $cdn_url ) ) {
+		            $cdn_url = ltrim( $cdn_url, 'https:' );
+		            $cdn_url = '//' . ltrim( $cdn_url, '//' );
+	            }
+
                 $cdn = array(
                     'cdn-active' => (isset($_POST['activate-cdn']) ? '1' : '0'),
-                    'cdn-url' =>(isset($_POST['cdn-url']) ? sanitize_text_field($_POST['cdn-url']) : ''),
+                    'cdn-url' => $cdn_url,
                     'cdn-content' => $cdn_content,
                     'cdn-exclude-content' => $exclude_content,
                     'cdn-relative-path' =>(isset($_POST['cdn-relative-path']) ? '1' : '0'),
