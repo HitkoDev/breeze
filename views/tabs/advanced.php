@@ -7,6 +7,7 @@ $excluded_css_check           = true;
 $excluded_js_check            = true;
 $excluded_css_check_extension = true;
 $excluded_js_check_extension  = true;
+$excluded_url_list            = true;
 if ( isset( $advanced['breeze-exclude-css'] ) && ! empty( $advanced['breeze-exclude-css'] ) ) {
 	$excluded_css_check = breeze_validate_urls( $advanced['breeze-exclude-css'] );
 	if ( true === $excluded_css_check ) {
@@ -19,6 +20,10 @@ if ( isset( $advanced['breeze-exclude-js'] ) && ! empty( $advanced['breeze-exclu
 	if ( true === $excluded_js_check ) {
 		$excluded_js_check_extension = breeze_validate_the_right_extension( $advanced['breeze-exclude-js'], 'js' );
 	}
+}
+
+if ( isset( $advanced['breeze-exclude-urls'] ) && ! empty( $advanced['breeze-exclude-urls'] ) ) {
+	$excluded_url_list = breeze_validate_urls( $advanced['breeze-exclude-urls'] );
 }
 ?>
 <table cellspacing="15">
@@ -39,6 +44,12 @@ if ( isset( $advanced['breeze-exclude-js'] ) && ! empty( $advanced['breeze-exclu
 			<span class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e( 'Add the URLs of the pages (one per line) you wish to exclude from the WordPress internal cache. To exclude URLs from the Varnish cache, please refer to this ', 'breeze' ); ?><a
 						href="https://support.cloudways.com/how-to-exclude-url-from-varnish/"
 						target="_blank"><?php _e( 'Knowledge Base', 'breeze' ); ?></a><?php _e( ' article.', 'breeze' ); ?> </span>
+			<?php if ( false === $excluded_url_list ) { ?>
+                <br/>
+                <span class="breeze_tool_tip" style="color: #ff0000">
+					<?php _e( 'One (or more) URL is invalid. Please check and correct the entry.', 'breeze' ); ?>
+				</span>
+			<?php } ?>
 		</td>
 	</tr>
 	<tr>
