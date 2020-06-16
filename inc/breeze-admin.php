@@ -335,10 +335,25 @@ class Breeze_Admin {
 		if ( is_multisite() ) {
 			$blogs = get_sites();
 			foreach ( $blogs as $blog ) {
-				update_blog_option( (int) $blog->blog_id, 'breeze_basic_settings', $basic );
-				update_blog_option( (int) $blog->blog_id, 'breeze_advanced_settings', $advanced );
-				update_blog_option( (int) $blog->blog_id, 'breeze_cdn_integration', $cdn );
-				update_blog_option( (int) $blog->blog_id, 'breeze_varnish_cache', $varnish );
+				$blog_basic = get_blog_option( (int) $blog->blog_id, 'breeze_basic_settings', '' );
+				if ( empty( $blog_basic ) ) {
+					update_blog_option( (int) $blog->blog_id, 'breeze_basic_settings', $basic );
+				}
+
+				$blog_advanced = get_blog_option( (int) $blog->blog_id, 'breeze_advanced_settings', '' );
+				if ( empty( $blog_advanced ) ) {
+					update_blog_option( (int) $blog->blog_id, 'breeze_advanced_settings', $advanced );
+				}
+
+				$blog_cdn = get_blog_option( (int) $blog->blog_id, 'breeze_cdn_integration', '' );
+				if ( empty( $blog_cdn ) ) {
+					update_blog_option( (int) $blog->blog_id, 'breeze_cdn_integration', $cdn );
+				}
+
+				$blog_varnish = get_blog_option( (int) $blog->blog_id, 'breeze_varnish_cache', '' );
+				if ( empty( $blog_varnish ) ) {
+					update_blog_option( (int) $blog->blog_id, 'breeze_varnish_cache', $varnish );
+				}
 			}
 		} else {
 			update_option( 'breeze_basic_settings', $basic );
