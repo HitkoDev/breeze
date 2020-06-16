@@ -260,7 +260,7 @@ class Breeze_Minify {
 	public function check_exclude_url( $current_url ) {
 		$opts_config = breeze_get_option( 'advanced_settings' );
 
-		$is_exclude = breeze_is_string_in_array_values( $current_url, $opts_config['breeze-exclude-urls'] );
+		$is_exclude = breeze_check_for_exclude_values( $current_url, $opts_config['breeze-exclude-urls'] );
 		if ( ! empty( $is_exclude ) ) {
 			return true;
 		}

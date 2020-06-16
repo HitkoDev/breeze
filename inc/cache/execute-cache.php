@@ -38,7 +38,13 @@ if ( isset( $_GET['debug_config'] ) ) {
 
 $url_path    = breeze_get_url_path();
 $user_logged = false;
-$filename    = $url_path . 'guest';
+
+if ( substr_count( $url_path, '?' ) > 0 ) {
+	$filename = $url_path . '&guest';
+} else {
+	$filename = $url_path . '?guest';
+}
+
 // Don't cache
 if ( ! empty( $_COOKIE ) ) {
 	$wp_cookies = array( 'wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_' );
