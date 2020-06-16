@@ -184,8 +184,14 @@ class Breeze_Configuration{
 
 	            $cdn_url = ( isset( $_POST['cdn-url'] ) ? sanitize_text_field( $_POST['cdn-url'] ) : '' );
 	            if ( ! empty( $cdn_url ) ) {
+		            $http_schema = parse_url( $cdn_url, PHP_URL_SCHEME );
+
 		            $cdn_url = ltrim( $cdn_url, 'https:' );
 		            $cdn_url = '//' . ltrim( $cdn_url, '//' );
+
+		            if ( ! empty( $http_schema ) ) {
+			            $cdn_url = $http_schema . ':' . $cdn_url;
+		            }
 	            }
 
                 $cdn = array(
