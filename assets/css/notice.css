@@ -1,0 +1,24 @@
+#breeze-plugins-notice {
+	/*padding: 10px 12px;*/
+}
+
+#breeze-plugins-notice .button,
+#breeze-plugins-notice .button:hover {
+	text-decoration: none;
+	line-height: 20px;
+	height: 18px;
+	transform: scale(0.9);
+}
+
+#breeze-plugins-notice li {
+	line-height: 18px;
+}
+
+#breeze-plugins-notice .text-error {
+	color: #dc3232;
+}
+
+#breeze-plugins-notice ul{
+	list-style: disc;
+	padding-left: 10px;
+}
