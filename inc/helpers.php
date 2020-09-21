@@ -409,8 +409,9 @@ function is_varnish_cache_started( $retry = 1, $time_fresh = 0, $use_headers = f
 				'verify_peer' => false,
 			),
 		);
-		$context         = stream_context_create( $context_options );
-		$headers         = get_headers( $url_ping, 1, $context );
+
+		stream_context_set_default( $context_options );
+		$headers = get_headers( $url_ping, 1 );
 
 		if ( empty( $headers ) ) {
 			$use_headers = false;
@@ -560,7 +561,6 @@ function is_varnish_layer_started() {
 	if ( ! isset( $data['HTTP_X_APPLICATION'] ) ) {
 		return false;
 	}
-
 
 	return true;
 }

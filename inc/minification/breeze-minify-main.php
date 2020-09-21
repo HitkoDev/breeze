@@ -35,7 +35,8 @@ class Breeze_Minify {
 			//cache minification
 			if ( Breeze_MinificationCache::create_cache_minification_folder() ) {
 				$conf = breeze_get_option( 'basic_settings' );
-				if ( ! empty( $conf['breeze-minify-html'] ) || ! empty( $conf['breeze-minify-css'] ) || ! empty( $conf['breeze-minify-js'] ) ) {
+				$config_advanced = breeze_get_option( 'advanced_settings' );
+				if ( ! empty( $conf['breeze-minify-html'] ) || ! empty( $conf['breeze-minify-css'] ) || ! empty( $conf['breeze-minify-js'] ) || ! empty( $config_advanced['breeze-defer-js'] )) {
 
 					if ( defined( 'breeze_INIT_EARLIER' ) ) {
 						add_action( 'init', array( $this, 'breeze_start_buffering' ), - 1 );
@@ -65,6 +66,7 @@ class Breeze_Minify {
 	 */
 	public function breeze_start_buffering() {
 		$ao_noptimize = false;
+
 		// check for DONOTMINIFY constant as used by e.g. WooCommerce POS
 		if ( defined( 'DONOTMINIFY' ) && ( constant( 'DONOTMINIFY' ) === true || constant( 'DONOTMINIFY' ) === "true" ) ) {
 			$ao_noptimize = true;
@@ -73,7 +75,9 @@ class Breeze_Minify {
 		$ao_noptimize = (bool) apply_filters( 'breeze_filter_noptimize', $ao_noptimize );
 		if ( ! is_feed() && ! $ao_noptimize && ! is_admin() ) {
 			// Config element
-			$conf = breeze_get_option( 'basic_settings' );
+			$conf            = breeze_get_option( 'basic_settings' );
+			$config_advanced = breeze_get_option( 'advanced_settings' );
+
 			// Load our base class
 			include_once( BREEZE_PLUGIN_DIR . 'inc/minification/breeze-minification-base.php' );
 
@@ -86,22 +90,25 @@ class Breeze_Minify {
 				}
 			}
 
+
 			if ( ! empty( $conf['breeze-minify-js'] ) ) {
+
 				include_once( BREEZE_PLUGIN_DIR . 'inc/minification/breeze-minification-scripts.php' );
-				if ( ! class_exists( 'JSMin' ) ) {
-					if ( defined( 'breeze_LEGACY_MINIFIERS' ) ) {
-						@include( BREEZE_PLUGIN_DIR . 'inc/minification/minify/jsmin-1.1.1.php' );
-					} else {
-						@include( BREEZE_PLUGIN_DIR . 'inc/minification/minify/minify-2.1.7-jsmin.php' );
-					}
-				}
+
+				// JS/CSS minifier library
+				include_once(BREEZE_PLUGIN_DIR.'vendor/autoload.php');
+
 				if ( ! defined( 'CONCATENATE_SCRIPTS' ) ) {
 					define( 'CONCATENATE_SCRIPTS', false );
 				}
 				if ( ! defined( 'COMPRESS_SCRIPTS' ) ) {
 					define( 'COMPRESS_SCRIPTS', false );
 				}
+			} elseif ( ! empty( $config_advanced['breeze-defer-js'] ) ) {
+				// If we have defer scripts to handle, load only the script for this action.
+				include_once( BREEZE_PLUGIN_DIR . 'inc/minification/breeze-js-deferred-loading.php' );
 			}
+
 			if ( ! empty( $conf['breeze-minify-css'] ) ) {
 				include_once( BREEZE_PLUGIN_DIR . 'inc/minification/breeze-minification-styles.php' );
 				if ( defined( 'breeze_LEGACY_MINIFIERS' ) ) {
@@ -117,7 +124,6 @@ class Breeze_Minify {
 					define( 'COMPRESS_CSS', false );
 				}
 			}
-
 			// Now, start the real thing!
 			add_filter( 'breeze_minify_content_return', array( $this, 'breeze_end_buffering' ) );
 		}
@@ -128,6 +134,7 @@ class Breeze_Minify {
 	 */
 
 	public function breeze_end_buffering( $content ) {
+
 		if ( stripos( $content, "<html" ) === false || stripos( $content, "<html amp" ) !== false || stripos( $content, "<html ⚡" ) !== false || stripos( $content, "<xsl:stylesheet" ) !== false ) {
 			return $content;
 		}
@@ -157,7 +164,10 @@ class Breeze_Minify {
 		$js_include_inline = $css_include_inline = false;
 		if ( ! empty( $conf['breeze-minify-js'] ) ) {
 			$classes[] = 'Breeze_MinificationScripts';
+		} elseif ( ! empty( $minify['breeze-defer-js'] ) ) {
+			$classes[] = 'Breeze_Js_Deferred_Loading';
 		}
+
 		if ( ! empty( $conf['breeze-minify-css'] ) ) {
 			$classes[] = 'Breeze_MinificationStyles';
 		}
@@ -209,7 +219,11 @@ class Breeze_Minify {
 			),
 			'Breeze_MinificationHtml'    => array(
 				'keepcomments' => false
-			)
+			),
+			'Breeze_Js_Deferred_Loading' => array(
+				'move_to_footer_js' => $minify['breeze-move-to-footer-js'],
+				'defer_js' => $minify['breeze-defer-js'],
+			),
 		);
 
 		$content = apply_filters( 'breeze_filter_html_before_minify', $content );
@@ -220,6 +234,7 @@ class Breeze_Minify {
 		} else {
 			// Run the classes
 			foreach ( $classes as $name ) {
+
 				$do_process = false;
 				$instance   = new $name( $content );
 				if ( 'Breeze_MinificationStyles' === $name ) {

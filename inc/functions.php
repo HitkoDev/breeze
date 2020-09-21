@@ -23,17 +23,25 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
  *
  * @param bool $is_network Whether to include the blog ID in the path on multisite.
  *
+ * @param int $blog_id_requested Folder for specific blog ID.
+ *
  * @return string
  */
-function breeze_get_cache_base_path( $is_network = false ) {
+function breeze_get_cache_base_path( $is_network = false, $blog_id_requested = 0 ) {
 
 	if ( ! $is_network && is_multisite() ) {
-		global $blog_id;
-		$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
 
-		if ( ! empty( $blog_id ) ) {
-			$path .= abs( intval( $blog_id ) ) . DIRECTORY_SEPARATOR;
+		if ( empty( $blog_id_requested ) ) {
+			global $blog_id;
+			$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
+			if ( ! empty( $blog_id ) ) {
+				$path .= abs( intval( $blog_id ) ) . DIRECTORY_SEPARATOR;
+			}
+		} else {
+			$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
+			$path .= abs( intval( $blog_id_requested ) ) . DIRECTORY_SEPARATOR;
 		}
+
 	} else {
 		$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
 	}

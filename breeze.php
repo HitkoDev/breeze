@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Breeze
  * Description: Breeze is a WordPress cache plugin with extensive options to speed up your website. All the options including Varnish Cache are compatible with Cloudways hosting.
- * Version: 1.1.7
+ * Version: 1.1.8
  * Text Domain: breeze
  * Domain Path: /languages
  * Author: Cloudways
@@ -12,7 +12,7 @@
  */
 
 /**
- *  @copyright 2017  Cloudways  https://www.cloudways.com
+ * @copyright 2017  Cloudways  https://www.cloudways.com
  *
  *  This plugin is inspired from WP Speed of Light by JoomUnited.
  *
@@ -31,13 +31,13 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-defined('ABSPATH') || die('No direct script access allowed!');
+defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 
 if ( ! defined( 'BREEZE_PLUGIN_DIR' ) ) {
 	define( 'BREEZE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 if ( ! defined( 'BREEZE_VERSION' ) ) {
-	define( 'BREEZE_VERSION', '1.1.6' );
+	define( 'BREEZE_VERSION', '1.1.8' );
 }
 if ( ! defined( 'BREEZE_SITEURL' ) ) {
 	define( 'BREEZE_SITEURL', get_site_url() );
@@ -61,7 +61,6 @@ if ( ! defined( 'BREEZE_BASENAME' ) ) {
 define( 'BREEZE_CACHE_DELAY', true );
 define( 'BREEZE_CACHE_NOGZIP', true );
 define( 'BREEZE_ROOT_DIR', str_replace( BREEZE_WP_CONTENT_NAME, '', WP_CONTENT_DIR ) );
-
 
 // Compatibility checks
 require_once BREEZE_PLUGIN_DIR . 'inc/plugin-incompatibility/class-breeze-incompatibility-plugins.php';
@@ -95,10 +94,15 @@ if ( is_admin() || 'cli' === php_sapi_name() ) {
 	}, 0 );
 
 } else {
-	$cdn_conf   = breeze_get_option( 'cdn_integration' );
-	$basic_conf = breeze_get_option( 'basic_settings' );
+	$cdn_conf      = breeze_get_option( 'cdn_integration' );
+	$basic_conf    = breeze_get_option( 'basic_settings' );
+	$config_advanced = breeze_get_option( 'advanced_settings' );
 
-	if ( ! empty( $cdn_conf['cdn-active'] ) || ! empty( $basic_conf['breeze-minify-js'] ) || ! empty( $basic_conf['breeze-minify-css'] ) || ! empty( $basic_conf['breeze-minify-html'] ) ) {
+	if ( ! empty( $cdn_conf['cdn-active'] )
+	     || ! empty( $basic_conf['breeze-minify-js'] )
+	     || ! empty( $basic_conf['breeze-minify-css'] )
+	     || ! empty( $basic_conf['breeze-minify-html'] )
+	     || ! empty( $config_advanced['breeze-defer-js'] ) ) {
 		// Call back ob start
 		ob_start( 'breeze_ob_start_callback' );
 	}
@@ -168,8 +172,9 @@ add_action( 'upgrader_process_complete', 'breeze_after_plugin_update_done', 10, 
 
 function breeze_check_for_new_version() {
 	if ( ! empty( get_option( 'breeze_new_update', '' ) ) ) {
-		if(class_exists('Breeze_Configuration') && method_exists('Breeze_Configuration','update_htaccess'))
-		Breeze_Configuration::update_htaccess();
+		if ( class_exists( 'Breeze_Configuration' ) && method_exists( 'Breeze_Configuration', 'update_htaccess' ) ) {
+			Breeze_Configuration::update_htaccess();
+		}
 		delete_option( 'breeze_new_update' );
 	}
 }

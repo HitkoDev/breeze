@@ -147,6 +147,10 @@ class Breeze_ConfigCache {
             'exclude_url' => array(),
         );
 
+	    if(is_multisite()){
+		    $storage['blog_id'] = get_current_blog_id();
+	    }
+
         if( class_exists('WooCommerce')){
 		    $ecommerce_exclude_urls = Breeze_Ecommerce_Cache::factory()->ecommerce_exclude_pages();
 	    }

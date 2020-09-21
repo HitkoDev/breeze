@@ -35,14 +35,16 @@ if ( isset( $_GET['debug_config'] ) ) {
 	var_dump( $GLOBALS['breeze_config'] );
 	exit;
 }
-
-$url_path    = breeze_get_url_path();
-$user_logged = false;
+$filename_guest_suffix = '';
+$url_path              = breeze_get_url_path();
+$user_logged           = false;
 
 if ( substr_count( $url_path, '?' ) > 0 ) {
-	$filename = $url_path . '&guest';
+	$filename              = $url_path . '&guest';
+	$filename_guest_suffix = '&guest';
 } else {
-	$filename = $url_path . '?guest';
+	$filename              = $url_path . '?guest';
+	$filename_guest_suffix = '?guest';
 }
 
 // Don't cache
@@ -155,7 +157,8 @@ function breeze_cache( $buffer, $flags ) {
 	}
 	$url_path = breeze_get_url_path();
 
-	$cache_base_path = breeze_get_cache_base_path();
+	$blog_id_requested = isset( $GLOBALS['breeze_config']['blog_id'] ) ? $GLOBALS['breeze_config']['blog_id'] : 0;
+	$cache_base_path   = breeze_get_cache_base_path( false, $blog_id_requested );
 
 	$path = $cache_base_path . md5( $url_path );
 
@@ -211,7 +214,8 @@ function breeze_cache( $buffer, $flags ) {
 			$url_path .= $current_user->user_login;
 		}
 	} else {
-		$url_path .= 'guest';
+		global $filename_guest_suffix;
+		$url_path .= $filename_guest_suffix;
 	}
 	$devices = $GLOBALS['breeze_config']['cache_options'];
 	// Detect devices
@@ -296,10 +300,13 @@ function breeze_serve_cache( $filename, $url_path, $X1, $opts ) {
 		$file_name = md5( $filename . '/index.html' ) . '.php';
 	}
 
+	$blog_id_requested = isset( $GLOBALS['breeze_config']['blog_id'] ) ? $GLOBALS['breeze_config']['blog_id'] : 0;
+	$path = breeze_get_cache_base_path(false, $blog_id_requested) . md5( $url_path ) . '/' . $file_name;
 
-	$path = breeze_get_cache_base_path() . md5( $url_path ) . '/' . $file_name;
-
-	$modified_time = (int) @filemtime( $path );
+	$modified_time = 0;
+	if ( file_exists( $path ) ) {
+		$modified_time = (int) @filemtime( $path );
+	}
 
 	if ( ! empty( $opts['breeze-browser-cache'] ) && ! empty( $modified_time ) && ! empty( $_SERVER['HTTP_IF_MODIFIED_SINCE'] ) && strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] ) === $modified_time ) {
 		header( $_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified', true, 304 );

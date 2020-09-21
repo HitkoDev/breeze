@@ -94,7 +94,7 @@ jQuery(document).ready(function ($) {
     var url = location.href;
     var fileClean = parseFloat(getParameterByName('file',url) );
 
-    $( window ).load(function() {
+    $( window ).on('load',function() {
         var patt = /wp-admin/i;
         if(patt.test(url)){
             //backend

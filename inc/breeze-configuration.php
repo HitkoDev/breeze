@@ -414,7 +414,7 @@ class Breeze_Configuration{
 			// Loop through caching type rules.
 			foreach ( $rules as $var_name => $method_name ) {
 				$has_cache_var = 'has_' . $var_name;
-				if ( ! $$has_cache_var ) {
+				if ( ! ${$has_cache_var} ) {
 					// No sites using rules, clean up.
 					self::$method_name( true );
 				} else {
@@ -422,7 +422,7 @@ class Breeze_Configuration{
 					$disabled_sites = 'no_' . $var_name . '_sites';
 					$regex_string   = '';
 
-					if ( empty( $$disabled_sites ) ) {
+					if ( empty( ${$disabled_sites} ) ) {
 						// Rule is active across sites, do not include conditional directives.
 						self::$method_name( $clean );
 						continue;
@@ -430,46 +430,46 @@ class Breeze_Configuration{
 
 					if ( defined( 'SUBDOMAIN_INSTALL' ) && SUBDOMAIN_INSTALL ) {
 						// Subdomain sites are matched using host alone.
-						$regex_string = '%{HTTP_HOST} =~ m#^(' . implode( '|', $$enabled_sites ) . ')#';
+						$regex_string = '%{HTTP_HOST} =~ m#^(' . implode( '|', ${$enabled_sites} ) . ')#';
 					} else {
 						// Subdirectory sites are matched using "THE_REQUEST".
 						$network_site_url = preg_quote( preg_replace( '(^https?://)', '', untrailingslashit( network_site_url() ) ) );
 
 						// Remove host part from URLs.
-						$$enabled_sites = array_filter(
+						${$enabled_sites} = array_filter(
 							array_map(
 								function( $url ) use ( $network_site_url ) {
 									$modified = str_replace( $network_site_url, '', $url );
 									return empty( $modified ) ? '/' : $modified;
 								},
-								$$enabled_sites
+								${$enabled_sites}
 							)
 						);
 
-						if ( ! empty( $$enabled_sites ) ) {
-							$regex_string = '%{THE_REQUEST} =~ m#^GET (' . implode( '|', $$enabled_sites ) . ')#';
+						if ( ! empty( ${$enabled_sites} ) ) {
+							$regex_string = '%{THE_REQUEST} =~ m#^GET (' . implode( '|', ${$enabled_sites} ) . ')#';
 						}
 
 						// Remove main site URL from disabled sites array.
-						$network_site_url_index = array_search( $network_site_url, $$disabled_sites );
+						$network_site_url_index = array_search( $network_site_url, ${$disabled_sites} );
 						if ( false !== $network_site_url_index ) {
-							unset( $$disabled_sites[ $network_site_url_index ] );
+							unset( ${$disabled_sites[ $network_site_url_index ]} );
 						}
 						// Remove host part from URLs.
-						$$disabled_sites = array_filter(
+						${$disabled_sites} = array_filter(
 							array_map(
 								function( $url ) use ( $network_site_url ) {
 									$modified = str_replace( $network_site_url, '', $url );
 									return empty( $modified ) ? '/' : $modified;
 								},
-								$$disabled_sites
+								${$disabled_sites}
 							)
 						);
-						if ( ! empty( $$disabled_sites ) ) {
-							if ( ! empty( $$enabled_sites ) ) {
+						if ( ! empty( ${$disabled_sites} ) ) {
+							if ( ! empty( ${$enabled_sites} ) ) {
 								$regex_string .= ' && ';
 							}
-							$regex_string .= '%{THE_REQUEST} !~ m#^GET (' . implode( '|', $$disabled_sites ) . ')#';
+							$regex_string .= '%{THE_REQUEST} !~ m#^GET (' . implode( '|', ${$disabled_sites} ) . ')#';
 						}
 					}
 

@@ -1,5 +1,7 @@
 <?php
-/* 
+
+use MatthiasMullie\Minify;
+/*
  *  Based on some work of autoptimize plugin 
  */
 if ( ! defined( 'ABSPATH' ) ) {
@@ -449,14 +451,14 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 
 			if ( $this->alreadyminified !== true ) {
 
-				if ( class_exists( 'JSMin' ) && apply_filters( 'breeze_js_do_minify', true ) ) {
-					if ( @is_callable( array( 'JSMin', 'minify' ) ) ) {
+				if ( apply_filters( 'breeze_js_do_minify', true ) && ! empty( $this->full_script ) ) {
+					$minifier = new Minify\JS();
+					$minifier->add( $this->full_script );
+					$tmp_jscode = $minifier->minify();
 
-						$tmp_jscode = trim( JSMin::minify( $this->full_script ) );
-						if ( ! empty( $tmp_jscode ) ) {
-							$this->full_script = $tmp_jscode;
-							unset( $tmp_jscode );
-						}
+					if ( ! empty( $tmp_jscode ) ) {
+						$this->full_script = trim( $tmp_jscode );
+						unset( $tmp_jscode );
 					}
 				}
 
@@ -468,13 +470,14 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				if ( ! empty( $this->js_head_group ) ) {
 					foreach ( $this->js_head_group as $jscode ) {
 						//$this->jscode has all the uncompressed code now.
-						if ( class_exists( 'JSMin' ) && apply_filters( 'breeze_js_do_minify', true ) ) {
-							if ( @is_callable( array( 'JSMin', 'minify' ) ) ) {
-								$tmp_jscode = trim( JSMin::minify( $jscode ) );
-								if ( ! empty( $tmp_jscode ) ) {
-									$jscode = $tmp_jscode;
-									unset( $tmp_jscode );
-								}
+						if ( apply_filters( 'breeze_js_do_minify', true ) ) {
+							$minifier = new Minify\JS();
+							$minifier->add( $jscode );
+							$tmp_jscode = $minifier->minify();
+
+							if ( ! empty( $tmp_jscode ) ) {
+								$jscode = $tmp_jscode;
+								unset( $tmp_jscode );
 							}
 						}
 
@@ -485,13 +488,14 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				if ( ! empty( $this->js_footer_group ) ) {
 					foreach ( $this->js_footer_group as $jscode ) {
 						//$this->jscode has all the uncompressed code now.
-						if ( class_exists( 'JSMin' ) && apply_filters( 'breeze_js_do_minify', true ) ) {
-							if ( @is_callable( array( 'JSMin', 'minify' ) ) ) {
-								$tmp_jscode = trim( JSMin::minify( $jscode ) );
-								if ( ! empty( $tmp_jscode ) ) {
-									$jscode = $tmp_jscode;
-									unset( $tmp_jscode );
-								}
+						if ( apply_filters( 'breeze_js_do_minify', true ) ) {
+							$minifier = new Minify\JS();
+							$minifier->add( $jscode );
+							$tmp_jscode = $minifier->minify();
+
+							if ( ! empty( $tmp_jscode ) ) {
+								$jscode = $tmp_jscode;
+								unset( $tmp_jscode );
 							}
 						}
 
@@ -519,14 +523,14 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 					unset( $ccheck );
 
 					//$this->jscode has all the uncompressed code now.
+					if( apply_filters( 'breeze_js_do_minify', true ) ){
+						$minifier = new Minify\JS();
+						$minifier->add( $jscode );
+						$tmp_jscode = $minifier->minify();
 
-					if ( class_exists( 'JSMin' ) && apply_filters( 'breeze_js_do_minify', true ) ) {
-						if ( @is_callable( array( 'JSMin', 'minify' ) ) ) {
-							$tmp_jscode = trim( JSMin::minify( $jscode ) );
-							if ( ! empty( $tmp_jscode ) ) {
-								$jscode = $tmp_jscode;
-								unset( $tmp_jscode );
-							}
+						if ( ! empty( $tmp_jscode ) ) {
+							$jscode = $tmp_jscode;
+							unset( $tmp_jscode );
 						}
 					}
 
@@ -548,14 +552,14 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 					unset( $ccheck );
 
 					//$this->jscode has all the uncompressed code now.
+					if( apply_filters( 'breeze_js_do_minify', true ) ){
+						$minifier = new Minify\JS();
+						$minifier->add( $jscode );
+						$tmp_jscode = $minifier->minify();
 
-					if ( class_exists( 'JSMin' ) && apply_filters( 'breeze_js_do_minify', true ) ) {
-						if ( @is_callable( array( 'JSMin', 'minify' ) ) ) {
-							$tmp_jscode = trim( JSMin::minify( $jscode ) );
-							if ( ! empty( $tmp_jscode ) ) {
-								$jscode = $tmp_jscode;
-								unset( $tmp_jscode );
-							}
+						if ( ! empty( $tmp_jscode ) ) {
+							$jscode = $tmp_jscode;
+							unset( $tmp_jscode );
 						}
 					}
 
