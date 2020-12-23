@@ -20,6 +20,11 @@
  */
 defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 
+/**
+ * Load the required resources.
+ *
+ * Class Breeze_Admin
+ */
 class Breeze_Admin {
 	public function __construct() {
 		add_action(
@@ -42,12 +47,10 @@ class Breeze_Admin {
 
 			// Add notice when installing plugin
 			$first_install = get_option( 'breeze_first_install' );
-
-			if ( $first_install === false ) {
+			if ( false === $first_install ) {
 				add_option( 'breeze_first_install', 'yes' );
 			}
-
-			if ( $first_install == 'yes' ) {
+			if ( 'yes' === $first_install ) {
 				add_action( 'admin_notices', array( $this, 'installing_notices' ) );
 			}
 
@@ -58,10 +61,10 @@ class Breeze_Admin {
 				add_action( 'admin_bar_menu', array( $this, 'register_admin_bar_menu' ), 999 );
 			}
 			/** Load admin js * */
-			add_action( 'admin_enqueue_scripts', array( $this, 'loadAdminScripts' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'load_admin_scripts' ) );
 
 			add_action( 'wp_head', array( $this, 'define_ajaxurl' ) );
-			$this->ajaxHandle();
+			$this->ajax_handle();
 
 			// Add setting buttons to plugins list page
 			add_filter( 'plugin_action_links_' . BREEZE_BASENAME, array( $this, 'breeze_add_action_links' ) );
@@ -71,7 +74,7 @@ class Breeze_Admin {
 	}
 
 	/**
-	 * Admin Init
+	 * Admin Init.
 	 *
 	 */
 	public function admin_init() {
@@ -88,7 +91,9 @@ class Breeze_Admin {
 		return;
 	}
 
-	//define ajaxurl
+	/**
+	 * define Ajax URL.
+	 */
 	function define_ajaxurl() {
 		if ( current_user_can( 'manage_options' ) ) {
 			echo '<script type="text/javascript">
@@ -97,7 +102,9 @@ class Breeze_Admin {
 		}
 	}
 
-	// Add notice message when install plugin
+	/**
+	 * Add notice message when install plugin.
+	 */
 	public function installing_notices() {
 		$class   = 'notice notice-success';
 		$message = __( 'Thanks for installing Breeze. It is always recommended not to use more than one caching plugin at the same time. We recommend you to purge cache if necessary.', 'breeze' );
@@ -106,8 +113,10 @@ class Breeze_Admin {
 		update_option( 'breeze_first_install', 'no' );
 	}
 
-
-	function loadAdminScripts() {
+	/**
+	 * Enqueue CSS and JS files required for the plugin functionality.
+	 */
+	function load_admin_scripts() {
 		if ( ! wp_script_is( 'jquery', 'enqueued' ) ) {
 			wp_enqueue_script( 'jquery' );
 		}
@@ -139,14 +148,17 @@ class Breeze_Admin {
 	}
 
 	/**
-	 * Register menu
+	 * Register menu.
 	 *
 	 */
 	function register_menu_page() {
-		//add submenu for cloudsway
+		//add submenu for Cloudways
 		add_submenu_page( 'options-general.php', __( 'Breeze', 'breeze' ), __( 'Breeze', 'breeze' ), 'manage_options', 'breeze', array( $this, 'breeze_load_page' ) );
 	}
 
+	/**
+	 * Register menu for multisite.
+	 */
 	function register_network_menu_page() {
 		//add submenu for multisite network
 		add_submenu_page( 'settings.php', __( 'Breeze', 'breeze' ), __( 'Breeze', 'breeze' ), 'manage_options', 'breeze', array( $this, 'breeze_load_page' ) );
@@ -154,7 +166,7 @@ class Breeze_Admin {
 
 
 	/**
-	 * Register bar menu
+	 * Register bar menu.
 	 *
 	 * @param WP_Admin_Bar $wp_admin_bar
 	 */
@@ -180,6 +192,12 @@ class Breeze_Admin {
 		$current_host       = $_SERVER['HTTP_HOST'];
 		$current_script     = $_SERVER['SCRIPT_NAME'];
 		$current_params     = $_SERVER['QUERY_STRING'];
+
+		if ( is_multisite() && ! is_subdomain_install() ) {
+			$blog_details = get_blog_details();
+			$current_host .= rtrim( $blog_details->path, '/' );
+		}
+
 		$current_screen_url = $current_protocol . '://' . $current_host . $current_script . '?' . $current_params;
 		$current_screen_url = remove_query_arg( array( 'breeze_purge', '_wpnonce' ), $current_screen_url );
 
@@ -247,25 +265,33 @@ class Breeze_Admin {
 		$wp_admin_bar->add_node( $args );
 	}
 
+	/**
+	 * Load plugin settings page for back-end.
+	 */
 	function breeze_load_page() {
-		if ( isset( $_GET['page'] ) && $_GET['page'] == 'breeze' ) {
+		if ( isset( $_GET['page'] ) && 'breeze' === $_GET['page'] ) {
 			require_once( BREEZE_PLUGIN_DIR . 'views/breeze-setting-views.php' );
 		}
 	}
 
+	/**
+	 * Error displayed of the PHP version is to low.
+	 */
 	public function breeze_show_error() {
 		echo '<div class="error"><p><strong>Breeze</strong> need at least PHP 5.3 version, please update php before installing the plugin.</p></div>';
 	}
 
-	//ajax admin
-	function ajaxHandle() {
+	/**
+	 * Admin ajax actions.
+	 */
+	public function ajax_handle() {
 		add_action( 'wp_ajax_breeze_purge_varnish', array( 'Breeze_Configuration', 'purge_varnish_action' ) );
 		add_action( 'wp_ajax_breeze_purge_file', array( 'Breeze_Configuration', 'breeze_ajax_clean_cache' ) );
 		add_action( 'wp_ajax_breeze_purge_database', array( 'Breeze_Configuration', 'breeze_ajax_purge_database' ) );
 	}
 
 	/*
-	 * Register active plugin hook
+	 * Register active plugin hook.
 	 */
 	public static function plugin_active_hook() {
 		WP_Filesystem();
@@ -374,7 +400,7 @@ class Breeze_Admin {
 	}
 
 	/*
-	 * Register deactive plugin hook
+	 * Register deactivate plugin hook.
 	 */
 	public static function plugin_deactive_hook() {
 		WP_Filesystem();
@@ -385,13 +411,17 @@ class Breeze_Admin {
 	}
 
 	/*
-	 * Render tab
+	 * Render tab for the settings in back-end.
 	 */
 	public static function render( $tab ) {
 		require_once( BREEZE_PLUGIN_DIR . 'views/tabs/' . $tab . '.php' );
 	}
 
-	// Check varnish cache exist
+	/**
+	 * Check varnish cache exist.
+	 *
+	 * @return bool
+	 */
 	public static function check_varnish() {
 		if ( isset( $_SERVER['HTTP_X_VARNISH'] ) ) {
 			return true;
@@ -400,25 +430,39 @@ class Breeze_Admin {
 		return false;
 	}
 
-	// Applied to the list of links to display on the plugins page
+	/**
+	 * Applied to the list of links to display on the plugins page.
+	 *
+	 * @param array $links List of links.
+	 *
+	 * @return array
+	 */
 	public function breeze_add_action_links( $links ) {
-		$mylinks = array(
+		$my_links = array(
 			'<a href="' . admin_url( 'options-general.php?page=breeze' ) . '">Settings</a>',
 		);
 
-		return array_merge( $mylinks, $links );
+		return array_merge( $my_links, $links );
 	}
 
-	// Applied to the list of links to display on the network plugins page
+	/**
+	 * Applied to the list of links to display on the network plugins page
+	 *
+	 * @param array $links List of links.
+	 *
+	 * @return array
+	 */
 	public function breeze_add_action_links_network( $links ) {
-		$mylinks = array(
+		$my_links = array(
 			'<a href="' . network_admin_url( 'settings.php?page=breeze' ) . '">Settings</a>',
 		);
 
-		return array_merge( $mylinks, $links );
+		return array_merge( $my_links, $links );
 	}
 
-	// Clear all cache action
+	/**
+	 * Clear all cache action.
+	 */
 	public function breeze_clear_all_cache() {
 		//delete minify
 		Breeze_MinificationCache::clear_minification();
@@ -428,7 +472,9 @@ class Breeze_Admin {
 		$this->breeze_clear_varnish();
 	}
 
-	// Clear all varnish cache action
+	/**
+	 * Clear all varnish cache action.
+	 */
 	public function breeze_clear_varnish() {
 		$main = new Breeze_PurgeVarnish();
 

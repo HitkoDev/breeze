@@ -29,6 +29,10 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
  */
 function breeze_get_cache_base_path( $is_network = false, $blog_id_requested = 0 ) {
 
+	if ( empty( $blog_id_requested ) ) {
+		$blog_id_requested = isset( $GLOBALS['breeze_config']['blog_id'] ) ? $GLOBALS['breeze_config']['blog_id'] : 0;
+	}
+
 	if ( ! $is_network && is_multisite() ) {
 
 		if ( empty( $blog_id_requested ) ) {
@@ -100,4 +104,24 @@ function breeze_all_user_folders() {
 		'author',
 		'contributor',
 	);
+}
+
+function breeze_is_feed( $url ) {
+
+	$parse_result = parse_url( $url );
+
+	if ( isset( $parse_result['query'] ) ) {
+		if ( substr_count( $parse_result['query'], 'feed=' ) > 0 ) {
+			return true;
+		}
+	}
+
+	if ( isset( $parse_result['path'] ) ) {
+		if ( substr_count( $parse_result['path'], '/feed' ) > 0 ) {
+			return true;
+		}
+	}
+
+	return false;
+
 }

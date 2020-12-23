@@ -255,7 +255,7 @@ function breeze_check_for_exclude_values( $needle = '', $haystack = array() ) {
 	$is_string_in_array = array_filter(
 		$haystack,
 		function ( $var ) use ( $needle ) {
-			#return false;
+
 			if ( breeze_string_contains_exclude_regexp( $var ) ) {
 				return breeze_file_match_pattern( $needle, $var );
 			} else {
@@ -618,4 +618,17 @@ function breeze_unlock_process( $path = '' ) {
 	}
 
 	return false;
+}
+
+function multisite_blog_id_config() {
+	global $blog_id;
+
+	$blog_id_requested = isset( $GLOBALS['breeze_config']['blog_id'] ) ? $GLOBALS['breeze_config']['blog_id'] : 0;
+	if ( ! empty( $blog_id_requested ) ) {
+		return $blog_id_requested;
+	}
+
+	if ( ! empty( $blog_id ) ) {
+
+	}
 }
