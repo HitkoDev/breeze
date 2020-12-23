@@ -188,10 +188,10 @@ class Breeze_Admin {
 		$wp_admin_bar->add_node( $args );
 
 		// Recreate the current URL in order to redirect to the same page on cache purge.
-		$current_protocol   = is_ssl() ? 'https' : 'http';
-		$current_host       = $_SERVER['HTTP_HOST'];
-		$current_script     = $_SERVER['SCRIPT_NAME'];
-		$current_params     = $_SERVER['QUERY_STRING'];
+		$current_protocol = is_ssl() ? 'https' : 'http';
+		$current_host     = $_SERVER['HTTP_HOST'];
+		$current_script   = $_SERVER['SCRIPT_NAME'];
+		$current_params   = $_SERVER['QUERY_STRING'];
 
 		if ( is_multisite() && ! is_subdomain_install() ) {
 			$blog_details = get_blog_details();
@@ -200,6 +200,7 @@ class Breeze_Admin {
 
 		$current_screen_url = $current_protocol . '://' . $current_host . $current_script . '?' . $current_params;
 		$current_screen_url = remove_query_arg( array( 'breeze_purge', '_wpnonce' ), $current_screen_url );
+
 
 		// add purge all item
 		$args = array(
@@ -464,6 +465,7 @@ class Breeze_Admin {
 	 * Clear all cache action.
 	 */
 	public function breeze_clear_all_cache() {
+
 		//delete minify
 		Breeze_MinificationCache::clear_minification();
 		//clear normal cache

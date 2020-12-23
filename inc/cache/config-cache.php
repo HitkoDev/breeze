@@ -19,9 +19,7 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 //Based on some work of simple-cache
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Breeze_ConfigCache {
 
@@ -134,28 +132,16 @@ class Breeze_ConfigCache {
 	}
 
     /**
-	 * Function write parameter to breeze-config.
-	 *
-	 * @param bool $create_root_config Used in multisite, to reset/create breeze-config.php file
+     * Function write parameter to breeze-config
+     * @return breeze_Cache
      */
-	public static function write_config_cache( $create_root_config = false ) {
-
-		if ( true === $create_root_config ) {
-			$network_id   = get_current_network_id();
-			$settings     = get_network_option( $network_id, 'breeze_basic_settings' );
-			$config       = get_network_option( $network_id, 'breeze_advanced_settings' );
-			$homepage_url = network_site_url();
-		} else {
-			$settings = breeze_get_option( 'basic_settings' );
-            $config   = breeze_get_option( 'advanced_settings' );
-			$homepage_url = get_site_url();
-		}
-
-
+    public static function write_config_cache(){
+		$settings = breeze_get_option( 'basic_settings' );
+        $config   = breeze_get_option( 'advanced_settings' );
 	    $ecommerce_exclude_urls = array();
 
         $storage = array(
-			'homepage'              => $homepage_url,
+            'homepage' => get_site_url(),
             'cache_options' => $settings,
             'disable_per_adminuser' => 0,
             'exclude_url' => array(),
@@ -168,154 +154,55 @@ class Breeze_ConfigCache {
         if( class_exists('WooCommerce')){
 		    $ecommerce_exclude_urls = Breeze_Ecommerce_Cache::factory()->ecommerce_exclude_pages();
 	    }
+        if(!empty($settings['breeze-disable-admin'])){
+            $storage['disable_per_adminuser'] = $settings['breeze-disable-admin'];
+        }
 
-		if ( function_exists( 'EDD' ) ) {
-			$exclude_edd_pages = Breeze_Ecommerce_Cache::factory()->exclude_edd_pages();
-
-			if ( ! empty( $exclude_edd_pages ) ) {
-				$ecommerce_exclude_urls = array_merge( $exclude_edd_pages, $ecommerce_exclude_urls );
-			}
-
-			/**
-			 * Remove Easy Digital Downloads Software Licensing endpoint from cache
-			 */
-			if ( class_exists( 'EDD_Software_Licensing' ) && defined( 'EDD_SL_VERSION' ) ) {
-				$ecommerce_exclude_urls[] = '/edd-sl/*';
-			}
-		}
-
-		/**
-		 * Give shop
-		 */
-		if ( function_exists( 'give_get_settings' ) ) {
-			$exclude_give_pages = Breeze_Ecommerce_Cache::factory()->exclude_give_pages();
-
-			if ( ! empty( $exclude_give_pages ) ) {
-				$ecommerce_exclude_urls = array_merge( $exclude_give_pages, $ecommerce_exclude_urls );
-			}
-		}
-
-		/**
-		 * Big Commerce
-		 */
-		if ( function_exists( 'bigcommerce' ) ) {
-			$exclude_bigcommerce_pages = Breeze_Ecommerce_Cache::factory()->exclude_big_commerce_pages();
-
-			if ( ! empty( $exclude_bigcommerce_pages ) ) {
-				$ecommerce_exclude_urls = array_merge( $exclude_bigcommerce_pages, $ecommerce_exclude_urls );
-			}
-		}
-
-		/**
-		 * CartFlows
-		 */
-		if ( class_exists( 'Cartflows_Loader' ) && defined( 'CARTFLOWS_FILE' ) ) {
-			$exclude_cartflows_pages = Breeze_Ecommerce_Cache::factory()->exclude_cart_flows_pages();
-
-			if ( ! empty( $exclude_cartflows_pages ) ) {
-				$ecommerce_exclude_urls = array_merge( $exclude_cartflows_pages, $ecommerce_exclude_urls );
-			}
-		}
-
-		/**
-		 * MemberPress
-		 */
-		if ( class_exists( 'MeprJobs' ) && defined( 'MEPR_OPTIONS_SLUG' ) ) {
-			$exclude_memberpress_pages = Breeze_Ecommerce_Cache::factory()->exclude_member_press_pages();
-
-			if ( ! empty( $exclude_memberpress_pages ) ) {
-				$ecommerce_exclude_urls = array_merge( $exclude_memberpress_pages, $ecommerce_exclude_urls );
-			}
-		}
-
-		/**
-		 * WP eCommerce
-		 */
-		if ( class_exists( 'WP_eCommerce' ) ) {
-			$exclude_wp_ecommerce_pages = Breeze_Ecommerce_Cache::factory()->exclude_wp_e_commerce_pages();
-
-			if ( ! empty( $exclude_wp_ecommerce_pages ) ) {
-				$ecommerce_exclude_urls = array_merge( $exclude_wp_ecommerce_pages, $ecommerce_exclude_urls );
-			}
-		}
-
-		/**
-		 * Ecwid Ecommerce Shopping Cart
-		 */
-		if ( function_exists( 'ecwid_init_integrations' ) && defined( 'ECWID_PLUGIN_DIR' ) ) {
-			$exclude_ecwid_pages = Breeze_Ecommerce_Cache::factory()->exclude_ecwid_store_pages();
-
-			if ( ! empty( $exclude_ecwid_pages ) ) {
-				$ecommerce_exclude_urls = array_merge( $exclude_ecwid_pages, $ecommerce_exclude_urls );
-			}
-		}
-
-		/**
-		 * WP EasyCart
-		 */
-		if ( defined( 'EC_PUGIN_NAME' ) && function_exists( 'wpeasycart_load_startup' ) ) {
-			$exclude_wp_easy_cart_pages = Breeze_Ecommerce_Cache::factory()->exclude_easy_cart_pages();
-
-			if ( ! empty( $exclude_wp_easy_cart_pages ) ) {
-				$ecommerce_exclude_urls = array_merge( $exclude_wp_easy_cart_pages, $ecommerce_exclude_urls );
-			}
-		}
-
-
-		if ( ! empty( $settings['breeze-disable-admin'] ) ) {
-			$storage['disable_per_adminuser'] = $settings['breeze-disable-admin'];
-		}
-
-		$storage['exclude_url'] = array_merge(
+        $storage['exclude_url'] = array_merge(
 			$ecommerce_exclude_urls,
 			! empty( $config['breeze-exclude-urls'] ) ? $config['breeze-exclude-urls'] : array()
 		);
 
-		$saved_pages = get_option( 'breeze_exclude_url_pages', array() );
+	    $saved_pages = get_option( 'breeze_exclude_url_pages', array() );
 
-		if ( ! empty( $saved_pages ) ) {
-			$saved_pages_urls = array();
-			foreach ( $saved_pages as $page_id ) {
-				$saved_pages_urls[] = get_permalink( $page_id );
-			}
+	    if ( ! empty( $saved_pages ) ) {
+		    $saved_pages_urls = array();
+		    foreach ( $saved_pages as $page_id ) {
+			    $saved_pages_urls[] = get_permalink( $page_id );
+		    }
 
-			$saved_pages_urls = array_unique( $saved_pages_urls );
+		    $saved_pages_urls = array_unique( $saved_pages_urls );
 
-			$storage['exclude_url'] = array_merge(
-				$saved_pages_urls,
-				! empty( $config['breeze-exclude-urls'] ) ? $config['breeze-exclude-urls'] : array(),
-				$ecommerce_exclude_urls
-			);
-		}
+		    $storage['exclude_url'] = array_merge(
+			    $saved_pages_urls,
+			    ! empty( $config['breeze-exclude-urls'] ) ? $config['breeze-exclude-urls'] : array()
+		    );
+	    }
 
 
-		if ( class_exists( 'WC_Facebook_Loader' ) ) {
-			$woocommerce_fb_feed_link = Breeze_Ecommerce_Cache::factory()->wc_facebook_feed();
+	    if( class_exists('WC_Facebook_Loader')){
+		    $woocommerce_fb_feed_link = Breeze_Ecommerce_Cache::factory()->wc_facebook_feed();
 
-			if ( ! empty( $woocommerce_fb_feed_link ) ) {
-				$storage['exclude_url'] = array_merge(
-					$woocommerce_fb_feed_link,
-					! empty( $config['breeze-exclude-urls'] ) ? $config['breeze-exclude-urls'] : array(),
-					$ecommerce_exclude_urls
-				);
-			}
-		}
+		    if(!empty($woocommerce_fb_feed_link)){
+			    $storage['exclude_url'] = array_merge(
+				    $woocommerce_fb_feed_link,
+				    ! empty( $config['breeze-exclude-urls'] ) ? $config['breeze-exclude-urls'] : array()
+			    );
+		    }
+	    }
 
-		return self::write_config( $storage, $create_root_config );
+		return self::write_config( $storage );
     }
 
-	/**
-	 * Create file config storage parameter used for cache.
-	 *
-	 * @param array $config Options array.
-	 * @param bool $create_root_config Used in multisite, to reset/create breeze-config.php file
-	 */
-	public static function write_config( $config, $create_root_config = false ) {
+    /*
+     *    create file config storage parameter used for cache
+     */
+    public static function write_config( $config ) {
 		global $wp_filesystem;
 
 		$config_dir = trailingslashit( WP_CONTENT_DIR ) . 'breeze-config';
 		$filename   = 'breeze-config';
-		if ( false === $create_root_config && ( is_multisite() && ! is_network_admin() ) ) {
+		if ( is_multisite() && ! is_network_admin() ) {
 			$filename .= '-' . get_current_blog_id();
 		}
 
@@ -333,16 +220,10 @@ class Breeze_ConfigCache {
 
 		$config_file_string = '<?php ' . "\n\r" . "defined( 'ABSPATH' ) || exit;" . "\n\r" . 'return ' . var_export( $config, true ) . '; ' . "\n\r";
 
-		return $wp_filesystem->put_contents( $config_file, $config_file_string );
-    }
 
-	/**
-	 * Turn on / off wp cache.
-	 *
-	 * @param bool $status If WP Cache is enabled or not.
-	 *
-	 * @return bool|void
-	 */
+	    return $wp_filesystem->put_contents( $config_file, $config_file_string );
+    }
+    //turn on / off wp cache
     public function toggle_caching( $status ) {
 
         global $wp_filesystem;
@@ -387,12 +268,12 @@ class Breeze_ConfigCache {
                 continue;
             }
 
-			if ( 'WP_CACHE' === $match[2] ) {
+            if ( $match[2] == 'WP_CACHE' ) {
                 $line_key = $key;
             }
         }
 
-		if ( false !== $line_key ) {
+        if ( $line_key !== false ) {
             unset( $config_file[ $line_key ] );
         }
 
@@ -413,12 +294,8 @@ class Breeze_ConfigCache {
 
         return true;
     }
+    //delete file for clean up
 
-	/**
-	 * Delete file for clean up.
-	 *
-	 * @return bool
-	 */
     public function clean_up() {
 
         global $wp_filesystem;
@@ -445,11 +322,7 @@ class Breeze_ConfigCache {
         return $ret;
     }
 
-	/**
-	 * Delete config file.
-	 *
-	 * @return mixed
-	 */
+    //delete config file
     public function clean_config() {
 
         global $wp_filesystem;
@@ -460,11 +333,7 @@ class Breeze_ConfigCache {
         return true;
     }
 
-	/**
-	 * Singleton instance.
-	 *
-	 * @return Breeze_ConfigCache
-	 */
+
     public static function factory() {
 
         static $instance;

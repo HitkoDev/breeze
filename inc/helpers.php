@@ -255,7 +255,7 @@ function breeze_check_for_exclude_values( $needle = '', $haystack = array() ) {
 	$is_string_in_array = array_filter(
 		$haystack,
 		function ( $var ) use ( $needle ) {
-
+			#return false;
 			if ( breeze_string_contains_exclude_regexp( $var ) ) {
 				return breeze_file_match_pattern( $needle, $var );
 			} else {

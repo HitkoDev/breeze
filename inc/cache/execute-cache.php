@@ -72,6 +72,7 @@ if ( ! empty( $_COOKIE ) ) {
 				}else{
 					$filename = $url_path .'?'. strtolower( $nameuser );
 				}
+
 			}
 		}
 	}
@@ -92,7 +93,6 @@ $domain = ( ( ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) ||
 $current_url   = $domain . rawurldecode( $_SERVER['REQUEST_URI'] );
 $opts_config   = $GLOBALS['breeze_config'];
 $check_exclude = check_exclude_page( $opts_config, $current_url );
-
 //load cache
 if ( ! $check_exclude ) {
 	$devices = $opts_config['cache_options'];
@@ -127,11 +127,11 @@ if ( ! $check_exclude ) {
 /**
  * Cache output before it goes to the browser
  *
- * @param  string $buffer
- * @param  int $flags
+ * @param string $buffer
+ * @param int $flags
  *
- * @since  1.0
  * @return string
+ * @since  1.0
  */
 function breeze_cache( $buffer, $flags ) {
 	// No cache for pages without 200 response status
@@ -288,8 +288,8 @@ function breeze_cache( $buffer, $flags ) {
 /**
  * Get URL path for caching
  *
- * @since  1.0
  * @return string
+ * @since  1.0
  */
 function breeze_get_url_path() {
 
@@ -376,12 +376,6 @@ function check_exclude_page( $opts_config, $current_url ) {
 
 	//check disable cache for page
 	if ( ! empty( $opts_config['exclude_url'] ) ) {
-
-		$is_exclude = exec_breeze_check_for_exclude_values( $current_url, $opts_config['exclude_url'] );
-		if ( ! empty( $is_exclude ) ) {
-			return true;
-		}
-
 		foreach ( $opts_config['exclude_url'] as $v ) {
 			// Clear blank character
 			$v = trim( $v );
@@ -417,82 +411,3 @@ function check_exclude_page( $opts_config, $current_url ) {
 
 	return false;
 }
-
-
-/**
- * Used to check for regexp exclude pages
- *
- * @param string $needle
- * @param array $haystack
- *
- * @return array
- * @since 1.1.7
- *
- */
-function exec_breeze_check_for_exclude_values( $needle = '', $haystack = array() ) {
-	if ( empty( $needle ) || empty( $haystack ) ) {
-		return array();
-	}
-	$needle             = trim( $needle );
-	$is_string_in_array = array_filter(
-		$haystack,
-		function ( $var ) use ( $needle ) {
-			if ( exec_breeze_string_contains_exclude_regexp( $var ) ) {
-				return exec_breeze_file_match_pattern( $needle, $var );
-			} else {
-				return false;
-			}
-
-		}
-	);
-
-	return $is_string_in_array;
-}
-
-
-/**
- * Function used to determine if the excluded URL contains regexp
- *
- * @param $file_url
- * @param string $validate
- *
- * @return bool
- */
-function exec_breeze_string_contains_exclude_regexp( $file_url, $validate = '(.*)' ) {
-	if ( empty( $file_url ) ) {
-		return false;
-	}
-	if ( empty( $validate ) ) {
-		return false;
-	}
-
-	$valid = false;
-
-	if ( substr_count( $file_url, $validate ) !== 0 ) {
-		$valid = true; // 0 or false
-	}
-
-	return $valid;
-}
-
-
-/**
- * Method will prepare the URLs escaped for preg_match
- * Will return the file_url matches the pattern.
- * empty array for false,
- * aray with data for true.
- *
- * @param $file_url
- * @param $pattern
- *
- * @return false|int
- */
-function exec_breeze_file_match_pattern( $file_url, $pattern ) {
-	$remove_pattern   = str_replace( '(.*)', 'REG_EXP_ALL', $pattern );
-	$prepared_pattern = preg_quote( $remove_pattern, '/' );
-	$pattern          = str_replace( 'REG_EXP_ALL', '(.*)', $prepared_pattern );
-	$result           = preg_match( '/' . $pattern . '/', $file_url );
-
-	return $result;
-}
-

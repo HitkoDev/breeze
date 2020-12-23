@@ -9,7 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 abstract class Breeze_MinificationBase {
 	protected $content = '';
 	protected $tagWarning = false;
-	protected $cdn_url = '';
 
 	public function __construct( $content ) {
 		$this->content = $content;

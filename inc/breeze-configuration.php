@@ -652,7 +652,8 @@ class Breeze_Configuration{
 			$blog_id = get_current_blog_id();
 			$files_path .= DIRECTORY_SEPARATOR . $blog_id;
 		}
-		$size_cache += breeze_get_directory_size( $files_path, array( 'index.html' ) );
+
+	    $size_cache += breeze_get_directory_size( $files_path, array( 'index.html' ) );
 
         $result = self::formatBytes( $size_cache );
 
