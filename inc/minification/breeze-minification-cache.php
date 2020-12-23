@@ -246,8 +246,9 @@ class Breeze_MinificationCache {
 			foreach ( $sites as $blog_id ) {
 				switch_to_blog( $blog_id );
 				self::clear_site_minification();
+				restore_current_blog();
 			}
-			restore_current_blog();
+
 		} else {
 			self::clear_site_minification();
 		}
