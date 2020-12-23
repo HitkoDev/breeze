@@ -16,6 +16,10 @@ if ( strpos( $_SERVER['REQUEST_URI'], 'robots.txt' ) !== false || strpos( $_SERV
 	return;
 }
 
+if ( strpos( $_SERVER['REQUEST_URI'], 'breeze-minification' ) !== false ) {
+	return;
+}
+
 // Don't cache non-GET requests
 if ( ! isset( $_SERVER['REQUEST_METHOD'] ) || $_SERVER['REQUEST_METHOD'] !== 'GET' ) {
 	return;
@@ -63,10 +67,15 @@ if ( ! empty( $_COOKIE ) ) {
 		foreach ( $_COOKIE as $k => $v ) {
 			if ( strpos( $k, 'wordpress_logged_in_' ) !== false ) {
 				$nameuser = substr( $v, 0, strpos( $v, '|' ) );
-				$filename = $url_path . strtolower( $nameuser );
+				if ( substr_count( $url_path, '?' ) > 0 ) {
+					$filename = $url_path .'&'. strtolower( $nameuser );
+				}else{
+					$filename = $url_path .'?'. strtolower( $nameuser );
+				}
 			}
 		}
 	}
+
 	if ( ! empty( $_COOKIE['breeze_commented_posts'] ) ) {
 		foreach ( $_COOKIE['breeze_commented_posts'] as $path ) {
 			if ( rtrim( $path, '/' ) === rtrim( $_SERVER['REQUEST_URI'], '/' ) ) {
@@ -211,7 +220,13 @@ function breeze_cache( $buffer, $flags ) {
 	if ( is_user_logged_in() ) {
 		$current_user = wp_get_current_user();
 		if ( $current_user->user_login ) {
-			$url_path .= $current_user->user_login;
+
+			if ( substr_count( $url_path, '?' ) > 0 ) {
+				$url_path .= '&'. $current_user->user_login;
+			}else{
+				$url_path .= '?'. $current_user->user_login;
+			}
+			#$url_path .= $current_user->user_login;
 		}
 	} else {
 		global $filename_guest_suffix;
@@ -352,8 +367,21 @@ function breeze_serve_cache( $filename, $url_path, $X1, $opts ) {
 }
 
 function check_exclude_page( $opts_config, $current_url ) {
+	$is_feed = breeze_is_feed( $current_url );
+
+	if ( true === $is_feed ) {
+		return true;
+	}
+
+
 	//check disable cache for page
 	if ( ! empty( $opts_config['exclude_url'] ) ) {
+
+		$is_exclude = exec_breeze_check_for_exclude_values( $current_url, $opts_config['exclude_url'] );
+		if ( ! empty( $is_exclude ) ) {
+			return true;
+		}
+
 		foreach ( $opts_config['exclude_url'] as $v ) {
 			// Clear blank character
 			$v = trim( $v );
@@ -389,3 +417,82 @@ function check_exclude_page( $opts_config, $current_url ) {
 
 	return false;
 }
+
+
+/**
+ * Used to check for regexp exclude pages
+ *
+ * @param string $needle
+ * @param array $haystack
+ *
+ * @return array
+ * @since 1.1.7
+ *
+ */
+function exec_breeze_check_for_exclude_values( $needle = '', $haystack = array() ) {
+	if ( empty( $needle ) || empty( $haystack ) ) {
+		return array();
+	}
+	$needle             = trim( $needle );
+	$is_string_in_array = array_filter(
+		$haystack,
+		function ( $var ) use ( $needle ) {
+			if ( exec_breeze_string_contains_exclude_regexp( $var ) ) {
+				return exec_breeze_file_match_pattern( $needle, $var );
+			} else {
+				return false;
+			}
+
+		}
+	);
+
+	return $is_string_in_array;
+}
+
+
+/**
+ * Function used to determine if the excluded URL contains regexp
+ *
+ * @param $file_url
+ * @param string $validate
+ *
+ * @return bool
+ */
+function exec_breeze_string_contains_exclude_regexp( $file_url, $validate = '(.*)' ) {
+	if ( empty( $file_url ) ) {
+		return false;
+	}
+	if ( empty( $validate ) ) {
+		return false;
+	}
+
+	$valid = false;
+
+	if ( substr_count( $file_url, $validate ) !== 0 ) {
+		$valid = true; // 0 or false
+	}
+
+	return $valid;
+}
+
+
+/**
+ * Method will prepare the URLs escaped for preg_match
+ * Will return the file_url matches the pattern.
+ * empty array for false,
+ * aray with data for true.
+ *
+ * @param $file_url
+ * @param $pattern
+ *
+ * @return false|int
+ */
+function exec_breeze_file_match_pattern( $file_url, $pattern ) {
+	$remove_pattern   = str_replace( '(.*)', 'REG_EXP_ALL', $pattern );
+	$prepared_pattern = preg_quote( $remove_pattern, '/' );
+	$pattern          = str_replace( 'REG_EXP_ALL', '(.*)', $prepared_pattern );
+	$result           = preg_match( '/' . $pattern . '/', $file_url );
+
+	return $result;
+}
+
