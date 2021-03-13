@@ -18,16 +18,16 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-defined('ABSPATH') || die('No direct script access allowed!');
+defined('ABSPATH') || exit('No direct script access allowed!');
 
 class Breeze_CDN_Rewrite {
-    private $blog_url = null;
-    private $cdn_url = null;
-    private $dirs = array();
-    private $excludes = array();
+    private $blog_url;
+    private $cdn_url;
+    private $dirs = [];
+    private $excludes = [];
     private $relative = false;
 
-    public function __construct(&$option){
+    public function __construct(&$option) {
         //storage option
         $this->blog_url = get_option('home');
         $this->cdn_url = $option['cdn-url'];
@@ -38,26 +38,10 @@ class Breeze_CDN_Rewrite {
         $this->hardcoded_exceptions_to_ignore();
     }
 
-	/**
-	 * Handles extra exceptions which need to be excluded
-	 * and instead use local URL instead of CDN.
-	 *
-	 * @since 1.1.3
-	 */
-	private function hardcoded_exceptions_to_ignore() {
-		if ( ! array( $this->excludes ) || empty( $this->excludes ) ) {
-			$this->excludes = array();
-		}
-		$this->excludes [] = 'download_file';
-		// Allow users to use filter and add exceptions from CDN url.
-		$this->excludes = apply_filters( 'breeze_cdn_exclude_paths', $this->excludes );
-	}
-
     /*
      * Replace cdn on html raw
      */
-    public function rewrite($content){
-
+    public function rewrite($content) {
         $blog_url = quotemeta($this->blog_url);
 
         // get dir scope in regex format
@@ -66,26 +50,26 @@ class Breeze_CDN_Rewrite {
         // regex rule start
         $regex_rule = '#(?<=[(\"\'])';
 
-	    // create blog url without http or https
-	    $parseurl = parse_url($this->blog_url);
-	    $scheme = 'http:';
-	    if(!empty($parseurl['scheme'])){
-		    $scheme = $parseurl['scheme'].':';
-	    }
-	    $blog_url_short = str_replace($scheme, '',$this->blog_url);
+        // create blog url without http or https
+        $parseurl = parse_url($this->blog_url);
+        $scheme = 'http:';
+        if ( ! empty($parseurl['scheme'])) {
+            $scheme = $parseurl['scheme'] . ':';
+        }
+        $blog_url_short = str_replace($scheme, '', $this->blog_url);
 
-	    // check if relative paths
-	    if ($this->relative) {
-		    $regex_rule .= '(?:'.$blog_url.'|'.$blog_url_short.')?';
-	    } else {
-		    $regex_rule .= '('.$blog_url.'|'.$blog_url_short.')';
-	    }
+        // check if relative paths
+        if ($this->relative) {
+            $regex_rule .= '(?:' . $blog_url . '|' . $blog_url_short . ')?';
+        } else {
+            $regex_rule .= '(' . $blog_url . '|' . $blog_url_short . ')';
+        }
 
         // regex rule end
-        $regex_rule .= '/(?:((?:'.$dirs.')[^\"\')]+)|([^/\"\']+\.[^/\"\')]+))(?=[\"\')])#';
+        $regex_rule .= '/(?:((?:' . $dirs . ')[^\"\')]+)|([^/\"\']+\.[^/\"\')]+))(?=[\"\')])#';
 
         // call the cdn rewriter callback
-        $new_content = preg_replace_callback($regex_rule, array(&$this, 'replace_cdn_url'), $content);
+        $new_content = preg_replace_callback($regex_rule, [&$this, 'replace_cdn_url'], $content);
 
         return $new_content;
     }
@@ -93,7 +77,6 @@ class Breeze_CDN_Rewrite {
     /**
      * get directory scope
      */
-
     protected function get_dir_scope() {
         // default
         if (empty($this->dirs) || count($this->dirs) < 1) {
@@ -106,40 +89,55 @@ class Breeze_CDN_Rewrite {
     /*
      * Replace cdn url to root url
      */
-    protected function replace_cdn_url($match){
+    protected function replace_cdn_url($match) {
         //return file type or directories excluded
-        if($this->excludes_check($match[0])){
+        if ($this->excludes_check($match[0])) {
             return $match[0];
         }
 
         $parseUrl = parse_url($this->blog_url);
-	    $scheme = 'http://';
-        if(isset($parseUrl['scheme'])){
-            $scheme = $parseUrl['scheme'].'://';
+        $scheme = 'http://';
+        if (isset($parseUrl['scheme'])) {
+            $scheme = $parseUrl['scheme'] . '://';
         }
         $host = $parseUrl['host'];
         //get domain
-	    $domain = '//'.$host;
+        $domain = '//' . $host;
 
         // check if not a relative path
-        if (!$this->relative || strstr($match[0], $this->blog_url)) {
-	        $domain = $scheme.$host;
+        if ( ! $this->relative || strstr($match[0], $this->blog_url)) {
+            $domain = $scheme . $host;
         }
 
-	    return str_replace($domain, $this->cdn_url, $match[0]);
-
+        return str_replace($domain, $this->cdn_url, $match[0]);
     }
+
     /*
      * Check excludes assets
      */
-    protected function excludes_check($dir){
-        if(!empty($this->excludes)){
-            foreach ($this->excludes as $exclude){
-                if(stristr($dir, $exclude) != false){
+    protected function excludes_check($dir) {
+        if ( ! empty($this->excludes)) {
+            foreach ($this->excludes as $exclude) {
+                if (stristr($dir, $exclude) != false) {
                     return true;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * Handles extra exceptions which need to be excluded
+     * and instead use local URL instead of CDN.
+     *
+     * @since 1.1.3
+     */
+    private function hardcoded_exceptions_to_ignore() {
+        if ( ! [$this->excludes] || empty($this->excludes)) {
+            $this->excludes = [];
+        }
+        $this->excludes[] = 'download_file';
+        // Allow users to use filter and add exceptions from CDN url.
+        $this->excludes = apply_filters('breeze_cdn_exclude_paths', $this->excludes);
     }
 }

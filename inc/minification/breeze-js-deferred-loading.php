@@ -1,8 +1,9 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) {
-	header( 'Status: 403 Forbidden' );
-	header( 'HTTP/1.1 403 Forbidden' );
-	exit;
+
+if ( ! defined('ABSPATH')) {
+    header('Status: 403 Forbidden');
+    header('HTTP/1.1 403 Forbidden');
+    exit;
 }
 
 /**
@@ -10,471 +11,459 @@ if ( ! defined( 'ABSPATH' ) ) {
  * that need to be handles.
  *
  * Class Breeze_Js_Deferred_Loading
+ *
  * @since 1.1.8
  */
 class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
+    /**
+     * Javascript URLs that need the defer tag.
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $defer_js = [];
 
-	/**
-	 * Javascript URLs that need the defer tag.
-	 *
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $defer_js = array();
+    /**
+     * Will hold the JS Scripts found in the header
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $head_scripts = [];
 
-	/**
-	 * Will hold the JS Scripts found in the header
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $head_scripts = array();
+    /**
+     * Will hold the JS Scripts found in the body/footer
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $footer_scripts = [];
 
-	/**
-	 * Will hold the JS Scripts found in the body/footer
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $footer_scripts = array();
+    /**
+     * Will hold scripts that need to be removed.
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $jsremovables = [];
 
-	/**
-	 * Will hold scripts that need to be removed.
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $jsremovables = array();
+    /**
+     * Holds scripts that need to be moved to the footer.
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $move_to_footer_js = [];
 
-	/**
-	 * Holds scripts that need to be moved to the footer.
-	 *
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $move_to_footer_js = array();
+    /**
+     * Prepared scripts that need to be moved to footer.
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $move_to_footer = [];
 
-	/**
-	 * Prepared scripts that need to be moved to footer.
-	 *
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $move_to_footer = array();
+    /**
+     * Files first or last.
+     *
+     * @var array[]
+     *
+     * @since 1.1.8
+     */
+    private $move = [
+        'first' => [],
+        'last' => [],
+    ];
 
-	/**
-	 * Files first or last.
-	 *
-	 * @var array[]
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $move = array(
-		'first' => array(),
-		'last'  => array(),
-	);
+    private $domove = [
+        'gaJsHost',
+        'load_cmc',
+        'jd.gallery.transitions.js',
+        'swfobject.embedSWF(',
+        'tiny_mce.js',
+        'tinyMCEPreInit.go'
+    ];
 
-	private $domove = array(
-		'gaJsHost',
-		'load_cmc',
-		'jd.gallery.transitions.js',
-		'swfobject.embedSWF(',
-		'tiny_mce.js',
-		'tinyMCEPreInit.go'
-	);
+    private $domovelast = [
+        'addthis.com',
+        '/afsonline/show_afs_search.js',
+        'disqus.js',
+        'networkedblogs.com/getnetworkwidget',
+        'infolinks.com/js/',
+        'jd.gallery.js.php',
+        'jd.gallery.transitions.js',
+        'swfobject.embedSWF(',
+        'linkwithin.com/widget.js',
+        'tiny_mce.js',
+        'tinyMCEPreInit.go',
+    ];
 
-	private $domovelast = array(
-		'addthis.com',
-		'/afsonline/show_afs_search.js',
-		'disqus.js',
-		'networkedblogs.com/getnetworkwidget',
-		'infolinks.com/js/',
-		'jd.gallery.js.php',
-		'jd.gallery.transitions.js',
-		'swfobject.embedSWF(',
-		'linkwithin.com/widget.js',
-		'tiny_mce.js',
-		'tinyMCEPreInit.go',
-	);
+    private $dontmove = [
+        'gtag',
+        'document.write',
+        'html5.js',
+        'show_ads.js',
+        'google_ad',
+        'blogcatalog.com/w',
+        'tweetmeme.com/i',
+        'mybloglog.com/',
+        'histats.com/js',
+        'ads.smowtion.com/ad.js',
+        'statcounter.com/counter/counter.js',
+        'widgets.amung.us',
+        'ws.amazon.com/widgets',
+        'media.fastclick.net',
+        '/ads/',
+        'comment-form-quicktags/quicktags.php',
+        'edToolbar',
+        'intensedebate.com',
+        'scripts.chitika.net/',
+        '_gaq.push',
+        'jotform.com/',
+        'admin-bar.min.js',
+        'GoogleAnalyticsObject',
+        'plupload.full.min.js',
+        'syntaxhighlighter',
+        'adsbygoogle',
+        'gist.github.com',
+        '_stq',
+        'nonce',
+        'post_id',
+        'data-noptimize',
+    ];
 
-	private $dontmove = array(
-		'gtag',
-		'document.write',
-		'html5.js',
-		'show_ads.js',
-		'google_ad',
-		'blogcatalog.com/w',
-		'tweetmeme.com/i',
-		'mybloglog.com/',
-		'histats.com/js',
-		'ads.smowtion.com/ad.js',
-		'statcounter.com/counter/counter.js',
-		'widgets.amung.us',
-		'ws.amazon.com/widgets',
-		'media.fastclick.net',
-		'/ads/',
-		'comment-form-quicktags/quicktags.php',
-		'edToolbar',
-		'intensedebate.com',
-		'scripts.chitika.net/',
-		'_gaq.push',
-		'jotform.com/',
-		'admin-bar.min.js',
-		'GoogleAnalyticsObject',
-		'plupload.full.min.js',
-		'syntaxhighlighter',
-		'adsbygoogle',
-		'gist.github.com',
-		'_stq',
-		'nonce',
-		'post_id',
-		'data-noptimize',
-	);
+    /**
+     * Reads the page content and fetches the JavaScript script tags.
+     *
+     * @param array $options Script options.
+     *
+     * @return bool
+     *
+     * @since 1.1.8
+     */
+    public function read($options = []) {
+        // Read the list of scripts that need defer tag.
+        if ( ! empty($options['defer_js'])) {
+            $this->defer_js = $options['defer_js'];
+        }
 
-	/**
-	 * Reads the page content and fetches the JavaScript script tags.
-	 *
-	 * @param array $options Script options.
-	 *
-	 * @return bool
-	 * @since 1.1.8
-	 * @access public
-	 */
-	public function read( $options = array() ) {
+        // JS files will move to footer
+        if ( ! empty($options['move_to_footer_js'])) {
+            $this->move_to_footer_js = $options['move_to_footer_js'];
+        }
 
-		// Read the list of scripts that need defer tag.
-		if ( ! empty( $options['defer_js'] ) ) {
-			$this->defer_js = $options['defer_js'];
-		}
+        // is there JS we should simply remove
+        $removableJS = apply_filters('breeze_filter_js_removables', '');
+        if ( ! empty($removableJS)) {
+            $this->jsremovables = array_filter(array_map('trim', explode(',', $removableJS)));
+        }
 
-		// JS files will move to footer
-		if ( ! empty( $options['move_to_footer_js'] ) ) {
-			$this->move_to_footer_js = $options['move_to_footer_js'];
-		}
+        // noptimize me
+        $this->content = $this->hide_noptimize($this->content);
+        // Save IE hacks
+        $this->content = $this->hide_iehacks($this->content);
+        // comments
+        $this->content = $this->hide_comments($this->content);
 
-		// is there JS we should simply remove
-		$removableJS = apply_filters( 'breeze_filter_js_removables', '' );
-		if ( ! empty( $removableJS ) ) {
-			$this->jsremovables = array_filter( array_map( 'trim', explode( ',', $removableJS ) ) );
-		}
+        //Get script files
+        $split_content = explode('</head>', $this->content, 2);
+        $this->fetch_javascript($split_content[0]);
+        $this->fetch_javascript($split_content[1], false);
 
-		// noptimize me
-		$this->content = $this->hide_noptimize( $this->content );
-		// Save IE hacks
-		$this->content = $this->hide_iehacks( $this->content );
-		// comments
-		$this->content = $this->hide_comments( $this->content );
+        if ( ! empty($this->head_scripts) || ! empty($this->footer_scripts)) {
+            // Re-order moving to footer JS files
+            $ordered_moving_js = array_intersect_key($this->move_to_footer_js, $this->move_to_footer);
+            $ordered_moving_js = array_map([$this, 'getpath'], $ordered_moving_js);
+            $this->footer_scripts = array_merge($ordered_moving_js, $this->footer_scripts);
 
-		//Get script files
-		$split_content = explode( '</head>', $this->content, 2 );
-		$this->fetch_javascript( $split_content[0] );
-		$this->fetch_javascript( $split_content[1], false );
+            // JS Scripts found, wen can start processing them.
+            return true;
+        }
 
-		if ( ! empty( $this->head_scripts ) || ! empty( $this->footer_scripts ) ) {
-			// Re-order moving to footer JS files
-			$ordered_moving_js    = array_intersect_key( $this->move_to_footer_js, $this->move_to_footer );
-			$ordered_moving_js    = array_map( array( $this, 'getpath' ), $ordered_moving_js );
-			$this->footer_scripts = array_merge( $ordered_moving_js, $this->footer_scripts );
+        // The page holds no JS scripts
+        return false;
+    }
 
-			// JS Scripts found, wen can start processing them.
-			return true;
-		}
+    /**
+     * Needed function to match Breeze_MinificationBase class pattern
+     *
+     * @since 1.1.8
+     */
+    public function minify() {
+        return true;
+    }
 
-		// The page holds no JS scripts
-		return false;
-	}
+    /**
+     * Needed function to match Breeze_MinificationBase class pattern
+     *
+     * @since 1.1.8
+     */
+    public function cache() {
+        return true;
+    }
 
-	/**
-	 * Returns the found javascript
-	 *
-	 * @param string $content HTML content
-	 * @param bool $head to process header or not.
-	 *
-	 * @return bool
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private function fetch_javascript( $content = '', $head = true ) {
-		if ( preg_match_all( '#<script.*</script>#Usmi', $content, $matches ) ) {
-			foreach ( $matches[0] as $tag ) {
-				// only consider aggregation whitelisted in should_aggregate-function
-				if ( ! $this->should_aggregate( $tag ) ) {
-					$tag = '';
-					continue;
-				}
+    /**
+     * Needed function to match Breeze_MinificationBase class pattern
+     *
+     * @since 1.1.8
+     */
+    public function getcontent() {
+        // Load inline JS to html
+        if ( ! empty($this->head_scripts)) {
+            $replaceTag = ['</head>', 'before'];
+            $js_head = [];
 
-				// handle only the scripts that have the a file as source.
-				if ( preg_match( '/\ssrc=("|\')?(.*(\ |\>))("|\')?/Usmi', $tag, $source ) ) {
-					$source[2] = substr( $source[2], 0, - 1 );
-					if ( $this->isremovable( $tag, $this->jsremovables ) ) {
-						$content = str_replace( $tag, '', $content );
-						continue;
-					}
+            foreach ($this->head_scripts as $js_url => $js_path) {
+                $defer = '';
+                if (gettype($js_url) == 'string' && in_array($js_url, $this->defer_js)) {
+                    $defer = 'defer ';
+                }
 
-					// External script
-					$url = current( explode( '?', $source[2], 2 ) );
-					if ( $url[0] == "'" || $url[0] == '"' ) {
-						$url = substr( $url, 1 );
-					}
-					if ( $url[ strlen( $url ) - 1 ] == '"' || $url[ strlen( $url ) - 1 ] == "'" ) {
-						$url = substr( $url, 0, - 1 );
-					}
+                $js_head[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
+            }
+            $js_replacement = '';
+            $js_replacement .= implode('', $js_head);
+            $this->inject_in_html($js_replacement, $replaceTag);
+        }
 
-					$path = $this->getpath( $url );
-					if ( $path !== false && preg_match( '#\.js$#', $path ) ) {
+        if ( ! empty($this->footer_scripts)) {
+            $replaceTag = ['</body>', 'before'];
+            $js_footer = [];
 
-						if ( $this->is_merge_valid( $tag ) ) {
-							//We can merge it
-							if ( true === $head ) {
-								// If this file will be move to footer
-								if ( in_array( $url, $this->move_to_footer_js ) ) {
-									$this->move_to_footer[ $url ] = $path;
-								} else {
-									$this->head_scripts[ $url ] = $path;
-								}
-							} else {
-								$this->footer_scripts[ $url ] = $path;
-							}
-						} else {
-							//No merge, but maybe we can move it
-							if ( $this->is_movable( $tag ) ) {
-								//Yeah, move it
-								if ( $this->move_to_last( $tag ) ) {
-									$this->move['last'][] = $tag;
-								} else {
-									$this->move['first'][] = $tag;
-								}
-							} else {
-								//We shouldn't touch this
-								$tag = '';
-							}
-						}
-					} else {
-						if ( breeze_validate_url_via_regexp( $url ) ) {
+            foreach ($this->footer_scripts as $js_url => $js_path) {
+                $defer = '';
+                if (gettype($js_url) == 'string' && in_array($js_url, $this->defer_js)) {
+                    $defer = 'defer ';
+                }
 
-							if ( true === $head ) {
+                $js_footer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
+            }
+            $js_replacement = '';
+            $js_replacement .= implode('', $js_footer);
+            $this->inject_in_html($js_replacement, $replaceTag);
+        }
 
-								if ( in_array( $url, $this->move_to_footer_js ) ) {
-									$this->move_to_footer[ $url ] = $url;
-								} else {
-									$this->head_scripts[ $url ] = $url;
-								}
-							} else {
-								$this->footer_scripts[ $url ] = $url;
-							}
-						}
-					}
-					//Remove the original script tag
-					$content = str_replace( $tag, '', $content );
-				}
-			}
-		}
+        // restore comments
+        $this->content = $this->restore_comments($this->content);
 
-		if ( true === $head ) {
-			$this->content = $content;
-		} else {
-			$this->content .= '</head>' . $content;
-		}
+        // Restore IE hacks
+        $this->content = $this->restore_iehacks($this->content);
 
-		return true;
-	}
+        // Restore noptimize
+        $this->content = $this->restore_noptimize($this->content);
 
-	/**
-	 * Needed function to match Breeze_MinificationBase class pattern
-	 *
-	 * @since 1.1.8
-	 * @access public
-	 */
-	public function minify() {
+        return $this->content;
+    }
 
-		return true;
-	}
+    /**
+     * Determines whether a <script> $tag should be aggregated or not.
+     *
+     * We consider these as "aggregation-safe" currently:
+     * - script tags without a `type` attribute
+     * - script tags with an explicit `type` of `text/javascript`, 'text/ecmascript',
+     *   'application/javascript' or 'application/ecmascript'
+     *
+     * Everything else should return false.
+     *
+     * @param string $tag
+     *
+     * @return bool
+     *
+     * original function by https://github.com/zytzagoo/ on his AO fork, thanks Tomas!
+     */
+    public function should_aggregate($tag) {
+        preg_match('#<(script[^>]*)>#i', $tag, $scripttag);
+        if (strpos($scripttag[1], 'type=') === false) {
+            return true;
+        }
+        if (preg_match('/type=["\']?(?:text|application)\/(?:javascript|ecmascript)["\']?/i', $scripttag[1])) {
+            return true;
+        }
+        return false;
+    }
 
-	/**
-	 * Needed function to match Breeze_MinificationBase class pattern
-	 *
-	 * @since 1.1.8
-	 * @access public
-	 */
-	public function cache() {
+    /**
+     * Returns the found javascript
+     *
+     * @param string $content HTML content
+     * @param bool   $head    to process header or not.
+     *
+     * @return bool
+     *
+     * @since 1.1.8
+     */
+    private function fetch_javascript($content = '', $head = true) {
+        if (preg_match_all('#<script.*</script>#Usmi', $content, $matches)) {
+            foreach ($matches[0] as $tag) {
+                // only consider aggregation whitelisted in should_aggregate-function
+                if ( ! $this->should_aggregate($tag)) {
+                    $tag = '';
+                    continue;
+                }
 
-		return true;
-	}
+                // handle only the scripts that have the a file as source.
+                if (preg_match('/\ssrc=("|\')?(.*(\ |\>))("|\')?/Usmi', $tag, $source)) {
+                    $source[2] = substr($source[2], 0, -1);
+                    if ($this->isremovable($tag, $this->jsremovables)) {
+                        $content = str_replace($tag, '', $content);
+                        continue;
+                    }
 
-	/**
-	 * Needed function to match Breeze_MinificationBase class pattern
-	 *
-	 * @since 1.1.8
-	 * @access public
-	 */
-	public function getcontent() {
+                    // External script
+                    $url = current(explode('?', $source[2], 2));
+                    if ($url[0] == "'" || $url[0] == '"') {
+                        $url = substr($url, 1);
+                    }
+                    if ($url[strlen($url) - 1] == '"' || $url[strlen($url) - 1] == "'") {
+                        $url = substr($url, 0, -1);
+                    }
 
-		// Load inline JS to html
-		if ( ! empty( $this->head_scripts ) ) {
+                    $path = $this->getpath($url);
+                    if ($path !== false && preg_match('#\.js$#', $path)) {
+                        if ($this->is_merge_valid($tag)) {
+                            //We can merge it
+                            if ($head === true) {
+                                // If this file will be move to footer
+                                if (in_array($url, $this->move_to_footer_js)) {
+                                    $this->move_to_footer[$url] = $path;
+                                } else {
+                                    $this->head_scripts[$url] = $path;
+                                }
+                            } else {
+                                $this->footer_scripts[$url] = $path;
+                            }
+                        } else {
+                            //No merge, but maybe we can move it
+                            if ($this->is_movable($tag)) {
+                                //Yeah, move it
+                                if ($this->move_to_last($tag)) {
+                                    $this->move['last'][] = $tag;
+                                } else {
+                                    $this->move['first'][] = $tag;
+                                }
+                            } else {
+                                //We shouldn't touch this
+                                $tag = '';
+                            }
+                        }
+                    } else {
+                        if (breeze_validate_url_via_regexp($url)) {
+                            if ($head === true) {
+                                if (in_array($url, $this->move_to_footer_js)) {
+                                    $this->move_to_footer[$url] = $url;
+                                } else {
+                                    $this->head_scripts[$url] = $url;
+                                }
+                            } else {
+                                $this->footer_scripts[$url] = $url;
+                            }
+                        }
+                    }
+                    //Remove the original script tag
+                    $content = str_replace($tag, '', $content);
+                }
+            }
+        }
 
-			$replaceTag = array( '</head>', 'before' );
-			$js_head    = array();
+        if ($head === true) {
+            $this->content = $content;
+        } else {
+            $this->content .= '</head>' . $content;
+        }
 
-			foreach ( $this->head_scripts as $js_url => $js_path ) {
-				$defer = '';
-				if ( gettype( $js_url ) == 'string' && in_array( $js_url, $this->defer_js ) ) {
-					$defer = 'defer ';
-				}
+        return true;
+    }
 
-				$js_head[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
-			}
-			$js_replacement = '';
-			$js_replacement .= implode( '', $js_head );
-			$this->inject_in_html( $js_replacement, $replaceTag );
-		}
+    // Checks against the white- and blacklists
+    private function is_merge_valid($tag) {
+        if ( ! empty($this->whitelist)) {
+            foreach ($this->whitelist as $match) {
+                if (strpos($tag, $match) !== false) {
+                    return true;
+                }
+            }
 
-		if ( ! empty( $this->footer_scripts ) ) {
-			$replaceTag = array( '</body>', 'before' );
-			$js_footer  = array();
+            // no match with whitelist
+            return false;
+        }
+        foreach ($this->domove as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return false;
+            }
+        }
 
-			foreach ( $this->footer_scripts as $js_url => $js_path ) {
-				$defer = '';
-				if ( gettype( $js_url ) == 'string' && in_array( $js_url, $this->defer_js ) ) {
-					$defer = 'defer ';
-				}
+        if ($this->move_to_last($tag)) {
+            return false;
+        }
 
-				$js_footer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
-			}
-			$js_replacement = '';
-			$js_replacement .= implode( '', $js_footer );
-			$this->inject_in_html( $js_replacement, $replaceTag );
-		}
+        foreach ($this->dontmove as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return false;
+            }
+        }
 
+        // If we're here it's safe to merge
+        return true;
+    }
 
-		// restore comments
-		$this->content = $this->restore_comments( $this->content );
+    /**
+     * Check if the script can be moved
+     *
+     * @param $tag
+     *
+     * @return bool
+     *
+     * @since 1.1.8
+     */
+    private function is_movable($tag) {
+        foreach ($this->domove as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return true;
+            }
+        }
 
-		// Restore IE hacks
-		$this->content = $this->restore_iehacks( $this->content );
+        if ($this->move_to_last($tag)) {
+            return true;
+        }
 
-		// Restore noptimize
-		$this->content = $this->restore_noptimize( $this->content );
+        foreach ($this->dontmove as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return false;
+            }
+        }
 
-		return $this->content;
-	}
+        //If we're here it's safe to move
+        return true;
+    }
 
+    /**
+     * Move the script last
+     *
+     * @param $tag
+     *
+     * @return bool
+     *
+     * @since 1.1.8
+     */
+    private function move_to_last($tag) {
+        foreach ($this->domovelast as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched, return true
+                return true;
+            }
+        }
 
-	// Checks against the white- and blacklists
-	private function is_merge_valid( $tag ) {
-		if ( ! empty( $this->whitelist ) ) {
-			foreach ( $this->whitelist as $match ) {
-				if ( strpos( $tag, $match ) !== false ) {
-					return true;
-				}
-			}
-
-			// no match with whitelist
-			return false;
-		} else {
-			foreach ( $this->domove as $match ) {
-				if ( strpos( $tag, $match ) !== false ) {
-					//Matched something
-					return false;
-				}
-			}
-
-			if ( $this->move_to_last( $tag ) ) {
-				return false;
-			}
-
-			foreach ( $this->dontmove as $match ) {
-				if ( strpos( $tag, $match ) !== false ) {
-					//Matched something
-					return false;
-				}
-			}
-
-			// If we're here it's safe to merge
-			return true;
-		}
-	}
-
-	/**
-	 * Check if the script can be moved
-	 *
-	 * @param $tag
-	 *
-	 * @return bool
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private function is_movable( $tag ) {
-
-		foreach ( $this->domove as $match ) {
-			if ( strpos( $tag, $match ) !== false ) {
-				//Matched something
-				return true;
-			}
-		}
-
-		if ( $this->move_to_last( $tag ) ) {
-			return true;
-		}
-
-		foreach ( $this->dontmove as $match ) {
-			if ( strpos( $tag, $match ) !== false ) {
-				//Matched something
-				return false;
-			}
-		}
-
-		//If we're here it's safe to move
-		return true;
-	}
-
-	/**
-	 * Move the script last
-	 *
-	 * @param $tag
-	 *
-	 * @return bool
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private function move_to_last( $tag ) {
-		foreach ( $this->domovelast as $match ) {
-			if ( strpos( $tag, $match ) !== false ) {
-				//Matched, return true
-				return true;
-			}
-		}
-
-		//Should be in 'first'
-		return false;
-	}
-
-	/**
-	 * Determines whether a <script> $tag should be aggregated or not.
-	 *
-	 * We consider these as "aggregation-safe" currently:
-	 * - script tags without a `type` attribute
-	 * - script tags with an explicit `type` of `text/javascript`, 'text/ecmascript',
-	 *   'application/javascript' or 'application/ecmascript'
-	 *
-	 * Everything else should return false.
-	 *
-	 * @param string $tag
-	 *
-	 * @return bool
-	 *
-	 * original function by https://github.com/zytzagoo/ on his AO fork, thanks Tomas!
-	 */
-	public function should_aggregate( $tag ) {
-		preg_match( '#<(script[^>]*)>#i', $tag, $scripttag );
-		if ( strpos( $scripttag[1], 'type=' ) === false ) {
-			return true;
-		} elseif ( preg_match( '/type=["\']?(?:text|application)\/(?:javascript|ecmascript)["\']?/i', $scripttag[1] ) ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+        //Should be in 'first'
+        return false;
+    }
 }

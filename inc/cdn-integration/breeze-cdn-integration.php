@@ -18,45 +18,43 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-defined('ABSPATH') || die('No direct script access allowed!');
+defined('ABSPATH') || exit('No direct script access allowed!');
 
-class Breeze_CDN_Integration{
-
-    public function __construct(){
-        add_action('template_redirect', array($this,'handle_rewrite_cdn'));
+class Breeze_CDN_Integration {
+    public function __construct() {
+        add_action('template_redirect', [$this, 'handle_rewrite_cdn']);
     }
 
     /**
      * Execute rewrite cdn
      */
-    public function handle_rewrite_cdn(){
-        $cdn_integration = breeze_get_option( 'cdn_integration' );
+    public function handle_rewrite_cdn() {
+        $cdn_integration = breeze_get_option('cdn_integration');
 
-        if(empty($cdn_integration) || empty($cdn_integration['cdn-active'])){
+        if (empty($cdn_integration) || empty($cdn_integration['cdn-active'])) {
             return;
         }
 
-        if($cdn_integration['cdn-url'] == ''){
+        if ($cdn_integration['cdn-url'] == '') {
             return;
         }
 
-        if(get_option('home') == $cdn_integration['cdn-url']){
+        if (get_option('home') == $cdn_integration['cdn-url']) {
             return;
         }
 
-	    if ( isset( $_GET['action'] ) && 'edit' === $_GET['action'] && isset( $_GET['job_id'] ) && ! empty( $_GET['job_id'] ) ) {
-		    return;
-	    }
-	    
+        if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['job_id']) && ! empty($_GET['job_id'])) {
+            return;
+        }
+
         $rewrite = new Breeze_CDN_Rewrite($cdn_integration);
 
         //rewrite CDN Url to html raw
 //        ob_start(array(&$rewrite,'rewrite'));
-        add_filter('breeze_cdn_content_return',array(&$rewrite,'rewrite'));
-
+        add_filter('breeze_cdn_content_return', [&$rewrite, 'rewrite']);
     }
 
-    public static function instance(){
+    public static function instance() {
         new self();
     }
 }
