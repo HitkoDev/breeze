@@ -2,7 +2,7 @@
 /*
  *  Based on some work of autoptimize plugin
  */
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit;
 } // Exit if accessed directly
 
@@ -71,7 +71,7 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 
             if (method_exists('Minify_HTML', 'minify')) {
                 $tmp_content = Minify_HTML::minify($this->content, $options);
-                if ( ! empty($tmp_content)) {
+                if (!empty($tmp_content)) {
                     $this->content = $tmp_content;
                     unset($tmp_content);
                 }
@@ -103,7 +103,7 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 
     //Returns the content
     public function getcontent() {
-        if ( ! empty($this->show_original_content)) {
+        if (!empty($this->show_original_content)) {
             return $this->original_content;
         }
 

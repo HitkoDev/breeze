@@ -6,13 +6,13 @@
  * @since 1.1.1
  */
 
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     header('Status: 403 Forbidden');
     header('HTTP/1.1 403 Forbidden');
     exit;
 }
 
-if ( ! isset($incompatibility_list)) {
+if (!isset($incompatibility_list)) {
     $incompatibility_list = [];
 }
 
@@ -41,12 +41,12 @@ if ( ! isset($incompatibility_list)) {
 						<?php esc_html_e('Deactivate', 'breeze'); ?>
 					</a> )
 					<?php
-                } elseif ( ! empty(trim($plugin['is_network_only']))) {
+                } elseif (!empty(trim($plugin['is_network_only']))) {
                     echo '[ ' . esc_html($plugin['is_network_only']) . ' ]';
                 } ?>
 
 				<?php
-                if ( ! empty($note_message)) {
+                if (!empty($note_message)) {
                     echo '. ' . esc_html($note_message);
                 } ?>
 			</li>

@@ -22,7 +22,7 @@ $basic = breeze_get_option('basic_settings', true);
         </td>
         <td>
             <input type="text" id="cache-ttl" size="5" name="cache-ttl"
-                   value='<?php echo ! empty($basic['breeze-ttl']) ? (int) $basic['breeze-ttl'] : '1440'; ?>'/>
+                   value='<?php echo !empty($basic['breeze-ttl']) ? (int) $basic['breeze-ttl'] : '1440'; ?>'/>
             <span class="breeze_tool_tip" style="vertical-align: baseline">
                 <?php _e('Automatically purge internal cache after X minutes. By default this is set to 1440 minutes (1 day)', 'breeze'); ?>
             </span>
@@ -98,8 +98,8 @@ $basic = breeze_get_option('basic_settings', true);
     $supports_conditionals = breeze_is_supported('conditional_htaccess');
 
     foreach ($htaccess_options as $fid => $field) {
-        $is_disabled = is_multisite() && ! is_network_admin() && ! $supports_conditionals;
-        $is_checked = isset($basic['breeze-' . $fid]) && $basic['breeze-' . $fid] === '1' && ! $is_disabled; ?>
+        $is_disabled = is_multisite() && !is_network_admin() && !$supports_conditionals;
+        $is_checked = isset($basic['breeze-' . $fid]) && $basic['breeze-' . $fid] === '1' && !$is_disabled; ?>
 		<tr>
 			<td>
 				<label for="<?php echo esc_attr($fid); ?>"><?php echo esc_html($field['label']); ?></label>

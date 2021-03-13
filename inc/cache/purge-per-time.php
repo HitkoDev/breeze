@@ -60,7 +60,7 @@ class Breeze_PurgeCacheTime {
             return;
         }
 
-        if ( ! $timestamp) {
+        if (!$timestamp) {
             wp_schedule_event(time(), 'breeze_varnish_time', 'breeze_purge_cache');
         }
     }
@@ -71,7 +71,7 @@ class Breeze_PurgeCacheTime {
      * @param mixed $schedules
      */
     public function filter_cron_schedules($schedules) {
-        if ( ! empty($this->timettl) && is_numeric($this->timettl) && (int) $this->timettl > 0) {
+        if (!empty($this->timettl) && is_numeric($this->timettl) && (int) $this->timettl > 0) {
             $interval = $this->timettl * 60;
         } else {
             $interval = '86400'; // One day
@@ -101,7 +101,7 @@ class Breeze_PurgeCacheTime {
 
     public static function factory() {
         static $instance;
-        if ( ! $instance) {
+        if (!$instance) {
             $instance = new self();
         }
         return $instance;

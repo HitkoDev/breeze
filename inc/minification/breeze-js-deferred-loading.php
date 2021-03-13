@@ -1,6 +1,6 @@
 <?php
 
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     header('Status: 403 Forbidden');
     header('HTTP/1.1 403 Forbidden');
     exit;
@@ -149,18 +149,18 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
      */
     public function read($options = []) {
         // Read the list of scripts that need defer tag.
-        if ( ! empty($options['defer_js'])) {
+        if (!empty($options['defer_js'])) {
             $this->defer_js = $options['defer_js'];
         }
 
         // JS files will move to footer
-        if ( ! empty($options['move_to_footer_js'])) {
+        if (!empty($options['move_to_footer_js'])) {
             $this->move_to_footer_js = $options['move_to_footer_js'];
         }
 
         // is there JS we should simply remove
         $removableJS = apply_filters('breeze_filter_js_removables', '');
-        if ( ! empty($removableJS)) {
+        if (!empty($removableJS)) {
             $this->jsremovables = array_filter(array_map('trim', explode(',', $removableJS)));
         }
 
@@ -176,7 +176,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
         $this->fetch_javascript($split_content[0]);
         $this->fetch_javascript($split_content[1], false);
 
-        if ( ! empty($this->head_scripts) || ! empty($this->footer_scripts)) {
+        if (!empty($this->head_scripts) || !empty($this->footer_scripts)) {
             // Re-order moving to footer JS files
             $ordered_moving_js = array_intersect_key($this->move_to_footer_js, $this->move_to_footer);
             $ordered_moving_js = array_map([$this, 'getpath'], $ordered_moving_js);
@@ -215,7 +215,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
      */
     public function getcontent() {
         // Load inline JS to html
-        if ( ! empty($this->head_scripts)) {
+        if (!empty($this->head_scripts)) {
             $replaceTag = ['</head>', 'before'];
             $js_head = [];
 
@@ -232,7 +232,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
             $this->inject_in_html($js_replacement, $replaceTag);
         }
 
-        if ( ! empty($this->footer_scripts)) {
+        if (!empty($this->footer_scripts)) {
             $replaceTag = ['</body>', 'before'];
             $js_footer = [];
 
@@ -302,7 +302,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
         if (preg_match_all('#<script.*</script>#Usmi', $content, $matches)) {
             foreach ($matches[0] as $tag) {
                 // only consider aggregation whitelisted in should_aggregate-function
-                if ( ! $this->should_aggregate($tag)) {
+                if (!$this->should_aggregate($tag)) {
                     $tag = '';
                     continue;
                 }
@@ -382,7 +382,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
     // Checks against the white- and blacklists
     private function is_merge_valid($tag) {
-        if ( ! empty($this->whitelist)) {
+        if (!empty($this->whitelist)) {
             foreach ($this->whitelist as $match) {
                 if (strpos($tag, $match) !== false) {
                     return true;

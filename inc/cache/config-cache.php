@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 //Based on some work of simple-cache
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit;
 }
 
@@ -47,7 +47,7 @@ class Breeze_ConfigCache {
             foreach ($blogs as $blog_id) {
                 switch_to_blog($blog_id);
                 $config = breeze_get_option('basic_settings');
-                if ( ! empty($config['breeze-active'])) {
+                if (!empty($config['breeze-active'])) {
                     $inherit_option = get_option('breeze_inherit_settings');
 
                     if ($inherit_option === '0') {
@@ -63,7 +63,7 @@ class Breeze_ConfigCache {
         } else {
             $config = breeze_get_option('basic_settings');
 
-            if ( ! empty($config['breeze-active'])) {
+            if (!empty($config['breeze-active'])) {
                 $cache_configs['breeze-config'][] = preg_replace('(^https?://)', '', site_url());
             }
         }
@@ -104,7 +104,7 @@ class Breeze_ConfigCache {
             foreach (array_reverse($cache_configs) as $filename => $urls) {
                 $blog_file = trailingslashit(WP_CONTENT_DIR) . 'breeze-config/' . $filename . '.php';
 
-                if ( ! is_array($urls)) {
+                if (!is_array($urls)) {
                     $urls = [$urls];
                 }
 
@@ -155,18 +155,18 @@ class Breeze_ConfigCache {
         if (class_exists('WooCommerce')) {
             $ecommerce_exclude_urls = Breeze_Ecommerce_Cache::factory()->ecommerce_exclude_pages();
         }
-        if ( ! empty($settings['breeze-disable-admin'])) {
+        if (!empty($settings['breeze-disable-admin'])) {
             $storage['disable_per_adminuser'] = $settings['breeze-disable-admin'];
         }
 
         $storage['exclude_url'] = array_merge(
             $ecommerce_exclude_urls,
-            ! empty($config['breeze-exclude-urls']) ? $config['breeze-exclude-urls'] : []
+            !empty($config['breeze-exclude-urls']) ? $config['breeze-exclude-urls'] : []
         );
 
         $saved_pages = get_option('breeze_exclude_url_pages', []);
 
-        if ( ! empty($saved_pages)) {
+        if (!empty($saved_pages)) {
             $saved_pages_urls = [];
             foreach ($saved_pages as $page_id) {
                 $saved_pages_urls[] = get_permalink($page_id);
@@ -183,7 +183,7 @@ class Breeze_ConfigCache {
         if (class_exists('WC_Facebook_Loader')) {
             $woocommerce_fb_feed_link = Breeze_Ecommerce_Cache::factory()->wc_facebook_feed();
 
-            if ( ! empty($woocommerce_fb_feed_link)) {
+            if (!empty($woocommerce_fb_feed_link)) {
                 $storage['exclude_url'] = array_merge(
                     $woocommerce_fb_feed_link,
                     $storage['exclude_url']
@@ -202,13 +202,13 @@ class Breeze_ConfigCache {
 
         $config_dir = trailingslashit(WP_CONTENT_DIR) . 'breeze-config';
         $filename = 'breeze-config';
-        if (is_multisite() && ! is_network_admin()) {
+        if (is_multisite() && !is_network_admin()) {
             $filename .= '-' . get_current_blog_id();
         }
 
         $config_file = $config_dir . DIRECTORY_SEPARATOR . $filename . '.php';
 
-        if (is_multisite() && ! is_network_admin() && breeze_does_inherit_settings()) {
+        if (is_multisite() && !is_network_admin() && breeze_does_inherit_settings()) {
             // Site inherits network-level setting, do not create separate configuration file and remove existing configuration file.
             if ($wp_filesystem->exists($config_file)) {
                 $wp_filesystem->delete($config_file, true);
@@ -248,7 +248,7 @@ class Breeze_ConfigCache {
         }
 
         // Couldn't find wp-config.php
-        if ( ! $config_path) {
+        if (!$config_path) {
             return false;
         }
 
@@ -263,7 +263,7 @@ class Breeze_ConfigCache {
         $line_key = false;
 
         foreach ($config_file as $key => $line) {
-            if ( ! preg_match('/^\s*define\(\s*(\'|")([A-Z_]+)(\'|")(.*)/', $line, $match)) {
+            if (!preg_match('/^\s*define\(\s*(\'|")([A-Z_]+)(\'|")(.*)/', $line, $match)) {
                 continue;
             }
 
@@ -287,7 +287,7 @@ class Breeze_ConfigCache {
             }
         }
 
-        if ( ! $wp_filesystem->put_contents($config_path, implode(PHP_EOL, $config_file))) {
+        if (!$wp_filesystem->put_contents($config_path, implode(PHP_EOL, $config_file))) {
             return false;
         }
 
@@ -302,19 +302,19 @@ class Breeze_ConfigCache {
 
         $ret = true;
 
-        if ( ! $wp_filesystem->delete($file)) {
+        if (!$wp_filesystem->delete($file)) {
             $ret = false;
         }
 
         $folder = untrailingslashit(breeze_get_cache_base_path());
 
-        if ( ! $wp_filesystem->delete($folder, true)) {
+        if (!$wp_filesystem->delete($folder, true)) {
             $ret = false;
         }
 
         $folder = untrailingslashit(WP_CONTENT_DIR) . '/cache/breeze-minification';
 
-        if ( ! $wp_filesystem->delete($folder, true)) {
+        if (!$wp_filesystem->delete($folder, true)) {
             $ret = false;
         }
 
@@ -333,7 +333,7 @@ class Breeze_ConfigCache {
     public static function factory() {
         static $instance;
 
-        if ( ! $instance) {
+        if (!$instance) {
             $instance = new self();
         }
 

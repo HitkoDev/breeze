@@ -23,19 +23,19 @@ defined('ABSPATH') || exit('No direct script access allowed!');
 class Breeze_Minify {
     public function __construct() {
         //check disable cache for page
-        $domain = ((( ! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ( ! empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+        $domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
         $current_url = $domain . $_SERVER['REQUEST_URI'];
 
         $check_url = $this->check_exclude_url($current_url);
 
         //load config file when redirect template
-        if ( ! $check_url && self::should_cache()) {
+        if (!$check_url && self::should_cache()) {
             //cache html
             //cache minification
             if (Breeze_MinificationCache::create_cache_minification_folder()) {
                 $conf = breeze_get_option('basic_settings');
                 $config_advanced = breeze_get_option('advanced_settings');
-                if ( ! empty($conf['breeze-minify-html']) || ! empty($conf['breeze-minify-css']) || ! empty($conf['breeze-minify-js']) || ! empty($config_advanced['breeze-defer-js'])) {
+                if (!empty($conf['breeze-minify-html']) || !empty($conf['breeze-minify-css']) || !empty($conf['breeze-minify-js']) || !empty($config_advanced['breeze-defer-js'])) {
                     if (defined('breeze_INIT_EARLIER')) {
                         add_action('init', [$this, 'breeze_start_buffering'], -1);
                     } else {
@@ -70,7 +70,7 @@ class Breeze_Minify {
         }
         // filter you can use to block autoptimization on your own terms
         $ao_noptimize = (bool) apply_filters('breeze_filter_noptimize', $ao_noptimize);
-        if ( ! is_feed() && ! $ao_noptimize && ! is_admin()) {
+        if (!is_feed() && !$ao_noptimize && !is_admin()) {
             // Config element
             $conf = breeze_get_option('basic_settings');
             $config_advanced = breeze_get_option('advanced_settings');
@@ -79,43 +79,43 @@ class Breeze_Minify {
             include_once BREEZE_PLUGIN_DIR . 'inc/minification/breeze-minification-base.php';
 
             // Load extra classes and set some vars
-            if ( ! empty($conf['breeze-minify-html'])) {
+            if (!empty($conf['breeze-minify-html'])) {
                 include_once BREEZE_PLUGIN_DIR . 'inc/minification/breeze-minification-html.php';
                 // BUG: new minify-html does not support keeping HTML comments, skipping for now
-                if ( ! class_exists('Minify_HTML')) {
+                if (!class_exists('Minify_HTML')) {
                     @include BREEZE_PLUGIN_DIR . 'inc/minification/minify/minify-html.php';
                 }
             }
 
-            if ( ! empty($conf['breeze-minify-js'])) {
+            if (!empty($conf['breeze-minify-js'])) {
                 include_once BREEZE_PLUGIN_DIR . 'inc/minification/breeze-minification-scripts.php';
 
                 // JS/CSS minifier library
                 include_once BREEZE_PLUGIN_DIR . 'vendor/autoload.php';
 
-                if ( ! defined('CONCATENATE_SCRIPTS')) {
+                if (!defined('CONCATENATE_SCRIPTS')) {
                     define('CONCATENATE_SCRIPTS', false);
                 }
-                if ( ! defined('COMPRESS_SCRIPTS')) {
+                if (!defined('COMPRESS_SCRIPTS')) {
                     define('COMPRESS_SCRIPTS', false);
                 }
-            } elseif ( ! empty($config_advanced['breeze-defer-js'])) {
+            } elseif (!empty($config_advanced['breeze-defer-js'])) {
                 // If we have defer scripts to handle, load only the script for this action.
                 include_once BREEZE_PLUGIN_DIR . 'inc/minification/breeze-js-deferred-loading.php';
             }
 
-            if ( ! empty($conf['breeze-minify-css'])) {
+            if (!empty($conf['breeze-minify-css'])) {
                 include_once BREEZE_PLUGIN_DIR . 'inc/minification/breeze-minification-styles.php';
                 if (defined('breeze_LEGACY_MINIFIERS')) {
-                    if ( ! class_exists('Minify_CSS_Compressor')) {
+                    if (!class_exists('Minify_CSS_Compressor')) {
                         @include BREEZE_PLUGIN_DIR . 'inc/minification/minify/minify-css-compressor.php';
                     }
                 } else {
-                    if ( ! class_exists('CSSmin')) {
+                    if (!class_exists('CSSmin')) {
                         @include BREEZE_PLUGIN_DIR . 'inc/minification/minify/yui-php-cssmin-2.4.8-4_fgo.php';
                     }
                 }
-                if ( ! defined('COMPRESS_CSS')) {
+                if (!defined('COMPRESS_CSS')) {
                     define('COMPRESS_CSS', false);
                 }
             }
@@ -156,30 +156,30 @@ class Breeze_Minify {
         // Choose the classes
         $classes = [];
         $js_include_inline = $css_include_inline = false;
-        if ( ! empty($conf['breeze-minify-js'])) {
+        if (!empty($conf['breeze-minify-js'])) {
             $classes[] = 'Breeze_MinificationScripts';
-        } elseif ( ! empty($minify['breeze-defer-js'])) {
+        } elseif (!empty($minify['breeze-defer-js'])) {
             $classes[] = 'Breeze_Js_Deferred_Loading';
         }
 
-        if ( ! empty($conf['breeze-minify-css'])) {
+        if (!empty($conf['breeze-minify-css'])) {
             $classes[] = 'Breeze_MinificationStyles';
         }
-        if ( ! empty($conf['breeze-minify-html'])) {
+        if (!empty($conf['breeze-minify-html'])) {
             $classes[] = 'Breeze_MinificationHtml';
         }
-        if ( ! empty($conf['breeze-include-inline-js'])) {
+        if (!empty($conf['breeze-include-inline-js'])) {
             $js_include_inline = true;
         }
-        if ( ! empty($conf['breeze-include-inline-css'])) {
+        if (!empty($conf['breeze-include-inline-css'])) {
             $css_include_inline = true;
         }
         $groupcss = false;
         $groupjs = false;
-        if ( ! empty($minify['breeze-group-css'])) {
+        if (!empty($minify['breeze-group-css'])) {
             $groupcss = true;
         }
-        if ( ! empty($minify['breeze-group-js'])) {
+        if (!empty($minify['breeze-group-js'])) {
             $groupjs = true;
         }
 
@@ -223,7 +223,7 @@ class Breeze_Minify {
         $content = apply_filters('breeze_filter_html_before_minify', $content);
 
         if (
-            ! empty($conf)
+            !empty($conf)
             && $conf['breeze-disable-admin']
             && (
                 current_user_can('administrator')
@@ -282,19 +282,19 @@ class Breeze_Minify {
         $opts_config = breeze_get_option('advanced_settings');
 
         $config_options = $this->read_the_config_file();
-        if ( ! empty($config_options)) {
+        if (!empty($config_options)) {
             $opts_config['breeze-exclude-urls'] = array_merge($opts_config['breeze-exclude-urls'], $config_options);
             $urls = array_unique($opts_config['breeze-exclude-urls']);
             $opts_config['breeze-exclude-urls'] = array_map([$this, 'rtrim_urls'], $urls);
         }
 
         $is_exclude = breeze_check_for_exclude_values($current_url, $opts_config['breeze-exclude-urls']);
-        if ( ! empty($is_exclude)) {
+        if (!empty($is_exclude)) {
             return true;
         }
 
         //check disable cache for page
-        if ( ! empty($opts_config['breeze-exclude-urls'])) {
+        if (!empty($opts_config['breeze-exclude-urls'])) {
             foreach ($opts_config['breeze-exclude-urls'] as $v) {
                 // Clear blank character
                 $v = trim($v);
@@ -346,7 +346,7 @@ class Breeze_Minify {
     public function read_the_config_file() {
         $config_dir = trailingslashit(WP_CONTENT_DIR) . 'breeze-config';
         $filename = 'breeze-config';
-        if (is_multisite() && ! is_network_admin()) {
+        if (is_multisite() && !is_network_admin()) {
             $filename .= '-' . get_current_blog_id();
         }
 
@@ -354,7 +354,7 @@ class Breeze_Minify {
 
         if (file_exists($config_file)) {
             $config = include $config_file;
-            if (empty($config) || ! isset($config['exclude_url']) || empty($config['exclude_url'])) {
+            if (empty($config) || !isset($config['exclude_url']) || empty($config['exclude_url'])) {
                 return false;
             }
 

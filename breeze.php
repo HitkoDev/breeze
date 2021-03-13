@@ -33,28 +33,28 @@
 
 defined('ABSPATH') || exit('No direct script access allowed!');
 
-if ( ! defined('BREEZE_PLUGIN_DIR')) {
+if (!defined('BREEZE_PLUGIN_DIR')) {
     define('BREEZE_PLUGIN_DIR', plugin_dir_path(__FILE__));
 }
-if ( ! defined('BREEZE_VERSION')) {
+if (!defined('BREEZE_VERSION')) {
     define('BREEZE_VERSION', '2.1.9');
 }
-if ( ! defined('BREEZE_SITEURL')) {
+if (!defined('BREEZE_SITEURL')) {
     define('BREEZE_SITEURL', get_site_url());
 }
-if ( ! defined('BREEZE_MINIFICATION_CACHE')) {
+if (!defined('BREEZE_MINIFICATION_CACHE')) {
     define('BREEZE_MINIFICATION_CACHE', WP_CONTENT_DIR . '/cache/breeze-minification/');
 }
-if ( ! defined('BREEZE_CACHEFILE_PREFIX')) {
+if (!defined('BREEZE_CACHEFILE_PREFIX')) {
     define('BREEZE_CACHEFILE_PREFIX', 'breeze_');
 }
-if ( ! defined('BREEZE_CACHE_CHILD_DIR')) {
+if (!defined('BREEZE_CACHE_CHILD_DIR')) {
     define('BREEZE_CACHE_CHILD_DIR', '/cache/breeze-minification/');
 }
-if ( ! defined('BREEZE_WP_CONTENT_NAME')) {
+if (!defined('BREEZE_WP_CONTENT_NAME')) {
     define('BREEZE_WP_CONTENT_NAME', '/' . wp_basename(WP_CONTENT_DIR));
 }
-if ( ! defined('BREEZE_BASENAME')) {
+if (!defined('BREEZE_BASENAME')) {
     define('BREEZE_BASENAME', plugin_basename(__FILE__));
 }
 
@@ -98,11 +98,11 @@ if (is_admin() || php_sapi_name() === 'cli') {
     $basic_conf = breeze_get_option('basic_settings');
     $config_advanced = breeze_get_option('advanced_settings');
 
-    if ( ! empty($cdn_conf['cdn-active'])
-         || ! empty($basic_conf['breeze-minify-js'])
-         || ! empty($basic_conf['breeze-minify-css'])
-         || ! empty($basic_conf['breeze-minify-html'])
-         || ! empty($config_advanced['breeze-defer-js'])) {
+    if (!empty($cdn_conf['cdn-active'])
+         || !empty($basic_conf['breeze-minify-js'])
+         || !empty($basic_conf['breeze-minify-css'])
+         || !empty($basic_conf['breeze-minify-html'])
+         || !empty($config_advanced['breeze-defer-js'])) {
         // Call back ob start
         ob_start('breeze_ob_start_callback');
     }
@@ -114,7 +114,7 @@ function breeze_ob_start_callback($buffer) {
     // Get buffer from minify
     $buffer = apply_filters('breeze_minify_content_return', $buffer);
 
-    if ( ! empty($conf) || ! empty($conf['cdn-active'])) {
+    if (!empty($conf) || !empty($conf['cdn-active'])) {
         // Get buffer after remove query strings
         $buffer = apply_filters('breeze_cdn_content_return', $buffer);
     }
@@ -131,7 +131,7 @@ add_action('init', function () {
     new Breeze_Minify();
 }, 0);
 // CDN Integration
-if ( ! class_exists('Breeze_CDN_Integration')) {
+if (!class_exists('Breeze_CDN_Integration')) {
     require_once BREEZE_PLUGIN_DIR . 'inc/cdn-integration/breeze-cdn-integration.php';
     require_once BREEZE_PLUGIN_DIR . 'inc/cdn-integration/breeze-cdn-rewrite.php';
     add_action('init', function () {
@@ -169,7 +169,7 @@ function breeze_after_plugin_update_done($upgrader_object, $options) {
 add_action('upgrader_process_complete', 'breeze_after_plugin_update_done', 10, 2);
 
 function breeze_check_for_new_version() {
-    if ( ! empty(get_option('breeze_new_update', ''))) {
+    if (!empty(get_option('breeze_new_update', ''))) {
         if (class_exists('Breeze_Configuration') && method_exists('Breeze_Configuration', 'update_htaccess')) {
             Breeze_Configuration::update_htaccess();
         }
@@ -194,7 +194,7 @@ if (isset($_GET['settings_debug'])) {
         $inherit_option = get_option('breeze_inherit_settings');
         $inherit = true;
 
-        if ( ! is_network_admin() && $inherit_option === '0') {
+        if (!is_network_admin() && $inherit_option === '0') {
             $inherit = false;
         }
 

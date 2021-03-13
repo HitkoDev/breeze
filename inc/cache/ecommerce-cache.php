@@ -37,7 +37,7 @@ class Breeze_Ecommerce_Cache {
             }
             Breeze_ConfigCache::write_config_cache();
         }
-        if ( ! empty($check)) {
+        if (!empty($check)) {
             global $wp_filesystem;
             if (empty($wp_filesystem)) {
                 require_once ABSPATH . '/wp-admin/includes/file.php';
@@ -108,7 +108,7 @@ class Breeze_Ecommerce_Cache {
     public function get_basic_urls($postID, $regex = null) {
         $permalink = get_option('permalink_structure');
 
-        if ( ! empty($permalink)) {
+        if (!empty($permalink)) {
             // Custom URL structure
             $url = parse_url(get_permalink($postID), PHP_URL_PATH);
         } else {
@@ -129,7 +129,7 @@ class Breeze_Ecommerce_Cache {
             if (isset($sitepress)) {
                 $active_languages = $sitepress->get_active_languages();
 
-                if ( ! empty($active_languages)) {
+                if (!empty($active_languages)) {
                     $languages = array_keys($active_languages);
                     foreach ($languages as $language) {
                         $translatedId = icl_object_id($postID, 'page', false, $language);
@@ -147,7 +147,7 @@ class Breeze_Ecommerce_Cache {
         if (class_exists('Polylang') && function_exists('pll_languages_list') && function_exists('PLL')) {
             $translatedId = pll_get_post_translations($postID);
 
-            if ( ! empty($translatedId)) {
+            if (!empty($translatedId)) {
                 foreach ($translatedId as $id) {
                     $urls[] = $this->get_basic_urls($id, $regex);
                 }
@@ -161,7 +161,7 @@ class Breeze_Ecommerce_Cache {
             if (isset($q_config) && function_exists('qtranxf_convertURL')) {
                 $url = $this->get_basic_urls($postID);
 
-                if ( ! empty($q_config['enabled_languages'])) {
+                if (!empty($q_config['enabled_languages'])) {
                     foreach ($q_config['enabled_languages'] as $language) {
                         $urls[] = qtranxf_convertURL($url, $language, true);
                     }
@@ -182,7 +182,7 @@ class Breeze_Ecommerce_Cache {
     public static function factory() {
         static $instance;
 
-        if ( ! $instance) {
+        if (!$instance) {
             $instance = new self();
         }
         return $instance;

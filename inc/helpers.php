@@ -31,19 +31,19 @@ function breeze_get_option($option_name, $is_local = false) {
 
     global $breeze_network_subsite_settings;
 
-    if (is_network_admin() && ! $breeze_network_subsite_settings) {
+    if (is_network_admin() && !$breeze_network_subsite_settings) {
         $is_local = false;
-    } elseif ( ! breeze_does_inherit_settings()) {
+    } elseif (!breeze_does_inherit_settings()) {
         $inherit = false;
     }
 
-    if ( ! is_multisite() || $is_local || ! $inherit) {
+    if (!is_multisite() || $is_local || !$inherit) {
         $option = get_option('breeze_' . $option_name);
     } else {
         $option = get_site_option('breeze_' . $option_name);
     }
 
-    if (empty($option) || ! is_array($option)) {
+    if (empty($option) || !is_array($option)) {
         $option = [];
     }
 
@@ -62,7 +62,7 @@ function breeze_update_option($option_name, $value, $is_local = false) {
         $is_local = false;
     }
 
-    if ( ! is_multisite() || $is_local) {
+    if (!is_multisite() || $is_local) {
         update_option('breeze_' . $option_name, $value);
     } else {
         update_site_option('breeze_' . $option_name, $value);
@@ -77,7 +77,7 @@ function breeze_update_option($option_name, $value, $is_local = false) {
 function breeze_does_inherit_settings() {
     global $breeze_network_subsite_settings;
 
-    if ( ! is_multisite() || ( ! $breeze_network_subsite_settings && is_network_admin())) {
+    if (!is_multisite() || (!$breeze_network_subsite_settings && is_network_admin())) {
         return false;
     }
 
@@ -117,13 +117,13 @@ function breeze_is_supported($check) {
  * @since 1.1.0
  */
 function breeze_validate_urls($url_list = []) {
-    if ( ! is_array($url_list)) {
+    if (!is_array($url_list)) {
         return false;
     }
 
     $is_valid = true;
     foreach ($url_list as $url) {
-        if ( ! filter_var($url, FILTER_VALIDATE_URL)) {
+        if (!filter_var($url, FILTER_VALIDATE_URL)) {
             $is_valid = false;
             if ($is_valid === false) {
                 $is_valid = breeze_validate_url_via_regexp($url);
@@ -143,7 +143,7 @@ function breeze_validate_urls($url_list = []) {
 }
 
 function breeze_validate_the_right_extension($url_list = [], $extension = 'css') {
-    if ( ! is_array($url_list)) {
+    if (!is_array($url_list)) {
         return false;
     }
 
@@ -182,11 +182,11 @@ function breeze_get_file_extension_from_url($url_given = '') {
     }
 
     $file_path = wp_parse_url($url_given, PHP_URL_PATH);
-    if ( ! empty($file_path)) {
+    if (!empty($file_path)) {
         $file_name = wp_basename($file_path);
-        if ( ! empty($file_name)) {
+        if (!empty($file_name)) {
             $bits = explode('.', $file_name);
-            if ( ! empty($bits)) {
+            if (!empty($bits)) {
                 $extension_id = count($bits) - 1;
                 $extension = strtolower($bits[$extension_id]);
                 $extension = preg_replace('/\s+/', ' ', $extension);
@@ -416,7 +416,7 @@ function is_varnish_cache_started($retry = 1, $time_fresh = 0, $use_headers = fa
         return true;
     }
 
-    if ( ! isset($headers['x-cache'])) {
+    if (!isset($headers['x-cache'])) {
         if ($retry === 1) {
             ++$retry;
 
@@ -523,7 +523,7 @@ function breeze_get_headers_via_curl($url_ping = '') {
 function is_varnish_layer_started() {
     $data = $_SERVER;
 
-    if ( ! isset($data['HTTP_X_VARNISH'])) {
+    if (!isset($data['HTTP_X_VARNISH'])) {
         return false;
     }
 
@@ -539,7 +539,7 @@ function is_varnish_layer_started() {
         }
     }
 
-    if ( ! isset($data['HTTP_X_APPLICATION'])) {
+    if (!isset($data['HTTP_X_APPLICATION'])) {
         return false;
     }
 
@@ -604,10 +604,10 @@ function multisite_blog_id_config() {
     global $blog_id;
 
     $blog_id_requested = isset($GLOBALS['breeze_config']['blog_id']) ? $GLOBALS['breeze_config']['blog_id'] : 0;
-    if ( ! empty($blog_id_requested)) {
+    if (!empty($blog_id_requested)) {
         return $blog_id_requested;
     }
 
-    if ( ! empty($blog_id)) {
+    if (!empty($blog_id)) {
     }
 }

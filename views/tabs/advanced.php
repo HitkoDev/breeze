@@ -8,21 +8,21 @@ $excluded_js_check = true;
 $excluded_css_check_extension = true;
 $excluded_js_check_extension = true;
 $excluded_url_list = true;
-if (isset($advanced['breeze-exclude-css']) && ! empty($advanced['breeze-exclude-css'])) {
+if (isset($advanced['breeze-exclude-css']) && !empty($advanced['breeze-exclude-css'])) {
     $excluded_css_check = breeze_validate_urls($advanced['breeze-exclude-css']);
     if ($excluded_css_check === true) {
         $excluded_css_check_extension = breeze_validate_the_right_extension($advanced['breeze-exclude-css'], 'css');
     }
 }
 
-if (isset($advanced['breeze-exclude-js']) && ! empty($advanced['breeze-exclude-js'])) {
+if (isset($advanced['breeze-exclude-js']) && !empty($advanced['breeze-exclude-js'])) {
     $excluded_js_check = breeze_validate_urls($advanced['breeze-exclude-js']);
     if ($excluded_js_check === true) {
         $excluded_js_check_extension = breeze_validate_the_right_extension($advanced['breeze-exclude-js'], 'js');
     }
 }
 
-if (isset($advanced['breeze-exclude-urls']) && ! empty($advanced['breeze-exclude-urls'])) {
+if (isset($advanced['breeze-exclude-urls']) && !empty($advanced['breeze-exclude-urls'])) {
     $excluded_url_list = breeze_validate_urls($advanced['breeze-exclude-urls']);
 }
 ?>
@@ -34,7 +34,7 @@ if (isset($advanced['breeze-exclude-urls']) && ! empty($advanced['breeze-exclude
 		<td>
 			<?php
             $css_output = '';
-            if ( ! empty($advanced['breeze-exclude-urls'])) {
+            if (!empty($advanced['breeze-exclude-urls'])) {
                 $output = implode("\n", $advanced['breeze-exclude-urls']);
                 $css_output = esc_textarea($output);
             }
@@ -84,7 +84,7 @@ if (isset($advanced['breeze-exclude-urls']) && ! empty($advanced['breeze-exclude
 		<td>
 			<?php
             $css_output = '';
-            if ( ! empty($advanced['breeze-exclude-css'])) {
+            if (!empty($advanced['breeze-exclude-css'])) {
                 $output = implode("\n", $advanced['breeze-exclude-css']);
                 $css_output = esc_textarea($output);
             }
@@ -108,7 +108,7 @@ if (isset($advanced['breeze-exclude-urls']) && ! empty($advanced['breeze-exclude
 		<td>
 			<?php
             $js_output = '';
-            if ( ! empty($advanced['breeze-exclude-js'])) {
+            if (!empty($advanced['breeze-exclude-js'])) {
                 $output = implode("\n", $advanced['breeze-exclude-js']);
                 $js_output = esc_textarea($output);
             }
@@ -131,7 +131,7 @@ if (isset($advanced['breeze-exclude-urls']) && ! empty($advanced['breeze-exclude
 		</td>
 		<td>
 			<div class="breeze-list-url">
-				<?php if ( ! empty($advanced['breeze-move-to-footer-js'])) { ?>
+				<?php if (!empty($advanced['breeze-move-to-footer-js'])) { ?>
 					<?php foreach ($advanced['breeze-move-to-footer-js'] as $js_url) { ?>
 						<div class="breeze-input-group">
 					<span class="sort-handle">
@@ -184,7 +184,7 @@ if (isset($advanced['breeze-exclude-urls']) && ! empty($advanced['breeze-exclude
 		</td>
 		<td>
 			<div class="breeze-list-url">
-				<?php if ( ! empty($advanced['breeze-defer-js'])) { ?>
+				<?php if (!empty($advanced['breeze-defer-js'])) { ?>
 					<?php foreach ($advanced['breeze-defer-js'] as $js_url) { ?>
 						<div class="breeze-input-group">
 							<span class="sort-handle">

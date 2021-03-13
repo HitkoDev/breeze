@@ -131,7 +131,7 @@ class CSSmin {
         }
 
         // Minify each chunk
-        for ($i = 0, $n = count($css_chunks); $i < $n; ++$i ) {
+        for ($i = 0, $n = count($css_chunks); $i < $n; ++$i) {
             $css_chunks[$i] = $this->minify($css_chunks[$i], $linebreak_pos);
             // Keep the first @charset at-rule found
             if (empty($charset) && preg_match($charset_regexp, $css_chunks[$i], $matches)) {
@@ -214,7 +214,7 @@ class CSSmin {
      */
     private function minify($css, $linebreak_pos) {
         // strings are safe, now wrestle the comments
-        for ($i = 0, $max = count($this->comments); $i < $max; ++$i ) {
+        for ($i = 0, $max = count($this->comments); $i < $max; ++$i) {
             $token = $this->comments[$i];
             $placeholder = '/' . self::COMMENT . $i . '___/';
 
@@ -420,7 +420,7 @@ class CSSmin {
         }
 
         // restore preserved comments and strings in reverse order
-        for ($i = count($this->preserved_tokens) - 1; $i >= 0; --$i ) {
+        for ($i = count($this->preserved_tokens) - 1; $i >= 0; --$i) {
             $css = preg_replace('/' . self::TOKEN . $i . '___/', $this->preserved_tokens[$i], $css, 1);
             // $css.=$this->preserved_tokens[$i];
         }
@@ -582,7 +582,7 @@ class CSSmin {
         // maybe the string contains a comment-like substring?
         // one, maybe more? put'em back then
         if (($pos = $this->index_of($match, self::COMMENT)) >= 0) {
-            for ($i = 0, $max = count($this->comments); $i < $max; ++$i ) {
+            for ($i = 0, $max = count($this->comments); $i < $max; ++$i) {
                 $match = preg_replace('/' . self::COMMENT . $i . '___/', $this->comments[$i], $match, 1);
             }
         }
@@ -625,7 +625,7 @@ class CSSmin {
         // Support for percentage values rgb(100%, 0%, 45%);
         if ($this->index_of($matches[1], '%') >= 0) {
             $rgbcolors = explode(',', str_replace('%', '', $matches[1]));
-            for ($i = 0; $i < count($rgbcolors); ++$i ) {
+            for ($i = 0; $i < count($rgbcolors); ++$i) {
                 $rgbcolors[$i] = $this->round_number(floatval($rgbcolors[$i]) * 2.55);
             }
         } else {
@@ -633,13 +633,13 @@ class CSSmin {
         }
 
         // Values outside the sRGB color space should be clipped (0-255)
-        for ($i = 0; $i < count($rgbcolors); ++$i ) {
+        for ($i = 0; $i < count($rgbcolors); ++$i) {
             $rgbcolors[$i] = $this->clamp_number(intval($rgbcolors[$i], 10), 0, 255);
             $rgbcolors[$i] = sprintf('%02x', $rgbcolors[$i]);
         }
 
         // Fix for issue #2528093
-        if ( ! preg_match('/[\s\,\);\}]/', $matches[2])) {
+        if (!preg_match('/[\s\,\);\}]/', $matches[2])) {
             $matches[2] = ' ' . $matches[2];
         }
 

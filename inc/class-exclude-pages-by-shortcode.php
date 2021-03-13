@@ -1,6 +1,6 @@
 <?php
 
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     header('Status: 403 Forbidden');
     header('HTTP/1.1 403 Forbidden');
     exit;
@@ -34,8 +34,8 @@ class Exclude_Pages_By_Shortcode {
 
         $shortcode_list = self::shortcode_exception_list_fixed();
 
-        if ( ! empty($output_shortcodes)) {
-            if (isset($output_shortcodes[1]) && ! empty($output_shortcodes[1])) {
+        if (!empty($output_shortcodes)) {
+            if (isset($output_shortcodes[1]) && !empty($output_shortcodes[1])) {
                 $data = $output_shortcodes[1];
                 $data = array_unique($data);
 
@@ -49,7 +49,7 @@ class Exclude_Pages_By_Shortcode {
                         return false;
                     });
 
-                    if ( ! empty($result)) {
+                    if (!empty($result)) {
                         $found = true;
                         break;
                     }
@@ -57,7 +57,7 @@ class Exclude_Pages_By_Shortcode {
             }
 
             if ($found === true) {
-                if ( ! in_array($page_id, $saved_pages, true)) {
+                if (!in_array($page_id, $saved_pages, true)) {
                     $saved_pages[] = $page_id;
                     update_option('breeze_exclude_url_pages', $saved_pages);
                     $action_taken = true;
@@ -85,13 +85,13 @@ class Exclude_Pages_By_Shortcode {
             }
 
             // import these file in front-end when required.
-            if ( ! class_exists('Breeze_Ecommerce_Cache')) {
+            if (!class_exists('Breeze_Ecommerce_Cache')) {
                 //cache when ecommerce installed
                 require_once BREEZE_PLUGIN_DIR . 'inc/cache/ecommerce-cache.php';
             }
 
             // import these file in front-end when required.
-            if ( ! class_exists('Breeze_ConfigCache')) {
+            if (!class_exists('Breeze_ConfigCache')) {
                 //config to cache
                 require_once BREEZE_PLUGIN_DIR . 'inc/cache/config-cache.php';
             }

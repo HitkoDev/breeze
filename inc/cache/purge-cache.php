@@ -18,7 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit;
 }
 class Breeze_PurgeCache {
@@ -42,7 +42,7 @@ class Breeze_PurgeCache {
     public function set_comment_cookie_exceptions($comment, $user) {
         $config = breeze_get_option('basic_settings');
         // File based caching only
-        if ( ! empty($config['breeze-active'])) {
+        if (!empty($config['breeze-active'])) {
             $post_id = $comment->comment_post_ID;
 
             setcookie('breeze_commented_posts[' . $post_id . ']', parse_url(get_permalink($post_id), PHP_URL_PATH), (time() + HOUR_IN_SECONDS * 24 * 30));
@@ -55,14 +55,14 @@ class Breeze_PurgeCache {
         if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || $post_type === 'revision') {
             return;
         }
-        if ( ! current_user_can('edit_post', $post_id) && ( ! defined('DOING_CRON') || ! DOING_CRON)) {
+        if (!current_user_can('edit_post', $post_id) && (!defined('DOING_CRON') || !DOING_CRON)) {
             return;
         }
 
         $config = breeze_get_option('basic_settings');
 
         // File based caching only
-        if ( ! empty($config['breeze-active'])) {
+        if (!empty($config['breeze-active'])) {
             self::breeze_cache_flush();
         }
     }
@@ -73,7 +73,7 @@ class Breeze_PurgeCache {
         }
         $config = breeze_get_option('basic_settings');
         // File based caching only
-        if ( ! empty($config['breeze-active'])) {
+        if (!empty($config['breeze-active'])) {
             $post_id = $commentdata['comment_post_ID'];
 
             global $wp_filesystem;
@@ -95,9 +95,9 @@ class Breeze_PurgeCache {
         $config = breeze_get_option('basic_settings');
 
         // File based caching only
-        if ( ! empty($config['breeze-active'])) {
+        if (!empty($config['breeze-active'])) {
             $comment = get_comment($comment_ID);
-            if ( ! empty($comment)) {
+            if (!empty($comment)) {
                 $post_id = $comment->comment_post_ID;
 
                 global $wp_filesystem;
@@ -137,13 +137,13 @@ class Breeze_PurgeCache {
 
         $ret = true;
 
-        if ( ! $wp_filesystem->delete($file)) {
+        if (!$wp_filesystem->delete($file)) {
             $ret = false;
         }
 
         $folder = untrailingslashit(breeze_get_cache_base_path());
 
-        if ( ! $wp_filesystem->delete($folder, true)) {
+        if (!$wp_filesystem->delete($folder, true)) {
             $ret = false;
         }
 
@@ -160,7 +160,7 @@ class Breeze_PurgeCache {
     public static function factory() {
         static $instance;
 
-        if ( ! $instance) {
+        if (!$instance) {
             $instance = new self();
             $instance->set_action();
         }

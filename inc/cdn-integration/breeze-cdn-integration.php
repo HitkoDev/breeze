@@ -43,7 +43,7 @@ class Breeze_CDN_Integration {
             return;
         }
 
-        if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['job_id']) && ! empty($_GET['job_id'])) {
+        if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['job_id']) && !empty($_GET['job_id'])) {
             return;
         }
 

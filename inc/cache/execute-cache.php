@@ -21,7 +21,7 @@ if (strpos($_SERVER['REQUEST_URI'], 'breeze-minification') !== false) {
 }
 
 // Don't cache non-GET requests
-if ( ! isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'GET') {
+if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'GET') {
     return;
 }
 
@@ -30,7 +30,7 @@ $file_extension = preg_replace('#^(.*?)\?.*$#', '$1', $file_extension);
 $file_extension = trim(preg_replace('#^.*\.(.*)$#', '$1', $file_extension));
 
 // Don't cache disallowed extensions. Prevents wp-cron.php, xmlrpc.php, etc.
-if ( ! preg_match('#index\.php$#i', $_SERVER['REQUEST_URI']) && in_array($file_extension, ['php', 'xml', 'xsl'])) {
+if (!preg_match('#index\.php$#i', $_SERVER['REQUEST_URI']) && in_array($file_extension, ['php', 'xml', 'xsl'])) {
     return;
 }
 
@@ -52,7 +52,7 @@ if (substr_count($url_path, '?') > 0) {
 }
 
 // Don't cache
-if ( ! empty($_COOKIE)) {
+if (!empty($_COOKIE)) {
     $wp_cookies = ['wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_'];
 
     foreach ($_COOKIE as $key => $value) {
@@ -75,7 +75,7 @@ if ( ! empty($_COOKIE)) {
         }
     }
 
-    if ( ! empty($_COOKIE['breeze_commented_posts'])) {
+    if (!empty($_COOKIE['breeze_commented_posts'])) {
         foreach ($_COOKIE['breeze_commented_posts'] as $path) {
             if (rtrim($path, '/') === rtrim($_SERVER['REQUEST_URI'], '/')) {
                 // User commented on this post
@@ -86,17 +86,17 @@ if ( ! empty($_COOKIE)) {
 }
 
 //check disable cache for page
-$domain = ((( ! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
+$domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
 //decode url with russian language
 $current_url = $domain . rawurldecode($_SERVER['REQUEST_URI']);
 $opts_config = $GLOBALS['breeze_config'];
 $check_exclude = check_exclude_page($opts_config, $current_url);
 //load cache
-if ( ! $check_exclude) {
+if (!$check_exclude) {
     $devices = $opts_config['cache_options'];
     $X1 = '';
     // Detect devices
-    if ($detect->isMobile() && ! $detect->isTablet()) {
+    if ($detect->isMobile() && !$detect->isTablet()) {
         //        The first X will be D for Desktop cache
         //                            M for Mobile cache
         //                            T for Tablet cache
@@ -140,7 +140,7 @@ function breeze_cache($buffer, $flags) {
     include_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
     $detect = new Detection\MobileDetect();
     //not cache per administrator if option disable optimization for admin users clicked
-    if ( ! empty($GLOBALS['breeze_config']) && (int) $GLOBALS['breeze_config']['disable_per_adminuser']) {
+    if (!empty($GLOBALS['breeze_config']) && (int) $GLOBALS['breeze_config']['disable_per_adminuser']) {
         if (function_exists('is_user_logged_in') && is_user_logged_in()) {
             $current_user = wp_get_current_user();
             if (in_array('administrator', $current_user->roles)) {
@@ -170,7 +170,7 @@ function breeze_cache($buffer, $flags) {
     $path = $cache_base_path . md5($url_path);
 
     // Make sure we can read/write files and that proper folders exist
-    if ( ! wp_mkdir_p($path)) {
+    if (!wp_mkdir_p($path)) {
         // Can not cache!
         return $buffer;
     }
@@ -196,7 +196,7 @@ function breeze_cache($buffer, $flags) {
         ]
     ];
 
-    if ( ! isset($_SERVER['HTTP_X_VARNISH'])) {
+    if (!isset($_SERVER['HTTP_X_VARNISH'])) {
         $headers = array_merge([
             [
                 'name' => 'Expires',
@@ -231,7 +231,7 @@ function breeze_cache($buffer, $flags) {
     }
     $devices = $GLOBALS['breeze_config']['cache_options'];
     // Detect devices
-    if ($detect->isMobile() && ! $detect->isTablet()) {
+    if ($detect->isMobile() && !$detect->isTablet()) {
         if ($devices['breeze-mobile-cache'] == 1) {
             $X1 = 'D';
             $url_path .= '_breeze_cache_desktop';
@@ -248,7 +248,7 @@ function breeze_cache($buffer, $flags) {
     }
 
     if (strpos($url_path, '_breeze_cache_') !== false) {
-        if ( ! empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression']) && function_exists('gzencode')) {
+        if (!empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression']) && function_exists('gzencode')) {
             $wp_filesystem->put_contents($path . md5($url_path . '/index.gzip.html') . '.php', $data);
             $wp_filesystem->touch($path . md5($url_path . '/index.gzip.html') . '.php', $modified_time);
         } else {
@@ -263,13 +263,13 @@ function breeze_cache($buffer, $flags) {
     header('Cache-Provider:CLOUDWAYS-CACHE-' . $X1 . 'C');
 
     // Do not send this header in case we are behind a varnish proxy
-    if ( ! isset($_SERVER['HTTP_X_VARNISH'])) {
+    if (!isset($_SERVER['HTTP_X_VARNISH'])) {
         header('Cache-Control: no-cache'); // Check back every time to see if re-download is necessary
     }
 
     header('Last-Modified: ' . gmdate('D, d M Y H:i:s', $modified_time) . ' GMT');
 
-    if (function_exists('ob_gzhandler') && ! empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
+    if (function_exists('ob_gzhandler') && !empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
         $ini_output_compression = ini_get('zlib.output_compression');
         $array_values = ['1', 'On', 'on'];
         if (in_array($ini_output_compression, $array_values)) {
@@ -289,7 +289,7 @@ function breeze_cache($buffer, $flags) {
  */
 function breeze_get_url_path() {
     $host = (isset($_SERVER['HTTP_HOST'])) ? $_SERVER['HTTP_HOST'] : '';
-    $domain = ((( ! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ( ! empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? 'https://' : 'http://');
+    $domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? 'https://' : 'http://');
 
     return $domain . rtrim($host, '/') . $_SERVER['REQUEST_URI'];
 }
@@ -309,7 +309,7 @@ function breeze_serve_cache($filename, $url_path, $X1, $opts) {
         return;
     }
 
-    if (function_exists('gzencode') && ! empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
+    if (function_exists('gzencode') && !empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
         $file_name = md5($filename . '/index.gzip.html') . '.php';
     } else {
         $file_name = md5($filename . '/index.html') . '.php';
@@ -323,7 +323,7 @@ function breeze_serve_cache($filename, $url_path, $X1, $opts) {
         $modified_time = (int) @filemtime($path);
     }
 
-    if ( ! empty($opts['breeze-browser-cache']) && ! empty($modified_time) && ! empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) === $modified_time) {
+    if (!empty($opts['breeze-browser-cache']) && !empty($modified_time) && !empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) === $modified_time) {
         header($_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified', true, 304);
         exit;
     }
@@ -346,7 +346,7 @@ function breeze_serve_cache($filename, $url_path, $X1, $opts) {
                 $client_support_gzip = false;
             }
 
-            if ($client_support_gzip && function_exists('gzdecode') && ! empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
+            if ($client_support_gzip && function_exists('gzdecode') && !empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
                 //if file is zip
 
                 $content = gzencode($datas['body'], 9);
@@ -372,7 +372,7 @@ function check_exclude_page($opts_config, $current_url) {
     }
 
     //check disable cache for page
-    if ( ! empty($opts_config['exclude_url'])) {
+    if (!empty($opts_config['exclude_url'])) {
         foreach ($opts_config['exclude_url'] as $v) {
             // Clear blank character
             $v = trim($v);

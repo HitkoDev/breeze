@@ -2,7 +2,7 @@
 /*
  *  Based on some work of autoptimize plugin
  */
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit;
 } // Exit if accessed directly
 
@@ -27,10 +27,10 @@ abstract class Breeze_MinificationBase {
     abstract public function getcontent();
 
     public function get_cache_file_url($type = 'css') {
-        $cache_dir = BREEZE_MINIFICATION_CACHE . breeze_current_user_type() . ( ! empty($type) ? $type . '/' : '');
+        $cache_dir = BREEZE_MINIFICATION_CACHE . breeze_current_user_type() . (!empty($type) ? $type . '/' : '');
         if (is_multisite()) {
             $blog_id = get_current_blog_id();
-            $cache_dir = BREEZE_MINIFICATION_CACHE . $blog_id . '/' . breeze_current_user_type() . ( ! empty($type) ? $type . '/' : '');
+            $cache_dir = BREEZE_MINIFICATION_CACHE . $blog_id . '/' . breeze_current_user_type() . (!empty($type) ? $type . '/' : '');
         }
 
         return $cache_dir;
@@ -67,17 +67,17 @@ abstract class Breeze_MinificationBase {
             $multidomains = [];
 
             $multidomainsWPML = apply_filters('wpml_setting', [], 'language_domains');
-            if ( ! empty($multidomainsWPML)) {
+            if (!empty($multidomainsWPML)) {
                 $multidomains = array_map([$this, 'ao_getDomain'], $multidomainsWPML);
             }
 
-            if ( ! empty($this->cdn_url)) {
+            if (!empty($this->cdn_url)) {
                 $multidomains[] = parse_url($this->cdn_url, PHP_URL_HOST);
             }
 
             $multidomains = apply_filters('breeze_filter_cssjs_multidomain', $multidomains);
 
-            if ( ! empty($multidomains)) {
+            if (!empty($multidomains)) {
                 if (in_array($thisHost, $multidomains)) {
                     $url = str_replace($thisHost, parse_url(breeze_WP_SITE_URL, PHP_URL_HOST), $url);
                 } else {
@@ -230,7 +230,7 @@ abstract class Breeze_MinificationBase {
 
     protected function url_replace_cdn($url) {
         $cdn_url = apply_filters('breeze_filter_base_cdnurl', $this->cdn_url);
-        if ( ! empty($cdn_url)) {
+        if (!empty($cdn_url)) {
             // secondly prepend domain-less absolute URL's
             if ((substr($url, 0, 1) === '/') && (substr($url, 1, 1) !== '/')) {
                 $url = rtrim($cdn_url, '/') . $url;
@@ -238,7 +238,7 @@ abstract class Breeze_MinificationBase {
                 // get wordpress base URL
                 $WPSiteBreakdown = parse_url(breeze_WP_SITE_URL);
                 $WPBaseUrl = $WPSiteBreakdown['scheme'] . '://' . $WPSiteBreakdown['host'];
-                if ( ! empty($WPSiteBreakdown['port'])) {
+                if (!empty($WPSiteBreakdown['port'])) {
                     $WPBaseUrl .= ':' . $WPSiteBreakdown['port'];
                 }
                 // three: replace full url's with scheme
@@ -268,7 +268,7 @@ abstract class Breeze_MinificationBase {
             $this->content = substr_replace($this->content, $replaceBlock, strpos($this->content, $replaceTag[0]), strlen($replaceTag[0]));
         } else {
             $this->content .= $payload;
-            if ( ! $this->tagWarning) {
+            if (!$this->tagWarning) {
                 $this->content .= '<!--noptimize--><!-- breeze found a problem with the HTML in your Theme, tag ' . $replaceTag[0] . ' missing --><!--/noptimize-->';
                 $this->tagWarning = true;
             }
@@ -348,7 +348,7 @@ abstract class Breeze_MinificationBase {
         //clear varnish cache
         $varnish_cache = new Breeze_PurgeVarnish();
 
-        $is_network = (is_network_admin() || ( ! empty($_POST['is_network']) && $_POST['is_network'] === 'true'));
+        $is_network = (is_network_admin() || (!empty($_POST['is_network']) && $_POST['is_network'] === 'true'));
 
         if (is_multisite() && $is_network) {
             $sites = get_sites();

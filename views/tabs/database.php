@@ -32,7 +32,7 @@ if (is_multisite() && is_network_admin()) {
     $transients = (int) Breeze_Configuration::getElementToClean('transient');
 }
 
-$is_optimize_disabled = is_multisite() && ! is_network_admin() && get_option('breeze_inherit_settings') !== '0';
+$is_optimize_disabled = is_multisite() && !is_network_admin() && get_option('breeze_inherit_settings') !== '0';
 
 ?>
 <div class="breeze-top-notice">

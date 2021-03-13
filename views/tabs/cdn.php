@@ -5,10 +5,10 @@
 
     $cdn_content_value = '';
     $cdn_exclude_content_value = '';
-    if ( ! empty($cdn_integration['cdn-content'])) {
+    if (!empty($cdn_integration['cdn-content'])) {
         $cdn_content_value = implode(',', $cdn_integration['cdn-content']);
     }
-    if ( ! empty($cdn_integration['cdn-exclude-content'])) {
+    if (!empty($cdn_integration['cdn-exclude-content'])) {
         $cdn_exclude_content_value = implode(',', $cdn_integration['cdn-exclude-content']);
     }
 ?>
@@ -36,7 +36,7 @@
             <br>
             <span class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e('Use double slash ‘//’ at the start of CDN CNAME, if you have some pages on  HTTP and some are on HTTPS.', 'breeze'); ?></span>
 	        <?php
-            if ($cdn_url_validation === false && ! empty($cdn_url)) {
+            if ($cdn_url_validation === false && !empty($cdn_url)) {
                 ?>
                 <br/>
                 <span>

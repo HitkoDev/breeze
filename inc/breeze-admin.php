@@ -114,7 +114,7 @@ class Breeze_Admin {
      * Enqueue CSS and JS files required for the plugin functionality.
      */
     public function load_admin_scripts() {
-        if ( ! wp_script_is('jquery', 'enqueued')) {
+        if (!wp_script_is('jquery', 'enqueued')) {
             wp_enqueue_script('jquery');
         }
         wp_enqueue_script('breeze-backend', plugins_url('assets/js/breeze-backend.js', dirname(__FILE__)), ['jquery'], BREEZE_VERSION, true);
@@ -164,7 +164,7 @@ class Breeze_Admin {
      * Register bar menu.
      */
     public function register_admin_bar_menu(WP_Admin_Bar $wp_admin_bar) {
-        if ( ! current_user_can('manage_options') && ! current_user_can('editor')) {
+        if (!current_user_can('manage_options') && !current_user_can('editor')) {
             return;
         }
 
@@ -186,7 +186,7 @@ class Breeze_Admin {
         $current_script = $_SERVER['SCRIPT_NAME'];
         $current_params = $_SERVER['QUERY_STRING'];
 
-        if (is_multisite() && ! is_subdomain_install()) {
+        if (is_multisite() && !is_subdomain_install()) {
             $blog_details = get_blog_details();
             $current_host .= rtrim($blog_details->path, '/');
         }
@@ -197,7 +197,7 @@ class Breeze_Admin {
         // add purge all item
         $args = [
             'id' => 'breeze-purge-all',
-            'title' => ( ! is_multisite() || $is_network) ? esc_html__('Purge All Cache', 'breeze') : esc_html__('Purge Site Cache', 'breeze'),
+            'title' => (!is_multisite() || $is_network) ? esc_html__('Purge All Cache', 'breeze') : esc_html__('Purge Site Cache', 'breeze'),
             'parent' => 'breeze-topbar',
             'href' => esc_url(wp_nonce_url(add_query_arg('breeze_purge', 1, $current_screen_url), 'breeze_purge_cache')),
             'meta' => ['class' => 'breeze-toolbar-group'],
@@ -205,7 +205,7 @@ class Breeze_Admin {
         $wp_admin_bar->add_node($args);
 
         // Editor role can only use Purge all cache option
-        if ( ! current_user_can('manage_options')) {
+        if (!current_user_can('manage_options')) {
             return;
         }
 
@@ -387,7 +387,7 @@ class Breeze_Admin {
         Breeze_ConfigCache::factory()->write();
         Breeze_ConfigCache::factory()->write_config_cache();
 
-        if ( ! empty($basic) && ! empty($basic['breeze-active'])) {
+        if (!empty($basic) && !empty($basic['breeze-active'])) {
             Breeze_ConfigCache::factory()->toggle_caching(true);
         }
     }
@@ -471,7 +471,7 @@ class Breeze_Admin {
     public function breeze_clear_varnish() {
         $main = new Breeze_PurgeVarnish();
 
-        $is_network = (is_network_admin() || ( ! empty($_POST['is_network']) && $_POST['is_network'] === 'true'));
+        $is_network = (is_network_admin() || (!empty($_POST['is_network']) && $_POST['is_network'] === 'true'));
 
         if (is_multisite() && $is_network) {
             $sites = get_sites();

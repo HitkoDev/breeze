@@ -40,7 +40,7 @@ class Breeze_Configuration {
             $inherit_settings = ($_REQUEST['inherit-settings'] == 1 ? '1' : '0');
             update_option('breeze_inherit_settings', $inherit_settings);
 
-            if ( ! isset($_REQUEST['breeze_basic_action'], $_REQUEST['breeze_advanced_action'])) {
+            if (!isset($_REQUEST['breeze_basic_action'], $_REQUEST['breeze_advanced_action'])) {
                 WP_Filesystem();
                 Breeze_ConfigCache::factory()->write_config_cache();
             }
@@ -100,15 +100,15 @@ class Breeze_Configuration {
                 $exclude_js = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-js']));
                 $move_to_footer_js = $defer_js = [];
 
-                if ( ! empty($exclude_js)) {
+                if (!empty($exclude_js)) {
                     $exclude_js = array_unique($exclude_js);
                 }
 
-                if ( ! empty($exclude_css)) {
+                if (!empty($exclude_css)) {
                     $exclude_css = array_unique($exclude_css);
                 }
 
-                if ( ! empty($_POST['move-to-footer-js'])) {
+                if (!empty($_POST['move-to-footer-js'])) {
                     foreach ($_POST['move-to-footer-js'] as $url) {
                         if (trim($url) == '') {
                             continue;
@@ -118,7 +118,7 @@ class Breeze_Configuration {
                     }
                 }
 
-                if ( ! empty($_POST['defer-js'])) {
+                if (!empty($_POST['defer-js'])) {
                     foreach ($_POST['defer-js'] as $url) {
                         if (trim($url) == '') {
                             continue;
@@ -155,12 +155,12 @@ class Breeze_Configuration {
             && $_REQUEST['breeze_database_action'] === 'breeze_database_settings'
             && isset($_POST['breeze_settings_database_nonce'])
             && wp_verify_nonce($_POST['breeze_settings_database_nonce'], 'breeze_settings_database')
-            && ! empty($_POST['clean']) && is_array($_POST['clean'])
+            && !empty($_POST['clean']) && is_array($_POST['clean'])
         ) {
             self::optimize_database($_POST['clean']);
 
             //return current page
-            if ( ! empty($_REQUEST['_wp_http_referer'])) {
+            if (!empty($_REQUEST['_wp_http_referer'])) {
                 $url = remove_query_arg('save-settings', $_REQUEST['_wp_http_referer']);
                 wp_safe_redirect(add_query_arg('database-cleanup', 'success', $url));
                 exit;
@@ -172,23 +172,23 @@ class Breeze_Configuration {
             if (isset($_POST['breeze_settings_cdn_nonce']) && wp_verify_nonce($_POST['breeze_settings_cdn_nonce'], 'breeze_settings_cdn')) {
                 $cdn_content = [];
                 $exclude_content = [];
-                if ( ! empty($_POST['cdn-content'])) {
+                if (!empty($_POST['cdn-content'])) {
                     $cdn_content = explode(',', sanitize_text_field($_POST['cdn-content']));
                     $cdn_content = array_unique($cdn_content);
                 }
-                if ( ! empty($_POST['cdn-exclude-content'])) {
+                if (!empty($_POST['cdn-exclude-content'])) {
                     $exclude_content = explode(',', sanitize_text_field($_POST['cdn-exclude-content']));
                     $exclude_content = array_unique($exclude_content);
                 }
 
                 $cdn_url = (isset($_POST['cdn-url']) ? sanitize_text_field($_POST['cdn-url']) : '');
-                if ( ! empty($cdn_url)) {
+                if (!empty($cdn_url)) {
                     $http_schema = parse_url($cdn_url, PHP_URL_SCHEME);
 
                     $cdn_url = ltrim($cdn_url, 'https:');
                     $cdn_url = '//' . ltrim($cdn_url, '//');
 
-                    if ( ! empty($http_schema)) {
+                    if (!empty($http_schema)) {
                         $cdn_url = $http_schema . ':' . $cdn_url;
                     }
                 }
@@ -224,7 +224,7 @@ class Breeze_Configuration {
         }
 
         //return current page
-        if ( ! empty($_REQUEST['_wp_http_referer'])) {
+        if (!empty($_REQUEST['_wp_http_referer'])) {
             $url = remove_query_arg('database-cleanup', $_REQUEST['_wp_http_referer']);
             wp_safe_redirect(add_query_arg('save-settings', 'success', $url));
             exit;
@@ -274,7 +274,7 @@ class Breeze_Configuration {
                 'ExpiresByType',
             ];
 
-            if ( ! empty($conditional_regex)) {
+            if (!empty($conditional_regex)) {
                 $args['content'] = '<If "' . $conditional_regex . '">' . PHP_EOL . $args['content'] . '</If>' . PHP_EOL;
             }
         }
@@ -320,7 +320,7 @@ class Breeze_Configuration {
                 'GzipofBreezeWPCache',
             ];
 
-            if ( ! empty($conditional_regex)) {
+            if (!empty($conditional_regex)) {
                 $args['content'] = '<If "' . $conditional_regex . '">' . PHP_EOL . $args['content'] . '</If>' . PHP_EOL;
             }
         }
@@ -346,13 +346,13 @@ class Breeze_Configuration {
             // Multisite setup.
             $supports_conditionals = breeze_is_supported('conditional_htaccess');
 
-            if ( ! $supports_conditionals) {
+            if (!$supports_conditionals) {
                 // If Apache htaccess conditional directives not available, inherit network-level settings.
                 $config = get_site_option('breeze_basic_settings', []);
 
                 if (isset($config['breeze-active']) && $config['breeze-active'] === '1') {
-                    self::add_expires_header( ! isset($config['breeze-browser-cache']) || $config['breeze-browser-cache'] !== '1');
-                    self::add_gzip_htacess( ! isset($config['breeze-gzip-compression']) || $config['breeze-gzip-compression'] !== '1');
+                    self::add_expires_header(!isset($config['breeze-browser-cache']) || $config['breeze-browser-cache'] !== '1');
+                    self::add_gzip_htacess(!isset($config['breeze-gzip-compression']) || $config['breeze-gzip-compression'] !== '1');
                 } else {
                     self::add_expires_header(true);
                     self::add_gzip_htacess(true);
@@ -412,7 +412,7 @@ class Breeze_Configuration {
             // Loop through caching type rules.
             foreach ($rules as $var_name => $method_name) {
                 $has_cache_var = 'has_' . $var_name;
-                if ( ! ${$has_cache_var}) {
+                if (!${$has_cache_var}) {
                     // No sites using rules, clean up.
                     self::$method_name(true);
                 } else {
@@ -444,7 +444,7 @@ class Breeze_Configuration {
                             )
                         );
 
-                        if ( ! empty(${$enabled_sites})) {
+                        if (!empty(${$enabled_sites})) {
                             $regex_string = '%{THE_REQUEST} =~ m#^GET (' . implode('|', ${$enabled_sites}) . ')#';
                         }
 
@@ -463,8 +463,8 @@ class Breeze_Configuration {
                                 ${$disabled_sites}
                             )
                         );
-                        if ( ! empty(${$disabled_sites})) {
-                            if ( ! empty(${$enabled_sites})) {
+                        if (!empty(${$disabled_sites})) {
+                            if (!empty(${$enabled_sites})) {
                                 $regex_string .= ' && ';
                             }
                             $regex_string .= '%{THE_REQUEST} !~ m#^GET (' . implode('|', ${$disabled_sites}) . ')#';
@@ -502,7 +502,7 @@ class Breeze_Configuration {
     public static function write_htaccess($args) {
         $htaccess_path = trailingslashit(ABSPATH) . '.htaccess';
 
-        if ( ! is_super_admin()) {
+        if (!is_super_admin()) {
             return false;
         }
         // open htaccess file
@@ -516,7 +516,7 @@ class Breeze_Configuration {
         // Remove old rules.
         $htaccess_content = preg_replace("/{$args['before']}[\\s\\S]*{$args['after']}" . PHP_EOL . '/im', '', $htaccess_content);
 
-        if ( ! isset($args['clean'])) {
+        if (!isset($args['clean'])) {
             if (isset($args['conditions'])) {
                 foreach ($args['conditions'] as $condition) {
                     if (strpos($htaccess_content, $condition) !== false) {
@@ -634,7 +634,7 @@ class Breeze_Configuration {
     //ajax clean cache
     public static function breeze_clean_cache() {
         // Check whether we're clearing the cache for one subsite on the network.
-        $is_subsite = is_multisite() && ! is_network_admin();
+        $is_subsite = is_multisite() && !is_network_admin();
 
         // analysis size cache
         $cachepath = untrailingslashit(breeze_get_cache_base_path(is_network_admin()));
@@ -748,7 +748,7 @@ class Breeze_Configuration {
     // Convert string to array
     protected function string_convert_arr($input) {
         $output = [];
-        if ( ! empty($input)) {
+        if (!empty($input)) {
             $input = rawurldecode($input);
             $input = trim($input);
             $input = str_replace(' ', '', $input);

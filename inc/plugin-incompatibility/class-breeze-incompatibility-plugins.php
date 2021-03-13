@@ -1,6 +1,6 @@
 <?php
 
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     header('Status: 403 Forbidden');
     header('HTTP/1.1 403 Forbidden');
     exit;
@@ -13,7 +13,7 @@ if ( ! defined('ABSPATH')) {
  *
  * Class Breeze_Incompatibility_Plugins
  */
-if ( ! class_exists('Breeze_Incompatibility_Plugins')) {
+if (!class_exists('Breeze_Incompatibility_Plugins')) {
     class Breeze_Incompatibility_Plugins {
         /**
          * Used to hold the data needed to display in the notice.
@@ -63,13 +63,13 @@ if ( ! class_exists('Breeze_Incompatibility_Plugins')) {
             $current_screen = get_current_screen(); // get the current WP screen
 
             // If we are on Network plugins or single site plugins screen, run the script.
-            if (( ! empty($current_screen) && ($current_screen->base === 'plugins-network' || $current_screen->base === 'plugins'))) {
+            if ((!empty($current_screen) && ($current_screen->base === 'plugins-network' || $current_screen->base === 'plugins'))) {
                 // Gather messages for incompatibility notice.
                 $this->notification_message = $this->notification_for_incompatibility();
                 // Future notices can be added and captured here.
 
                 // Start the notice row.
-                if ( ! empty($this->notification_message)) {
+                if (!empty($this->notification_message)) {
                     // Display catched notifications.
                     echo $this->notification_message;
                 }
@@ -101,7 +101,7 @@ if ( ! class_exists('Breeze_Incompatibility_Plugins')) {
                 update_option('breeze_show_incompatibility', $comparing_value, 'no');
             }
 
-            if ($show_message && ! empty($incompatibility_list)) {
+            if ($show_message && !empty($incompatibility_list)) {
                 // Build the HTML for the error notice.
                 ob_start();
                 require BREEZE_PLUGIN_DIR . 'views/html-notice-plugin-screen-incompatibilities.php';
@@ -122,7 +122,7 @@ if ( ! class_exists('Breeze_Incompatibility_Plugins')) {
             $final_list = [];
             $context = $status;
 
-            if ( ! empty($incompatible_plugins) && ! empty($installed_plugins)) {
+            if (!empty($incompatible_plugins) && !empty($installed_plugins)) {
                 foreach ($incompatible_plugins as $plugin => $details) {
                     if (isset($installed_plugins[$plugin])) {
                         // Only do the operations if the given plugin is active.
@@ -148,7 +148,7 @@ if ( ! class_exists('Breeze_Incompatibility_Plugins')) {
                             if ($is_warning === true) {
                                 // Build the default message for incompatibility.
                                 $message = $active_item['Title'] . ' ' . esc_html__('Plugin', 'breeze') . ' ' . $active_item['Version'] . ' ' . esc_html__('is not compatible', 'breeze') . ' ';
-                                if ( ! empty(trim($details['warning_message']))) {
+                                if (!empty(trim($details['warning_message']))) {
                                     // If a custom message exists, overwrite the default message.
                                     $message = trim($details['warning_message']);
                                 }
@@ -162,9 +162,9 @@ if ( ! class_exists('Breeze_Incompatibility_Plugins')) {
                                     if (current_user_can('deactivate_plugin', $plugin)) {
                                         $is_active = is_plugin_active($plugin);
                                         $restrict_network_active = (is_multisite() && is_plugin_active_for_network($plugin));
-                                        $restrict_network_only = (is_multisite() && is_network_only_plugin($plugin) && ! $is_active);
+                                        $restrict_network_only = (is_multisite() && is_network_only_plugin($plugin) && !$is_active);
 
-                                        if ( ! $restrict_network_active && ! $restrict_network_only) {
+                                        if (!$restrict_network_active && !$restrict_network_only) {
                                             $show_deactivate = true;
                                         }
 
@@ -179,7 +179,7 @@ if ( ! class_exists('Breeze_Incompatibility_Plugins')) {
                                 // Build data for the notice HTML
                                 $final_list[] = [
                                     'warning_message' => $message,
-                                    'safe_version_message' => ( ! empty(trim($details['safe_version_message'])) ? $details['safe_version_message'] : ''),
+                                    'safe_version_message' => (!empty(trim($details['safe_version_message'])) ? $details['safe_version_message'] : ''),
                                     'display_deactivate_button' => $show_deactivate,
                                     'deactivate_url' => wp_nonce_url('plugins.php?action=deactivate&amp;plugin=' . urlencode($plugin) . '&amp;plugin_status=' . $context . '&amp;paged=' . $page . '&amp;s=' . $s, 'deactivate-plugin_' . $plugin),
                                     'is_network_only' => $network_only_text,
@@ -200,7 +200,7 @@ if ( ! class_exists('Breeze_Incompatibility_Plugins')) {
          */
         protected function plugins_list() {
             // If $plugins_list is empty, request the list again
-            if (empty($this->plugins_list) || ! is_array($this->plugins_list)) {
+            if (empty($this->plugins_list) || !is_array($this->plugins_list)) {
                 $this->plugins_list = get_plugins();
             }
 

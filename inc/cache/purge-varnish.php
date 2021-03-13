@@ -37,9 +37,9 @@ class Breeze_PurgeVarnish {
         $this->blogId = $blog_id;
         $settings = breeze_get_option('varnish_cache');
         //storage config
-        if ( ! empty($settings['auto-purge-varnish'])) {
+        if (!empty($settings['auto-purge-varnish'])) {
             $this->auto_purge = (int) $settings['auto-purge-varnish'];
-            if ($this->auto_purge && ! isset($_GET['breeze_check_cache_available'])) {
+            if ($this->auto_purge && !isset($_GET['breeze_check_cache_available'])) {
                 // before sending the requests, we need to make sure Varnish is actually enabled.
                 // If Varnish is disabled, the requests will take longer to finish and will affect
                 // the WordPress performance.
@@ -51,7 +51,7 @@ class Breeze_PurgeVarnish {
 
     public function init() {
         if ($this->auto_purge) {
-            if ( ! empty($this->actions)) {
+            if (!empty($this->actions)) {
                 //if enabled auto purge option , this action will start
                 foreach ($this->actions as $action) {
                     if (in_array($action, $this->actionsNoId)) {
@@ -78,7 +78,7 @@ class Breeze_PurgeVarnish {
      * Execute Purge
      */
     public function breeze_execute_purge() {
-        if ( ! empty($this->urlsPurge)) {
+        if (!empty($this->urlsPurge)) {
             $urlsPurge = array_unique($this->urlsPurge);
 
             // before sending the requests, we need to make sure Varnish is actually enabled.
@@ -144,7 +144,7 @@ class Breeze_PurgeVarnish {
         $config = breeze_get_option('varnish_cache');
         $varnish_host = isset($config['breeze-varnish-server-ip']) ? $config['breeze-varnish-server-ip'] : '127.0.0.1';
         $purgeme = $varnish_host . $path . $pregex;
-        if ( ! empty($parseUrl['query']) && $parseUrl['query'] != 'breeze') {
+        if (!empty($parseUrl['query']) && $parseUrl['query'] != 'breeze') {
             $purgeme .= '?' . $parseUrl['query'];
         }
         $request_args = [
@@ -168,7 +168,7 @@ class Breeze_PurgeVarnish {
 
     //check permission
     public function check_permission() {
-        return ( ! is_multisite() && current_user_can('activate_plugins')) || current_user_can('manage_network') || (is_multisite() && ! current_user_can('manage_network') && (SUBDOMAIN_INSTALL || ( ! SUBDOMAIN_INSTALL && ($this->blogId != BLOG_ID_CURRENT_SITE))));
+        return (!is_multisite() && current_user_can('activate_plugins')) || current_user_can('manage_network') || (is_multisite() && !current_user_can('manage_network') && (SUBDOMAIN_INSTALL || (!SUBDOMAIN_INSTALL && ($this->blogId != BLOG_ID_CURRENT_SITE))));
     }
 
     /*
@@ -198,7 +198,7 @@ class Breeze_PurgeVarnish {
      */
     public function purge_post_on_comment_status($comment_ID, $comment_status) {
         $comment = get_comment($comment_ID);
-        if ( ! empty($comment)) {
+        if (!empty($comment)) {
             $postId = $comment->comment_post_ID;
             $this->pushUrl($postId);
         }
@@ -222,13 +222,13 @@ class Breeze_PurgeVarnish {
         // array to collect all our URLs
         $listofurls = [];
         // Verify we have a permalink and that we're a valid post status and a not an invalid post type
-        if (get_permalink($postId) == true && in_array($this_post_status, $valid_post_status) && ! in_array($this_post_type, $invalid_post_type)) {
+        if (get_permalink($postId) == true && in_array($this_post_status, $valid_post_status) && !in_array($this_post_type, $invalid_post_type)) {
             // Post URL
             array_push($listofurls, get_permalink($postId));
             // JSON API Permalink for the post based on type
             // We only want to do this if the rest_base exists
             $post_type_object = get_post_type_object($this_post_type);
-            if (isset($post_type_object->rest_base) && ! empty($post_type_object->rest_base)) {
+            if (isset($post_type_object->rest_base) && !empty($post_type_object->rest_base)) {
                 $rest_permalink = get_rest_url() . $rest_api_route . '/' . $post_type_object->rest_base . '/' . $postId . '/';
             } elseif ($this_post_type == 'post') {
                 $rest_permalink = get_rest_url() . $rest_api_route . '/posts/' . $postId . '/';
@@ -281,7 +281,7 @@ class Breeze_PurgeVarnish {
                 get_rest_url() . $rest_api_route . '/users/' . $author_id . '/'
             );
             // Archives and their feeds
-            if ($this_post_type && ! in_array($this_post_type, $noarchive_post_type)) {
+            if ($this_post_type && !in_array($this_post_type, $noarchive_post_type)) {
                 array_push(
                     $listofurls,
                     get_post_type_archive_link(get_post_type($postId)),
@@ -316,7 +316,7 @@ class Breeze_PurgeVarnish {
             return;
         }
         // Now flush all the URLs we've collected provided the array isn't empty
-        if ( ! empty($listofurls)) {
+        if (!empty($listofurls)) {
             $this->urlsPurge = array_filter(
                 array_unique(
                     array_merge(

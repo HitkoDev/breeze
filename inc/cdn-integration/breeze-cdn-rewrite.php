@@ -53,7 +53,7 @@ class Breeze_CDN_Rewrite {
         // create blog url without http or https
         $parseurl = parse_url($this->blog_url);
         $scheme = 'http:';
-        if ( ! empty($parseurl['scheme'])) {
+        if (!empty($parseurl['scheme'])) {
             $scheme = $parseurl['scheme'] . ':';
         }
         $blog_url_short = str_replace($scheme, '', $this->blog_url);
@@ -105,7 +105,7 @@ class Breeze_CDN_Rewrite {
         $domain = '//' . $host;
 
         // check if not a relative path
-        if ( ! $this->relative || strstr($match[0], $this->blog_url)) {
+        if (!$this->relative || strstr($match[0], $this->blog_url)) {
             $domain = $scheme . $host;
         }
 
@@ -116,7 +116,7 @@ class Breeze_CDN_Rewrite {
      * Check excludes assets
      */
     protected function excludes_check($dir) {
-        if ( ! empty($this->excludes)) {
+        if (!empty($this->excludes)) {
             foreach ($this->excludes as $exclude) {
                 if (stristr($dir, $exclude) != false) {
                     return true;
@@ -133,7 +133,7 @@ class Breeze_CDN_Rewrite {
      * @since 1.1.3
      */
     private function hardcoded_exceptions_to_ignore() {
-        if ( ! [$this->excludes] || empty($this->excludes)) {
+        if (![$this->excludes] || empty($this->excludes)) {
             $this->excludes = [];
         }
         $this->excludes[] = 'download_file';

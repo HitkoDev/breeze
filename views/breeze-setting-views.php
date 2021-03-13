@@ -70,19 +70,19 @@ $global_tabs = [
     }
     ?>
 
-	<ul id="breeze-tabs" class="nav-tab-wrapper <?php echo ! $show_tabs ? 'tabs-hidden' : ''; ?>">
+	<ul id="breeze-tabs" class="nav-tab-wrapper <?php echo !$show_tabs ? 'tabs-hidden' : ''; ?>">
 		<?php
         foreach ($tabs as $key => $name) {
-            $is_inactive = ! $show_tabs && ! in_array($key, $global_tabs);
+            $is_inactive = !$show_tabs && !in_array($key, $global_tabs);
             echo '<a id="tab-' . $key . '" class="nav-tab' . ($is_inactive ? ' inactive' : '') . '" href="#tab-' . $key . '" data-tab-id="' . $key . '"> ' . $name . ' </a> ';
         }
         ?>
 	</ul>
 
-    <div id="breeze-tabs-content" class="tab-content <?php echo ! $show_tabs ? 'tabs-hidden' : ''; ?>">
+    <div id="breeze-tabs-content" class="tab-content <?php echo !$show_tabs ? 'tabs-hidden' : ''; ?>">
         <?php
         foreach ($tabs as $key => $name) {
-            $is_inactive = ! $show_tabs && ! in_array($key, $global_tabs);
+            $is_inactive = !$show_tabs && !in_array($key, $global_tabs);
             echo '<div id="tab-content-' . $key . '" class="tab-pane' . ($is_inactive ? ' inactive' : '') . '">';
             echo '<form class="breeze-form" method="post" action="">';
             echo '<div class="tab-child">';
@@ -93,7 +93,7 @@ $global_tabs = [
 
             if (
                 $key != 'faq'
-                && ($key != 'database' || (is_multisite() && ! is_network_admin()))
+                && ($key != 'database' || (is_multisite() && !is_network_admin()))
             ) {
                 if (is_multisite() && is_network_admin()) {
                     echo '<p class="multisite-inherit-disclaimer">' . __('* Any change here will also be applied to all the sub-sites that are using Network level settings.', 'wpr') . '</p>';
@@ -102,7 +102,7 @@ $global_tabs = [
                     '<input type="submit" class="button button-primary breeze-submit-btn" value="' . __('Save Changes', 'breeze') . '"/>' . PHP_EOL .
                 '</p>';
             }
-            if ( ! in_array($key, $global_tabs)) {
+            if (!in_array($key, $global_tabs)) {
                 echo '<span class="hidden-text">' . esc_attr__('When Network Level Settings is selected, modifications/updates can only be done from the main Network site.', 'breeze') . '</span>';
             }
             echo '</form>';

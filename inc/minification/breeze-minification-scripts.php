@@ -5,7 +5,7 @@ use MatthiasMullie\Minify;
 /*
  *  Based on some work of autoptimize plugin
  */
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit;
 } // Exit if accessed directly
 
@@ -112,13 +112,13 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 
         // only optimize known good JS?
         $whitelistJS = apply_filters('breeze_filter_js_whitelist', '');
-        if ( ! empty($whitelistJS)) {
+        if (!empty($whitelistJS)) {
             $this->whitelist = array_filter(array_map('trim', explode(',', $whitelistJS)));
         }
 
         // is there JS we should simply remove
         $removableJS = apply_filters('breeze_filter_js_removables', '');
-        if ( ! empty($removableJS)) {
+        if (!empty($removableJS)) {
             $this->jsremovables = array_filter(array_map('trim', explode(',', $removableJS)));
         }
 
@@ -140,17 +140,17 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
         }
 
         //custom js exclude
-        if ( ! empty($options['custom_js_exclude'])) {
+        if (!empty($options['custom_js_exclude'])) {
             $this->custom_js_exclude = $options['custom_js_exclude'];
         }
 
         // JS files will move to footer
-        if ( ! empty($options['move_to_footer_js'])) {
+        if (!empty($options['move_to_footer_js'])) {
             $this->move_to_footer_js = $options['move_to_footer_js'];
         }
 
         // JS files will move to footer
-        if ( ! empty($options['defer_js'])) {
+        if (!empty($options['defer_js'])) {
             $this->defer_js = $options['defer_js'];
         }
 
@@ -200,7 +200,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
         $this->getJS($exploded_content[0]);
         $this->getJS($exploded_content[1], false);
 
-        if ( ! empty($this->head_scripts) || ! empty($this->footer_scripts)) {
+        if (!empty($this->head_scripts) || !empty($this->footer_scripts)) {
             // Re-order moving to footer JS files
             $ordered_moving_js = array_intersect_key($this->move_to_footer_js, $this->move_to_footer);
             $ordered_moving_js = array_map([$this, 'getpath'], $ordered_moving_js);
@@ -217,7 +217,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
         $this->runMinify($this->head_scripts);
         $this->runMinify($this->footer_scripts, false);
 
-        if ( ! empty($this->group_js) && empty($this->include_inline) && ! empty($this->uncompressed_inline)) {
+        if (!empty($this->group_js) && empty($this->include_inline) && !empty($this->uncompressed_inline)) {
             foreach ($this->uncompressed_inline as $index_inline => $uncompressed_js) {
                 // add the uncompressed inline
                 $this->full_script = str_replace($index_inline, $uncompressed_js, $this->full_script);
@@ -237,7 +237,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
             // If inline is also included
             $cache = new Breeze_MinificationCache($this->md5hash, 'js');
 
-            if ( ! $cache->check()) {
+            if (!$cache->check()) {
                 //Cache our code
                 $cache->cache($this->full_script, 'text/javascript');
             }
@@ -257,13 +257,13 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                 $namehash = substr($js_min, 0, strpos($js_min, '_breezejsgroup_'));
                 $js_code = substr($js_min, strpos($js_min, '_breezejsgroup_') + strlen('_breezejsgroup_'));
                 $cache = new Breeze_MinificationCache($namehash, 'js');
-                if ( ! $cache->check()) {
+                if (!$cache->check()) {
                     //Cache our code
                     $cache->cache($js_code, 'text/javascript');
                 }
 
                 $cache_directory = $cache->get_cache_dir();
-                if ( ! file_exists($cache_directory . $cache->get_file_name())) {
+                if (!file_exists($cache_directory . $cache->get_file_name())) {
                     $url_exists = false;
                 } else {
                     $url = breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
@@ -275,13 +275,13 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                 $namehash = substr($js_min, 0, strpos($js_min, '_breezejsgroup_'));
                 $js_code = substr($js_min, strpos($js_min, '_breezejsgroup_') + strlen('_breezejsgroup_'));
                 $cache = new Breeze_MinificationCache($namehash, 'js');
-                if ( ! $cache->check()) {
+                if (!$cache->check()) {
                     //Cache our code
                     $cache->cache($js_code, 'text/javascript');
                 }
 
                 $cache_directory = $cache->get_cache_dir();
-                if ( ! file_exists($cache_directory . $cache->get_file_name())) {
+                if (!file_exists($cache_directory . $cache->get_file_name())) {
                     $url_exists = false;
                 } else {
                     $url = breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
@@ -298,18 +298,18 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 
     // Returns the content
     public function getcontent() {
-        if ( ! empty($this->show_original_content)) {
+        if (!empty($this->show_original_content)) {
             return $this->original_content;
         }
 
         // Restore the full content
-        if ( ! empty($this->restofcontent)) {
+        if (!empty($this->restofcontent)) {
             $this->content .= $this->restofcontent;
             $this->restofcontent = '';
         }
 
         // Load inline JS to html
-        if ( ! empty($this->jscode_inline_head) && empty($this->group_js)) {
+        if (!empty($this->jscode_inline_head) && empty($this->group_js)) {
             $replaceTag = ['</head>', 'before'];
 
             foreach ($this->jscode_inline_head as $js) {
@@ -320,7 +320,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
             $this->inject_in_html($jsReplacement, $replaceTag);
         }
 
-        if ( ! empty($this->jscode_inline_footer) && empty($this->group_js)) {
+        if (!empty($this->jscode_inline_footer) && empty($this->group_js)) {
             $replaceTag = ['</body>', 'before'];
 
             foreach ($this->jscode_inline_footer as $js) {
@@ -352,7 +352,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
             $headScript = [];
             $footerScript = [];
 
-            if ( ! empty($this->url_group_head)) {
+            if (!empty($this->url_group_head)) {
                 $replaceTag = ['</head>', 'before'];
 
                 foreach ($this->url_group_head as $old_url => $url) {
@@ -370,12 +370,12 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 
                 $replaceTag = apply_filters('breeze_filter_js_replacetag', $replaceTag);
 
-                if ( ! empty($this->js_min_head)) {
+                if (!empty($this->js_min_head)) {
                     $this->inject_in_html($jsReplacement, $replaceTag);
                 }
             }
 
-            if ( ! empty($this->url_group_footer)) {
+            if (!empty($this->url_group_footer)) {
                 $replaceTag = ['</body>', 'before'];
 
                 foreach ($this->url_group_footer as $old_url => $url) {
@@ -393,7 +393,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 
                 $replaceTag = apply_filters('breeze_filter_js_replacetag', $replaceTag);
 
-                if ( ! empty($this->js_min_footer)) {
+                if (!empty($this->js_min_footer)) {
                     $this->inject_in_html($jsReplacement, $replaceTag);
                 }
             }
@@ -451,7 +451,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
         if (preg_match_all('#<script.*</script>#Usmi', $content, $matches)) {
             foreach ($matches[0] as $tag) {
                 // only consider aggregation whitelisted in should_aggregate-function
-                if ( ! $this->should_aggregate($tag)) {
+                if (!$this->should_aggregate($tag)) {
                     $tag = '';
                     continue;
                 }
@@ -475,7 +475,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                     // Let's check if this file is in the excluded list.
                     $is_excluded = breeze_is_string_in_array_values($url, $this->custom_js_exclude);
                     //exclude js
-                    if ( ! empty($is_excluded)) {
+                    if (!empty($is_excluded)) {
                         continue;
                     }
 
@@ -587,7 +587,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                     $script = 'try{' . $script . '}catch(e){}';
                 }
                 $tmpscript = apply_filters('breeze_js_individual_script', $script, '');
-                if (has_filter('breeze_js_individual_script') && ! empty($tmpscript)) {
+                if (has_filter('breeze_js_individual_script') && !empty($tmpscript)) {
                     $script = $tmpscript;
                     $this->alreadyminified = true;
                 }
@@ -620,7 +620,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                         $scriptsrc = 'try{' . $scriptsrc . '}catch(e){}';
                     }
                     $tmpscriptsrc = apply_filters('breeze_js_individual_script', $scriptsrc, $script);
-                    if (has_filter('breeze_js_individual_script') && ! empty($tmpscriptsrc)) {
+                    if (has_filter('breeze_js_individual_script') && !empty($tmpscriptsrc)) {
                         $scriptsrc = $tmpscriptsrc;
                         $this->alreadyminified = true;
                     } elseif ((strpos($script, 'min.js') !== false) && ($this->inject_min_late === true) || $this->breeze_js_files_exceptions($url)) {
@@ -645,7 +645,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 
         // Minify JS
         // When using group JS
-        if ( ! $head && ! empty($this->jscode)) {
+        if (!$head && !empty($this->jscode)) {
             //Check for already-minified code
             $this->md5hash = md5($this->full_script);
             $ccheck = new Breeze_MinificationCache($this->md5hash, 'js');
@@ -658,12 +658,12 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
             //$this->jscode has all the uncompressed code now.
 
             if ($this->alreadyminified !== true) {
-                if (apply_filters('breeze_js_do_minify', true) && ! empty($this->full_script)) {
+                if (apply_filters('breeze_js_do_minify', true) && !empty($this->full_script)) {
                     $minifier = new Minify\JS();
                     $minifier->add($this->full_script);
                     $tmp_jscode = $minifier->minify();
 
-                    if ( ! empty($tmp_jscode)) {
+                    if (!empty($tmp_jscode)) {
                         $this->full_script = trim($tmp_jscode);
                         unset($tmp_jscode);
                     }
@@ -673,8 +673,8 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
             }
 
             // Get the inline JS and minify
-            if ( ! empty($this->js_head_group) || ! empty($this->js_footer_group)) {
-                if ( ! empty($this->js_head_group)) {
+            if (!empty($this->js_head_group) || !empty($this->js_footer_group)) {
+                if (!empty($this->js_head_group)) {
                     foreach ($this->js_head_group as $jscode) {
                         //$this->jscode has all the uncompressed code now.
                         if (apply_filters('breeze_js_do_minify', true)) {
@@ -682,7 +682,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                             $minifier->add($jscode);
                             $tmp_jscode = $minifier->minify();
 
-                            if ( ! empty($tmp_jscode)) {
+                            if (!empty($tmp_jscode)) {
                                 $jscode = $tmp_jscode;
                                 unset($tmp_jscode);
                             }
@@ -692,7 +692,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                     }
                 }
 
-                if ( ! empty($this->js_footer_group)) {
+                if (!empty($this->js_footer_group)) {
                     foreach ($this->js_footer_group as $jscode) {
                         //$this->jscode has all the uncompressed code now.
                         if (apply_filters('breeze_js_do_minify', true)) {
@@ -700,7 +700,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                             $minifier->add($jscode);
                             $tmp_jscode = $minifier->minify();
 
-                            if ( ! empty($tmp_jscode)) {
+                            if (!empty($tmp_jscode)) {
                                 $jscode = $tmp_jscode;
                                 unset($tmp_jscode);
                             }
@@ -715,8 +715,8 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
         }
 
         // Not using group JS
-        if ( ! empty($this->js_head_group) || ! empty($this->js_footer_group)) {
-            if ($head && ! empty($this->js_head_group)) {
+        if (!empty($this->js_head_group) || !empty($this->js_footer_group)) {
+            if ($head && !empty($this->js_head_group)) {
                 foreach ($this->js_head_group as $url => $jscode) {
                     //Check for already-minified code
                     $this->md5hash = md5($jscode);
@@ -735,7 +735,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                         $minifier->add($jscode);
                         $tmp_jscode = $minifier->minify();
 
-                        if ( ! empty($tmp_jscode)) {
+                        if (!empty($tmp_jscode)) {
                             $jscode = $tmp_jscode;
                             unset($tmp_jscode);
                         }
@@ -746,7 +746,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                 }
             }
 
-            if ( ! $head && ! empty($this->js_footer_group)) {
+            if (!$head && !empty($this->js_footer_group)) {
                 foreach ($this->js_footer_group as $url => $jscode) {
                     //Check for already-minified code
                     $this->md5hash = md5($jscode);
@@ -764,7 +764,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                         $minifier->add($jscode);
                         $tmp_jscode = $minifier->minify();
 
-                        if ( ! empty($tmp_jscode)) {
+                        if (!empty($tmp_jscode)) {
                             $jscode = $tmp_jscode;
                             unset($tmp_jscode);
                         }
@@ -781,7 +781,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 
     // Checks against the white- and blacklists
     private function ismergeable($tag) {
-        if ( ! empty($this->whitelist)) {
+        if (!empty($this->whitelist)) {
             foreach ($this->whitelist as $match) {
                 if (strpos($tag, $match) !== false) {
                     return true;
@@ -872,7 +872,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
         $needle = trim($needle);
         foreach ($search_patterns as $pattern) {
             preg_match('/(' . $pattern . ')/i', $needle, $output_array);
-            if ( ! empty($output_array)) { // is found ?
+            if (!empty($output_array)) { // is found ?
                 return true;
             }
         }
