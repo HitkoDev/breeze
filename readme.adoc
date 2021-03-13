@@ -29,33 +29,33 @@ What makes Breeze WordPress Cache Plugin awesome is that it comes with builtin s
 
 == Installation ==
 
-= To install the plugin via WordPress Dashboard: =
-* In the WordPress admin panel, navigate to Plugin > Add new
-* Search for Breeze
-* Click install and wait for the installation to finish. Next, click the activate link
-
 = To install the plugin manually: =
-* Download and unzip the plugin package - breeze.1.0.0.zip
-* Upload the breeze to /wp-content/plugins/
-* Activate the plugin through the 'Plugins' menu in WordPress
-* Access Breeze from WordPress Admin > Settings > Breeze
+. Download and unzip the plugin package (`breeze.zip`) from the link:https://github.com/HitkoDev/breeze/releases/latest[latest release]
+. Upload the /breeze folder to /wp-content/plugins/
+. Activate the plugin through the 'Plugins' menu in WordPress
+. Access Breeze from WordPress Admin > Settings > Breeze
+
+= To install the plugin via WordPress Dashboard: =
+. In the WordPress admin panel, Menu > Plugin > Add new
+. Search for Breeze
+. Click on install and wait for the installation to finish. Next, then click on the activate link
 
 == Frequently Asked Questions ==
 
 = Installation Instructions
+
+To install the plugin manually
+
+. Download and unzip the plugin package (`breeze.zip`) from the link:https://github.com/HitkoDev/breeze/releases/latest[latest release]
+. Upload the /breeze folder to /wp-content/plugins/
+. Activate the plugin through the 'Plugins' menu in WordPress
+. Access Breeze from WordPress Admin > Settings > Breeze
 
 To install the plugin via WordPress Dashboard
 
 . In the WordPress admin panel, Menu > Plugin > Add new
 . Search for Breeze
 . Click on install and wait for the installation to finish. Next, then click on the activate link
-
-To install the plugin manually
-
-. Download and unzip the plugin package - breeze.1.0.0.zip
-. Upload the /breeze to /wp-content/plugins/
-. Activate the plugin through the 'Plugins' menu in WordPress
-. Access Breeze from WordPress Admin > Settings > Breeze
 
 = Does Breeze support Varnish and to what extent? =
 
@@ -118,9 +118,9 @@ You can get your questions answered on the WordPress support forums. If you are 
 = How can I test and verify the results? =
 
 You will be able to see the impact of the Breeze Cache Plugin almost immediately. We also recommend using the following tools for generating metrics:
-link:https://developers.google.com/speed/pagespeed/"[Google Page Speed]
-link:https://www.webpagetest.org/test"[WebPagetest]
-link:https://tools.pingdom.com/"[Pingdom]
+link:https://developers.google.com/speed/pagespeed/[Google Page Speed]
+link:https://www.webpagetest.org/test[WebPagetest]
+link:https://tools.pingdom.com/[Pingdom]
 
 = Does Breeze plugin work with Visual Builder? =
 
@@ -129,9 +129,9 @@ Yes, Breeze Plugin is compatible with Visual Builder.
 = What popular CDN are supported by Breeze Plugin? =
 
 Breeze supports the following three popular CDNs:
-link:https://support.cloudways.com/how-to-use-breeze-with-maxcdn/"[MaxCDN]
-link:https://support.cloudways.com/how-to-use-breeze-with-keycdn/"[KeyCDN]
-link:https://support.cloudways.com/how-to-use-breeze-with-amazon-cloudfront/"[Amazon Cloudfront]
+link:https://support.cloudways.com/how-to-use-breeze-with-maxcdn/[MaxCDN]
+link:https://support.cloudways.com/how-to-use-breeze-with-keycdn/[KeyCDN]
+link:https://support.cloudways.com/how-to-use-breeze-with-amazon-cloudfront/[Amazon Cloudfront]
 
 = Does Breeze support Push CDN? =
 
@@ -139,13 +139,15 @@ No, Breeze does not support Push CDN. However, you could use Breeze with Push CD
 
 = Does Breeze Work With CloudFlare? =
 
-Yes. The process of setting up CloudFlare with Breeze is easy. Check out the following link:https://support.cloudways.com/can-i-use-cloudflare-cdn/"[KnowledgeBase article] for details.
+Yes. The process of setting up CloudFlare with Breeze is easy. Check out the following link:https://support.cloudways.com/can-i-use-cloudflare-cdn/[KnowledgeBase article] for details.
 
 = How Breeze cache uses Gzip? =
 
 Using Gzip, Breeze compresses the request files, further reducing the size of the download files and speeding up the user experience.
 
 == Changelog ==
+
+Below is the old changelog, for recent versions see link:https://github.com/HitkoDev/breeze/releases[Releases].
 
 = 1.1.9 =
 
