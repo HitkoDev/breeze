@@ -1,10 +1,10 @@
 === Breeze - WordPress Cache Plugin ===
-Contributors: Cloudways
-Tags: cache,caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers
-Requires at least: 4.5
-Tested up to: 5.7
-Stable tag: 1.1.9
-License: GPLv2 or later
+Contributors: Cloudways +
+Tags: cache,caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers +
+Requires at least: 4.5 +
+Tested up to: 5.7 +
+Stable tag: 1.1.9 +
+License: GPLv2 or later +
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Breeze is a WordPress Caching Plugin developed by Cloudways. Breeze uses advance caching systems to improve WordPress loading times exponentially.
@@ -23,7 +23,7 @@ Breeze excels in the following areas:
 
 What makes Breeze WordPress Cache Plugin awesome is that it comes with builtin support for Varnish. If Varnish is not installed on your servers, Breeze will utilize its internal cache mechanism to boost up your WordPress site performance.
 
-**Support:** We love to provide support! Post your questions on the WordPress.org support forums, or if you are a Cloudways Customer you may ask questions on the <a href="https://community.cloudways.com/">Cloudways Community Forum</a>. 
+**Support:** We love to provide support! Post your questions on the WordPress.org support forums, or if you are a Cloudways Customer you may ask questions on the link:https://community.cloudways.com/[Cloudways Community Forum]. 
 
 **Special Thanks:** We would like to give special mention to WP Speed Of Light for being an inspiration for Breeze.
 
@@ -45,15 +45,17 @@ What makes Breeze WordPress Cache Plugin awesome is that it comes with builtin s
 = Installation Instructions
 
 To install the plugin via WordPress Dashboard
-1. In the WordPress admin panel, Menu > Plugin > Add new
-2. Search for Breeze
-3. Click on install and wait for the installation to finish. Next, then click on the activate link
+
+. In the WordPress admin panel, Menu > Plugin > Add new
+. Search for Breeze
+. Click on install and wait for the installation to finish. Next, then click on the activate link
 
 To install the plugin manually
-1. Download and unzip the plugin package - breeze.1.0.0.zip
-2. Upload the /breeze to /wp-content/plugins/
-3. Activate the plugin through the 'Plugins' menu in WordPress
-4. Access Breeze from WordPress Admin > Settings > Breeze
+
+. Download and unzip the plugin package - breeze.1.0.0.zip
+. Upload the /breeze to /wp-content/plugins/
+. Activate the plugin through the 'Plugins' menu in WordPress
+. Access Breeze from WordPress Admin > Settings > Breeze
 
 = Does Breeze support Varnish and to what extent? =
 
@@ -83,7 +85,7 @@ Breeze does not require any special configuration to work with HTTP or HTTPS pag
 
 = Does Breeze have compatibility issues with other known plugins? =
 
-Breeze has been tested with popular plugins available on WordPress.org. Please feel free to report any incompatibilities on the WordPress Support Forums or on <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
+Breeze has been tested with popular plugins available on WordPress.org. Please feel free to report any incompatibilities on the WordPress Support Forums or on link:https://community.cloudways.com/[Cloudways Community Forum].
 
 = Does Breeze support CDN? =
 
@@ -103,7 +105,7 @@ Comments will appear upon moderation as per the comment system (or policy) set i
 
 You can exclude a file by mentioning its URL or file type (by mentioning file extension) in the exclude fields (available in the Breeze settings). Exclude will not let the cache impact that URL or file type. 
 
-If Varnish is active, you will need to exclude URLs and file type(s) in the Varnish configuration. If you are hosting WordPress websites on Cloudways servers, follow <a href="https://support.cloudways.com/how-to-exclude-url-from-varnish/">this KB to exclude URLs from the Varnish cache</a>.
+If Varnish is active, you will need to exclude URLs and file type(s) in the Varnish configuration. If you are hosting WordPress websites on Cloudways servers, follow link:https://support.cloudways.com/how-to-exclude-url-from-varnish/[this KB to exclude URLs from the Varnish cache].
 
 = Does it work with all hosting providers? =
 
@@ -111,14 +113,14 @@ Breeze has been tested to work with all major hosting providers. In addition, ma
 
 = Where can I get support for Breeze? =
 
-You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
+You can get your questions answered on the WordPress support forums. If you are a Cloudways customer, please feel free to start a discussion at link:https://community.cloudways.com/[Cloudways Community Forum].
 
 = How can I test and verify the results? =
 
 You will be able to see the impact of the Breeze Cache Plugin almost immediately. We also recommend using the following tools for generating metrics:
-<a href="https://developers.google.com/speed/pagespeed/" target="_blank">Google Page Speed</a>
-<a href="https://www.webpagetest.org/test" target="_blank">WebPagetest</a>
-<a href="https://tools.pingdom.com/" target="_blank">Pingdom</a>
+link:https://developers.google.com/speed/pagespeed/"[Google Page Speed]
+link:https://www.webpagetest.org/test"[WebPagetest]
+link:https://tools.pingdom.com/"[Pingdom]
 
 = Does Breeze plugin work with Visual Builder? =
 
@@ -127,9 +129,9 @@ Yes, Breeze Plugin is compatible with Visual Builder.
 = What popular CDN are supported by Breeze Plugin? =
 
 Breeze supports the following three popular CDNs:
-<a href="https://support.cloudways.com/how-to-use-breeze-with-maxcdn/" target="_blank">MaxCDN</a>
-<a href="https://support.cloudways.com/how-to-use-breeze-with-keycdn/" target="_blank">KeyCDN</a>
-<a href="https://support.cloudways.com/how-to-use-breeze-with-amazon-cloudfront/" target="_blank">Amazon Cloudfront</a>
+link:https://support.cloudways.com/how-to-use-breeze-with-maxcdn/"[MaxCDN]
+link:https://support.cloudways.com/how-to-use-breeze-with-keycdn/"[KeyCDN]
+link:https://support.cloudways.com/how-to-use-breeze-with-amazon-cloudfront/"[Amazon Cloudfront]
 
 = Does Breeze support Push CDN? =
 
@@ -137,7 +139,7 @@ No, Breeze does not support Push CDN. However, you could use Breeze with Push CD
 
 = Does Breeze Work With CloudFlare? =
 
-Yes. The process of setting up CloudFlare with Breeze is easy. Check out the following <a href="https://support.cloudways.com/can-i-use-cloudflare-cdn/" target="_blank">KnowledgeBase article</a> for details.
+Yes. The process of setting up CloudFlare with Breeze is easy. Check out the following link:https://support.cloudways.com/can-i-use-cloudflare-cdn/"[KnowledgeBase article] for details.
 
 = How Breeze cache uses Gzip? =
 
