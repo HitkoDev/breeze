@@ -8,8 +8,8 @@ defined( 'ABSPATH' ) || exit;
 require_once dirname( __DIR__ ) . '/functions.php';
 
 // Include and instantiate the class.
-require_once 'Mobile-Detect-2.8.25/Mobile_Detect.php';
-$detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect;
+include_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
+$detect = new Detection\MobileDetect();
 
 // Don't cache robots.txt or htacesss
 if ( strpos( $_SERVER['REQUEST_URI'], 'robots.txt' ) !== false || strpos( $_SERVER['REQUEST_URI'], '.htaccess' ) !== false ) {
@@ -139,8 +139,8 @@ function breeze_cache( $buffer, $flags ) {
 		return $buffer;
 	}
 
-	require_once 'Mobile-Detect-2.8.25/Mobile_Detect.php';
-	$detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect;
+    include_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
+    $detect = new Detection\MobileDetect();
 	//not cache per administrator if option disable optimization for admin users clicked
 	if ( ! empty( $GLOBALS['breeze_config'] ) && (int) $GLOBALS['breeze_config']['disable_per_adminuser'] ) {
 		if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) {
