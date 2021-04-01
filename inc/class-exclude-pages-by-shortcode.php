@@ -20,7 +20,6 @@ class Exclude_Pages_By_Shortcode {
 	public function post_check_content_on_save( $post_id = 0, $post = null, $update = false ) {
 		$content = trim( $post->post_content );
 
-
 		if ( 'page' !== $post->post_type ) {
 			return;
 		}
@@ -41,23 +40,24 @@ class Exclude_Pages_By_Shortcode {
 				$data = $output_shortcodes[1];
 				$data = array_unique( $data );
 
-
 				foreach ( $shortcode_list as $shortcode ) {
-					$result = array_filter( $data, function ( $item ) use ( $shortcode ) {
-						$shortcode = str_replace( '(.*)', '', $shortcode );
-						if ( stripos( $item, $shortcode ) !== false ) {
-							return true;
-						}
+					$result = array_filter(
+						$data,
+						function ( $item ) use ( $shortcode ) {
+							$shortcode = str_replace( '(.*)', '', $shortcode );
+							if ( stripos( $item, $shortcode ) !== false ) {
+								return true;
+							}
 
-						return false;
-					} );
+							return false;
+						}
+					);
 
 					if ( ! empty( $result ) ) {
 						$found = true;
 						break;
 					}
 				}
-
 			}
 
 			if ( true === $found ) {

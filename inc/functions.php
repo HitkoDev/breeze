@@ -36,17 +36,15 @@ function breeze_get_cache_base_path( $is_network = false, $blog_id_requested = 0
 	if ( ! $is_network && is_multisite() ) {
 
 		if ( empty( $blog_id_requested ) ) {
-
 			global $blog_id;
 			$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
 			if ( ! empty( $blog_id ) ) {
 				$path .= abs( intval( $blog_id ) ) . DIRECTORY_SEPARATOR;
 			}
 		} else {
-			$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
+			$path  = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
 			$path .= abs( intval( $blog_id_requested ) ) . DIRECTORY_SEPARATOR;
 		}
-
 	} else {
 		$path = rtrim( WP_CONTENT_DIR, '/\\' ) . '/cache/breeze/';
 	}

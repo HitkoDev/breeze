@@ -255,7 +255,7 @@ function breeze_check_for_exclude_values( $needle = '', $haystack = array() ) {
 	$is_string_in_array = array_filter(
 		$haystack,
 		function ( $var ) use ( $needle ) {
-			#return false;
+
 			if ( breeze_string_contains_exclude_regexp( $var ) ) {
 				return breeze_file_match_pattern( $needle, $var );
 			} else {
@@ -632,3 +632,121 @@ function multisite_blog_id_config() {
 
 	}
 }
+
+/**
+ * Purges the cache for a given URL.
+ * Varnish cache and local cache.
+ *
+ * @param string $url The url for which to purge the cache.
+ * @param false $purge_varnish If the check was already done for Varnish server On/OFF set to true.
+ * @param bool $check_varnish If the check for Varnish was not done, set to true to check Varnish server status inside the function.
+ *
+ * @since 1.1.10
+ */
+function breeze_varnish_purge_cache( $url = '', $purge_varnish = false, $check_varnish = true ) {
+	global $wp_filesystem;
+
+	// Making sure the filesystem is loaded.
+	if ( empty( $wp_filesystem ) ) {
+		require_once( ABSPATH . '/wp-admin/includes/file.php' );
+		WP_Filesystem();
+	}
+
+	// Clear the local cache using the product URL.
+	if ( ! empty( $url ) && $wp_filesystem->exists( breeze_get_cache_base_path() . md5( $url ) ) ) {
+		$wp_filesystem->rmdir( breeze_get_cache_base_path() . md5( $url ), true );
+	}
+
+	if ( false === $purge_varnish && true === $check_varnish ) {
+		// Checks if the Varnish server is ON.
+		$do_varnish_purge = is_varnish_cache_started();
+
+		if ( false === $do_varnish_purge ) {
+			return;
+		}
+	}
+
+	if ( false === $purge_varnish && false === $check_varnish ) {
+		return;
+	}
+
+	$parse_url = parse_url( $url );
+	$pregex    = '';
+	// Default method is URLPURGE to purge only one object, this method is specific to cloudways configuration
+	$purge_method = 'URLPURGE';
+	// Use PURGE method when purging all site
+	if ( isset( $parse_url['query'] ) && ( 'breeze' === strtolower( $parse_url['query'] ) ) ) {
+		// The regex is not needed as cloudways configuration purge all the cache of the domain when a PURGE is done
+		$pregex       = '.*';
+		$purge_method = 'PURGE';
+	}
+	// Determine the path
+	$url_path = '';
+	if ( isset( $parse_url['path'] ) ) {
+		$url_path = $parse_url['path'];
+	}
+	// Determine the schema
+	$schema = 'http://';
+	if ( isset( $parse_url['scheme'] ) ) {
+		$schema = $parse_url['scheme'] . '://';
+	}
+	// Determine the host
+	$host         = $parse_url['host'];
+	$config       = breeze_get_option( 'varnish_cache' );
+	$varnish_host = isset( $config['breeze-varnish-server-ip'] ) ? $config['breeze-varnish-server-ip'] : '127.0.0.1';
+	$purgeme      = $varnish_host . $url_path . $pregex;
+	if ( ! empty( $parse_url['query'] ) && 'breeze' !== strtolower( $parse_url['query'] ) ) {
+		$purgeme .= '?' . $parse_url['query'];
+	}
+	$request_args = array(
+		'method'    => $purge_method,
+		'headers'   => array(
+			'Host'       => $host,
+			'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+		),
+		'sslverify' => false,
+	);
+	$response     = wp_remote_request( $schema . $purgeme, $request_args );
+	if ( is_wp_error( $response ) || 200 !== (int) $response['response']['code'] ) {
+		if ( 'https://' === $schema ) {
+			$schema = 'http://';
+		} else {
+			$schema = 'https://';
+		}
+		wp_remote_request( $schema . $purgeme, $request_args );
+	}
+}
+
+/**
+ * Will ignore the files added into $minified_already array so that these files will not be minified twice.
+ *
+ * @param string $script_path local script path.
+ *
+ * @return bool
+ * @since 1.1.9
+ */
+function breeze_libraries_already_minified( $script_path = '' ) {
+	if ( empty( $script_path ) ) {
+		return false;
+	}
+
+	$minified_already = array(
+		'woocommerce-bookings/dist/frontend.js',
+	);
+
+	$library = explode( '/plugins/', $script_path );
+
+	if ( empty( $library ) || ! isset( $library[1] ) ) {
+		return false;
+	}
+
+	$library_path = $library[1];
+
+	if ( in_array( $library_path, $minified_already ) ) {
+		return true;
+	}
+
+	return false;
+
+}
+add_filter( 'breeze_js_ignore_minify', 'breeze_libraries_already_minified' );

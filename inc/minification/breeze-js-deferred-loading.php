@@ -24,6 +24,14 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 	private $defer_js = array();
 
 	/**
+	 * CDN domain.
+	 *
+	 * @since 1.1.8
+	 * @access private
+	 */
+	protected $cdn_url = '';
+
+	/**
 	 * Will hold the JS Scripts found in the header
 	 * @var array
 	 * @since 1.1.8
@@ -83,7 +91,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 		'jd.gallery.transitions.js',
 		'swfobject.embedSWF(',
 		'tiny_mce.js',
-		'tinyMCEPreInit.go'
+		'tinyMCEPreInit.go',
 	);
 
 	private $domovelast = array(
@@ -168,6 +176,9 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 		// comments
 		$this->content = $this->hide_comments( $this->content );
 
+		// get cdn url
+		$this->cdn_url = $options['cdn_url'];
+
 		//Get script files
 		$split_content = explode( '</head>', $this->content, 2 );
 		$this->fetch_javascript( $split_content[0] );
@@ -198,6 +209,17 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 	 * @access private
 	 */
 	private function fetch_javascript( $content = '', $head = true ) {
+		$cdn_array_move_to_footer = array();
+
+		if ( ! empty( $this->move_to_footer_js ) ) {
+			foreach ( $this->move_to_footer_js as $index => $key ) {
+				$cdn_array_move_to_footer[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
+				$index = ltrim( $index, 'https:' );
+				$key   = ltrim( $key, 'https:' );
+				$cdn_array_move_to_footer[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
+			}
+		}
+
 		if ( preg_match_all( '#<script.*</script>#Usmi', $content, $matches ) ) {
 			foreach ( $matches[0] as $tag ) {
 				// only consider aggregation whitelisted in should_aggregate-function
@@ -230,8 +252,24 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 							//We can merge it
 							if ( true === $head ) {
 								// If this file will be move to footer
-								if ( in_array( $url, $this->move_to_footer_js ) ) {
-									$this->move_to_footer[ $url ] = $path;
+								$compare_url  = ltrim( $url, 'https:' );
+								$cdn_url      = $this->url_replace_cdn( $url );
+								$cdn_url_trim = ltrim( $cdn_url, 'https:' );
+
+								if (
+									( in_array( $compare_url, $this->move_to_footer_js ) ||
+									  in_array( $url, $this->move_to_footer_js ) ||
+									  in_array( $cdn_url, $this->move_to_footer_js ) ||
+									  in_array( $cdn_url_trim, $this->move_to_footer_js )
+									) ||
+									(
+										in_array( $compare_url, $cdn_array_move_to_footer ) ||
+										in_array( $url, $cdn_array_move_to_footer ) ||
+										in_array( $cdn_url, $cdn_array_move_to_footer ) ||
+										in_array( $cdn_url_trim, $cdn_array_move_to_footer )
+									)
+								) {
+									$this->footer_scripts[ $url ] = $path;
 								} else {
 									$this->head_scripts[ $url ] = $path;
 								}
@@ -311,6 +349,20 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 	 * @access public
 	 */
 	public function getcontent() {
+		if ( ! empty( $this->cdn_url ) ) {
+			foreach ( $this->defer_js as $index => $key ) {
+				$this->defer_js[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
+				$index = ltrim( $index, 'https:' );
+				$key   = ltrim( $key, 'https:' );
+				$this->defer_js[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
+			}
+		} else {
+			foreach ( $this->defer_js as $index => $key ) {
+				$index                    = ltrim( $index, 'https:' );
+				$key                      = ltrim( $key, 'https:' );
+				$this->defer_js[ $index ] = $key;
+			}
+		}
 
 		// Load inline JS to html
 		if ( ! empty( $this->head_scripts ) ) {
@@ -320,13 +372,20 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
 			foreach ( $this->head_scripts as $js_url => $js_path ) {
 				$defer = '';
-				if ( gettype( $js_url ) == 'string' && in_array( $js_url, $this->defer_js ) ) {
+
+				if ( ! empty( $this->cdn_url ) ) {
+					$js_url = $this->url_replace_cdn( $js_url );
+				}
+
+				$js_url_trim = ltrim( $js_url, 'https:' );
+
+				if ( gettype( $js_url ) == 'string' && ( in_array( $js_url, $this->defer_js ) || in_array( $js_url_trim, $this->defer_js ) ) ) {
 					$defer = 'defer ';
 				}
 
 				$js_head[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
 			}
-			$js_replacement = '';
+			$js_replacement  = '';
 			$js_replacement .= implode( '', $js_head );
 			$this->inject_in_html( $js_replacement, $replaceTag );
 		}
@@ -337,17 +396,22 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
 			foreach ( $this->footer_scripts as $js_url => $js_path ) {
 				$defer = '';
-				if ( gettype( $js_url ) == 'string' && in_array( $js_url, $this->defer_js ) ) {
+				if ( ! empty( $this->cdn_url ) ) {
+					$js_url = $this->url_replace_cdn( $js_url );
+				}
+
+				$js_url_trim = ltrim( $js_url, 'https:' );
+
+				if ( gettype( $js_url ) == 'string' && ( in_array( $js_url, $this->defer_js ) || in_array( $js_url_trim, $this->defer_js ) ) ) {
 					$defer = 'defer ';
 				}
 
 				$js_footer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
 			}
-			$js_replacement = '';
+			$js_replacement  = '';
 			$js_replacement .= implode( '', $js_footer );
 			$this->inject_in_html( $js_replacement, $replaceTag );
 		}
-
 
 		// restore comments
 		$this->content = $this->restore_comments( $this->content );
@@ -476,5 +540,42 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 		} else {
 			return false;
 		}
+	}
+
+	/**
+	 * Change the URL from local domain to CDN domain.
+	 *
+	 * @param string $url the given URL
+	 *
+	 * @return mixed|void
+	 */
+	protected function url_replace_cdn( $url ) {
+		$cdn_url = apply_filters( 'breeze_filter_base_cdnurl', $this->cdn_url );
+		if ( ! empty( $cdn_url ) ) {
+			// secondly prepend domain-less absolute URL's
+			if ( ( substr( $url, 0, 1 ) === '/' ) && ( substr( $url, 1, 1 ) !== '/' ) ) {
+				$url = rtrim( $cdn_url, '/' ) . $url;
+			} else {
+				// get WordPress base URL
+				$WPSiteBreakdown = parse_url( breeze_WP_SITE_URL );
+				$WPBaseUrl       = $WPSiteBreakdown['scheme'] . '://' . $WPSiteBreakdown['host'];
+				if ( ! empty( $WPSiteBreakdown['port'] ) ) {
+					$WPBaseUrl .= ':' . $WPSiteBreakdown['port'];
+				}
+				// three: replace full url's with scheme
+				$tmp_url = str_replace( $WPBaseUrl, rtrim( $cdn_url, '/' ), $url );
+				if ( $tmp_url === $url ) {
+					// last attempt; replace scheme-less URL's
+					$url = str_replace( preg_replace( '/https?:/', '', $WPBaseUrl ), rtrim( $cdn_url, '/' ), $url );
+				} else {
+					$url = $tmp_url;
+				}
+			}
+		}
+
+		// allow API filter to take alter after CDN replacement
+		$url = apply_filters( 'breeze_filter_base_replace_cdn', $url );
+
+		return $url;
 	}
 }

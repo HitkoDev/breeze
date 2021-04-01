@@ -22,9 +22,9 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 
 class Breeze_PurgeVarnish {
 	protected $blogId;
-	protected $urlsPurge = array();
-	protected $auto_purge = false;
-	protected $actions = array(
+	protected $urlsPurge   = array();
+	protected $auto_purge  = false;
+	protected $actions     = array(
 		'switch_theme',                        // After a theme is changed
 		'save_post',                            // Save a post
 		'deleted_post',                        // Delete a post
@@ -93,7 +93,6 @@ class Breeze_PurgeVarnish {
 					$this->purge_cache( $url );
 				}
 			}
-
 		} else {
 			$homepage = home_url() . '/?breeze';
 			if ( isset( $_REQUEST['breeze_action'] ) && $_REQUEST['breeze_action'] == 'breeze_settings' ) {
@@ -288,7 +287,7 @@ class Breeze_PurgeVarnish {
 					$listofurls,
 					get_post_type_archive_link( get_post_type( $postId ) ),
 					get_post_type_archive_feed_link( get_post_type( $postId ) )
-				// Need to add in JSON?
+					// Need to add in JSON?
 				);
 			}
 			// Feeds

@@ -1,17 +1,17 @@
 <?php
-/* 
- *  Based on some work of autoptimize plugin 
+/*
+ *  Based on some work of autoptimize plugin
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
 class Breeze_MinificationHtml extends Breeze_MinificationBase {
-	private $keepcomments = false;
-	private $exclude = array( '<!-- ngg_resource_manager_marker -->' );
-	private $original_content = '';
+	private $keepcomments          = false;
+	private $exclude               = array( '<!-- ngg_resource_manager_marker -->' );
+	private $original_content      = '';
 	private $show_original_content = 0;
-	private $do_process = false;
+	private $do_process            = false;
 
 	public function read( $options ) {
 		$this_path_url = $this->get_cache_file_url( '' );
@@ -31,8 +31,8 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 
 		// filter to add strings to be excluded from HTML minification
 		$excludeHTML = apply_filters( 'breeze_filter_html_exclude', '' );
-		if ( $excludeHTML !== "" ) {
-			$exclHTMLArr   = array_filter( array_map( 'trim', explode( ",", $excludeHTML ) ) );
+		if ( $excludeHTML !== '' ) {
+			$exclHTMLArr   = array_filter( array_map( 'trim', explode( ',', $excludeHTML ) ) );
 			$this->exclude = array_merge( $exclHTMLArr, $this->exclude );
 		}
 
@@ -55,7 +55,7 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 			// wrap the to-be-excluded strings in noptimize tags
 			foreach ( $this->exclude as $exclString ) {
 				if ( strpos( $this->content, $exclString ) !== false ) {
-					$replString    = "<!--noptimize-->" . $exclString . "<!--/noptimize-->";
+					$replString    = '<!--noptimize-->' . $exclString . '<!--/noptimize-->';
 					$this->content = str_replace( $exclString, $replString, $this->content );
 				}
 			}
@@ -82,7 +82,7 @@ class Breeze_MinificationHtml extends Breeze_MinificationBase {
 
 			// remove the noptimize-wrapper from around the excluded strings
 			foreach ( $this->exclude as $exclString ) {
-				$replString = "<!--noptimize-->" . $exclString . "<!--/noptimize-->";
+				$replString = '<!--noptimize-->' . $exclString . '<!--/noptimize-->';
 				if ( strpos( $this->content, $replString ) !== false ) {
 					$this->content = str_replace( $replString, $exclString, $this->content );
 				}

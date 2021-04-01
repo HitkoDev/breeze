@@ -1,37 +1,37 @@
 <?php
-/* 
- *  Based on some work of autoptimize plugin 
+/*
+ *  Based on some work of autoptimize plugin
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 class Breeze_MinificationStyles extends Breeze_MinificationBase {
-	private $css = array();
-	private $csscode = array();
-	private $url = array();
-	private $restofcontent = '';
-	private $mhtml = '';
-	private $datauris = false;
-	private $hashmap = array();
-	private $alreadyminified = false;
-	private $inline = false;
-	private $defer = false;
-	private $defer_inline = false;
-	private $whitelist = '';
-	private $cssinlinesize = '';
-	private $cssremovables = array();
-	private $include_inline = false;
-	private $inject_min_late = '';
-	private $group_css = false;
-	private $custom_css_exclude = array();
-	private $css_group_val = array();
-	private $css_min_arr = array();
-	private $issetminfile = false;
-	private $url_group_arr = array();
-	private $include_imported_css = false;
-	private $original_content = '';
+	private $css                   = array();
+	private $csscode               = array();
+	private $url                   = array();
+	private $restofcontent         = '';
+	private $mhtml                 = '';
+	private $datauris              = false;
+	private $hashmap               = array();
+	private $alreadyminified       = false;
+	private $inline                = false;
+	private $defer                 = false;
+	private $defer_inline          = false;
+	private $whitelist             = '';
+	private $cssinlinesize         = '';
+	private $cssremovables         = array();
+	private $include_inline        = false;
+	private $inject_min_late       = '';
+	private $group_css             = false;
+	private $custom_css_exclude    = array();
+	private $css_group_val         = array();
+	private $css_min_arr           = array();
+	private $issetminfile          = false;
+	private $url_group_arr         = array();
+	private $include_imported_css  = false;
+	private $original_content      = '';
 	private $show_original_content = 0;
-	private $do_process = false;
+	private $do_process            = false;
 
 
 	//Reads the page and collects style tags
@@ -322,8 +322,8 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 						if ( ! $import_ok ) {
 							// external imports and general fall-back
 							$external_imports .= $import;
-							$thiscss          = str_replace( $import, '', $thiscss );
-							$fiximports       = true;
+							$thiscss           = str_replace( $import, '', $thiscss );
+							$fiximports        = true;
 						}
 					}
 					$thiscss = preg_replace( '#/\*FILESTART\*/#', '', $thiscss );
@@ -559,7 +559,6 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 				$this->show_original_content = 1;
 				$this->clear_cache_data();
 			}
-
 		} else {
 			$url_exists = true;
 			foreach ( $this->css_min_arr as $value ) {
@@ -578,7 +577,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 				if ( ! file_exists( $cache_directory . $cache->get_file_name() ) ) {
 					$url_exists = false;
 				} else {
-					$this->url_group_arr[] = $media . "_breezemedia_" . $hash . "_breezekey_" . breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
+					$this->url_group_arr[] = $media . '_breezemedia_' . $hash . '_breezekey_' . breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
 				}
 			}
 
@@ -603,7 +602,6 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 		if ( strpos( $this->content, '%%SCRIPT%%' ) !== false ) {
 			$this->content = preg_replace_callback(
 				'#%%SCRIPT' . breeze_HASH . '%%(.*?)%%SCRIPT%%#is',
-
 				function ( $matches ) {
 					return base64_decode( $matches[1] );
 				},
@@ -614,7 +612,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
 		$this->content = $this->restore_noptimize( $this->content );
 		//Restore the full content
 		if ( ! empty( $this->restofcontent ) ) {
-			$this->content       .= $this->restofcontent;
+			$this->content      .= $this->restofcontent;
 			$this->restofcontent = '';
 		}
 		// Inject the new stylesheets

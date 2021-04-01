@@ -1,14 +1,15 @@
 <?php
-/* 
- *  Based on some work of autoptimize plugin 
+/*
+ *  Based on some work of autoptimize plugin
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 } // Exit if accessed directly
 
 abstract class Breeze_MinificationBase {
-	protected $content = '';
+	protected $content    = '';
 	protected $tagWarning = false;
+	protected $cdn_url    = '';
 
 	public function __construct( $content ) {
 		$this->content = $content;
@@ -37,18 +38,18 @@ abstract class Breeze_MinificationBase {
 		// normalize
 		if ( strpos( $url, '//' ) === 0 ) {
 			if ( is_ssl() ) {
-				$url = "https:" . $url;
+				$url = 'https:' . $url;
 			} else {
-				$url = "http:" . $url;
+				$url = 'http:' . $url;
 			}
-		} else if ( ( strpos( $url, '//' ) === false ) && ( strpos( $url, parse_url( breeze_WP_SITE_URL, PHP_URL_HOST ) ) === false ) ) {
+		} elseif ( ( strpos( $url, '//' ) === false ) && ( strpos( $url, parse_url( breeze_WP_SITE_URL, PHP_URL_HOST ) ) === false ) ) {
 			$url = breeze_WP_SITE_URL . $url;
 		}
 
 		// first check; hostname wp site should be hostname of url
 		$thisHost = @parse_url( $url, PHP_URL_HOST );
 		if ( $thisHost !== parse_url( breeze_WP_SITE_URL, PHP_URL_HOST ) ) {
-			/* 
+			/*
 			* first try to get all domains from WPML (if available)
 			* then explicitely declare $this->cdn_url as OK as well
 			* then apply own filter autoptimize_filter_cssjs_multidomain takes an array of hostnames
@@ -58,7 +59,7 @@ abstract class Breeze_MinificationBase {
 
 			$multidomainsWPML = apply_filters( 'wpml_setting', array(), 'language_domains' );
 			if ( ! empty( $multidomainsWPML ) ) {
-				$multidomains = array_map( array( $this, "ao_getDomain" ), $multidomainsWPML );
+				$multidomains = array_map( array( $this, 'ao_getDomain' ), $multidomainsWPML );
 			}
 
 			if ( ! empty( $this->cdn_url ) ) {
@@ -97,8 +98,8 @@ abstract class Breeze_MinificationBase {
 	// needed for WPML-filter
 	protected function ao_getDomain( $in ) {
 		// make sure the url starts with something vaguely resembling a protocol
-		if ( ( strpos( $in, "http" ) !== 0 ) && ( strpos( $in, "//" ) !== 0 ) ) {
-			$in = "http://" . $in;
+		if ( ( strpos( $in, 'http' ) !== 0 ) && ( strpos( $in, '//' ) !== 0 ) ) {
+			$in = 'http://' . $in;
 		}
 
 		// do the actual parse_url
@@ -116,10 +117,10 @@ abstract class Breeze_MinificationBase {
 	// logger
 	protected function ao_logger( $logmsg, $appendHTML = true ) {
 		if ( $appendHTML ) {
-			$logmsg        = "<!--noptimize--><!-- " . $logmsg . " --><!--/noptimize-->";
+			$logmsg         = '<!--noptimize--><!-- ' . $logmsg . ' --><!--/noptimize-->';
 			$this->content .= $logmsg;
 		} else {
-			error_log( "Error: " . $logmsg );
+			error_log( 'Error: ' . $logmsg );
 		}
 	}
 
@@ -128,9 +129,8 @@ abstract class Breeze_MinificationBase {
 		if ( preg_match( '/<!--\s?noptimize\s?-->/', $noptimize_in ) ) {
 			$noptimize_out = preg_replace_callback(
 				'#<!--\s?noptimize\s?-->.*?<!--\s?/\s?noptimize\s?-->#is',
-
 				function ( $matches ) {
-					return "%%NOPTIMIZE" . breeze_HASH . "%%" . base64_encode( $matches[0] ) . "%%NOPTIMIZE%%";
+					return '%%NOPTIMIZE' . breeze_HASH . '%%' . base64_encode( $matches[0] ) . '%%NOPTIMIZE%%';
 				},
 				$noptimize_in
 			);
@@ -146,7 +146,6 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $noptimize_in, '%%NOPTIMIZE%%' ) !== false ) {
 			$noptimize_out = preg_replace_callback(
 				'#%%NOPTIMIZE' . breeze_HASH . '%%(.*?)%%NOPTIMIZE%%#is',
-
 				function ( $matches ) {
 					return base64_decode( $matches[1] );
 				},
@@ -163,11 +162,9 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $iehacks_in, '<!--[if' ) !== false ) {
 			$iehacks_out = preg_replace_callback(
 				'#<!--\[if.*?\[endif\]-->#is',
-
 				function ( $matches ) {
-					return "%%IEHACK" . breeze_HASH . "%%" . base64_encode( $matches[0] ) . "%%IEHACK%%";
+					return '%%IEHACK' . breeze_HASH . '%%' . base64_encode( $matches[0] ) . '%%IEHACK%%';
 				},
-
 				$iehacks_in
 			);
 		} else {
@@ -181,7 +178,6 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $iehacks_in, '%%IEHACK%%' ) !== false ) {
 			$iehacks_out = preg_replace_callback(
 				'#%%IEHACK' . breeze_HASH . '%%(.*?)%%IEHACK%%#is',
-
 				function ( $matches ) {
 					return base64_decode( $matches[1] );
 				},
@@ -198,9 +194,8 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $comments_in, '<!--' ) !== false ) {
 			$comments_out = preg_replace_callback(
 				'#<!--.*?-->#is',
-
 				function ( $matches ) {
-					return "%%COMMENTS" . breeze_HASH . "%%" . base64_encode( $matches[0] ) . "%%COMMENTS%%";
+					return '%%COMMENTS' . breeze_HASH . '%%' . base64_encode( $matches[0] ) . '%%COMMENTS%%';
 				},
 				$comments_in
 			);
@@ -215,7 +210,6 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $comments_in, '%%COMMENTS%%' ) !== false ) {
 			$comments_out = preg_replace_callback(
 				'#%%COMMENTS' . breeze_HASH . '%%(.*?)%%COMMENTS%%#is',
-
 				function ( $matches ) {
 					return base64_decode( $matches[1] );
 				},
@@ -235,11 +229,11 @@ abstract class Breeze_MinificationBase {
 			if ( ( substr( $url, 0, 1 ) === '/' ) && ( substr( $url, 1, 1 ) !== '/' ) ) {
 				$url = rtrim( $cdn_url, '/' ) . $url;
 			} else {
-				// get wordpress base URL
+				// get WordPress base URL
 				$WPSiteBreakdown = parse_url( breeze_WP_SITE_URL );
 				$WPBaseUrl       = $WPSiteBreakdown['scheme'] . '://' . $WPSiteBreakdown['host'];
 				if ( ! empty( $WPSiteBreakdown['port'] ) ) {
-					$WPBaseUrl .= ":" . $WPSiteBreakdown['port'];
+					$WPBaseUrl .= ':' . $WPSiteBreakdown['port'];
 				}
 				// three: replace full url's with scheme
 				$tmp_url = str_replace( $WPBaseUrl, rtrim( $cdn_url, '/' ), $url );
@@ -260,9 +254,9 @@ abstract class Breeze_MinificationBase {
 
 	protected function inject_in_html( $payload, $replaceTag ) {
 		if ( strpos( $this->content, $replaceTag[0] ) !== false ) {
-			if ( $replaceTag[1] === "after" ) {
+			if ( $replaceTag[1] === 'after' ) {
 				$replaceBlock = $replaceTag[0] . $payload;
-			} else if ( $replaceTag[1] === "replace" ) {
+			} elseif ( $replaceTag[1] === 'replace' ) {
 				$replaceBlock = $payload;
 			} else {
 				$replaceBlock = $payload . $replaceTag[0];
@@ -271,7 +265,7 @@ abstract class Breeze_MinificationBase {
 		} else {
 			$this->content .= $payload;
 			if ( ! $this->tagWarning ) {
-				$this->content    .= "<!--noptimize--><!-- breeze found a problem with the HTML in your Theme, tag " . $replaceTag[0] . " missing --><!--/noptimize-->";
+				$this->content   .= '<!--noptimize--><!-- breeze found a problem with the HTML in your Theme, tag ' . $replaceTag[0] . ' missing --><!--/noptimize-->';
 				$this->tagWarning = true;
 			}
 		}
@@ -292,35 +286,34 @@ abstract class Breeze_MinificationBase {
 		if ( strpos( $in, '%%INJECTLATER%%' ) !== false ) {
 			$out = preg_replace_callback(
 				'#%%INJECTLATER' . breeze_HASH . '%%(.*?)%%INJECTLATER%%#is',
-
 				function ( $matches ) {
-					$filepath    = base64_decode( strtok( $matches[1], "|" ) );
+					$filepath    = base64_decode( strtok( $matches[1], '|' ) );
 					$filecontent = file_get_contents( $filepath );
-                    if(empty(trim($filecontent))){
-                    	return '';
-                    }
-
-					// remove BOM
-					$filecontent = preg_replace( "#\x{EF}\x{BB}\x{BF}#", "", $filecontent );
-
-					// remove comments and blank lines
-					if ( substr( $filepath, - 3, 3 ) === ".js" ) {
-						$filecontent = preg_replace( "#^\s*\/\/.*$#Um", "", $filecontent );
+					if ( empty( trim( $filecontent ) ) ) {
+						return '';
 					}
 
-					$filecontent = preg_replace( "#^\s*\/\*[^!].*\*\/\s?#Us", "", $filecontent );
+					// remove BOM
+					$filecontent = preg_replace( "#\x{EF}\x{BB}\x{BF}#", '', $filecontent );
+
+					// remove comments and blank lines
+					if ( substr( $filepath, - 3, 3 ) === '.js' ) {
+						$filecontent = preg_replace( '#^\s*\/\/.*$#Um', '', $filecontent );
+					}
+
+					$filecontent = preg_replace( '#^\s*\/\*[^!].*\*\/\s?#Us', '', $filecontent );
 					$filecontent = preg_replace( "#(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+#", "\n", $filecontent );
 
 					// specific stuff for JS-files
-					if ( substr( $filepath, - 3, 3 ) === ".js" ) {
-						if ( ( substr( $filecontent, - 1, 1 ) !== ";" ) && ( substr( $filecontent, - 1, 1 ) !== "}" ) ) {
-							$filecontent .= ";";
+					if ( substr( $filepath, - 3, 3 ) === '.js' ) {
+						if ( ( substr( $filecontent, - 1, 1 ) !== ';' ) && ( substr( $filecontent, - 1, 1 ) !== '}' ) ) {
+							$filecontent .= ';';
 						}
 
-						if ( get_option( "breeze_js_trycatch" ) === "on" ) {
-							$filecontent = "try{" . $filecontent . "}catch(e){}";
+						if ( get_option( 'breeze_js_trycatch' ) === 'on' ) {
+							$filecontent = 'try{' . $filecontent . '}catch(e){}';
 						}
-					} else if ( ( substr( $filepath, - 4, 4 ) === ".css" ) ) {
+					} elseif ( ( substr( $filepath, - 4, 4 ) === '.css' ) ) {
 						$filecontent = Breeze_MinificationStyles::fixurls( $filepath, $filecontent );
 					}
 

@@ -194,13 +194,12 @@ class Breeze_Admin {
 		$current_params   = $_SERVER['QUERY_STRING'];
 
 		if ( is_multisite() && ! is_subdomain_install() ) {
-			$blog_details = get_blog_details();
+			$blog_details  = get_blog_details();
 			$current_host .= rtrim( $blog_details->path, '/' );
 		}
 
 		$current_screen_url = $current_protocol . '://' . $current_host . $current_script . '?' . $current_params;
 		$current_screen_url = remove_query_arg( array( 'breeze_purge', '_wpnonce' ), $current_screen_url );
-
 
 		// add purge all item
 		$args = array(
@@ -465,7 +464,6 @@ class Breeze_Admin {
 	 * Clear all cache action.
 	 */
 	public function breeze_clear_all_cache() {
-
 		//delete minify
 		Breeze_MinificationCache::clear_minification();
 		//clear normal cache

@@ -16,12 +16,15 @@ if ( strpos( $_SERVER['REQUEST_URI'], 'robots.txt' ) !== false || strpos( $_SERV
 	return;
 }
 
-if ( strpos( $_SERVER['REQUEST_URI'], 'breeze-minification' ) !== false ) {
+if (
+	strpos( $_SERVER['REQUEST_URI'], 'breeze-minification' ) !== false ||
+	strpos( $_SERVER['REQUEST_URI'], 'favicon.ico' ) !== false
+) {
 	return;
 }
 
 // Don't cache non-GET requests
-if ( ! isset( $_SERVER['REQUEST_METHOD'] ) || $_SERVER['REQUEST_METHOD'] !== 'GET' ) {
+if ( ! isset( $_SERVER['REQUEST_METHOD'] ) || 'GET' !== $_SERVER['REQUEST_METHOD'] ) {
 	return;
 }
 
@@ -34,11 +37,6 @@ if ( ! preg_match( '#index\.php$#i', $_SERVER['REQUEST_URI'] ) && in_array( $fil
 	return;
 }
 
-// @TODO: Remove debugging code.
-if ( isset( $_GET['debug_config'] ) ) {
-	var_dump( $GLOBALS['breeze_config'] );
-	exit;
-}
 $filename_guest_suffix = '';
 $url_path              = breeze_get_url_path();
 $user_logged           = false;
@@ -60,7 +58,6 @@ if ( ! empty( $_COOKIE ) ) {
 		if ( strpos( $key, 'wordpress_logged_in_' ) !== false ) {
 			$user_logged = true;
 		}
-
 	}
 
 	if ( $user_logged ) {
@@ -68,11 +65,10 @@ if ( ! empty( $_COOKIE ) ) {
 			if ( strpos( $k, 'wordpress_logged_in_' ) !== false ) {
 				$nameuser = substr( $v, 0, strpos( $v, '|' ) );
 				if ( substr_count( $url_path, '?' ) > 0 ) {
-					$filename = $url_path .'&'. strtolower( $nameuser );
-				}else{
-					$filename = $url_path .'?'. strtolower( $nameuser );
+					$filename = $url_path . '&' . strtolower( $nameuser );
+				} else {
+					$filename = $url_path . '?' . strtolower( $nameuser );
 				}
-
 			}
 		}
 	}
@@ -93,6 +89,7 @@ $domain = ( ( ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) ||
 $current_url   = $domain . rawurldecode( $_SERVER['REQUEST_URI'] );
 $opts_config   = $GLOBALS['breeze_config'];
 $check_exclude = check_exclude_page( $opts_config, $current_url );
+
 //load cache
 if ( ! $check_exclude ) {
 	$devices = $opts_config['cache_options'];
@@ -103,17 +100,16 @@ if ( ! $check_exclude ) {
 		//                            M for Mobile cache
 		//                            T for Tablet cache
 		if ( (int) $devices['breeze-mobile-cache'] == 1 ) {
-			$X1       = 'D';
+			$X1        = 'D';
 			$filename .= '_breeze_cache_desktop';
 		}
 		if ( (int) $devices['breeze-mobile-cache'] == 2 ) {
-			$X1       = 'M';
+			$X1        = 'M';
 			$filename .= '_breeze_cache_mobile';
 		}
-
 	} else {
 		if ( (int) $devices['breeze-desktop-cache'] == 1 ) {
-			$X1       = 'D';
+			$X1        = 'D';
 			$filename .= '_breeze_cache_desktop';
 		}
 	}
@@ -127,8 +123,8 @@ if ( ! $check_exclude ) {
 /**
  * Cache output before it goes to the browser
  *
- * @param string $buffer
- * @param int $flags
+ * @param  string $buffer
+ * @param  int $flags
  *
  * @return string
  * @since  1.0
@@ -186,45 +182,52 @@ function breeze_cache( $buffer, $flags ) {
 	$headers = array(
 		array(
 			'name'  => 'Content-Length',
-			'value' => strlen( $buffer )
+			'value' => strlen( $buffer ),
 		),
 		array(
 			'name'  => 'Content-Type',
-			'value' => 'text/html; charset=utf-8'
+			'value' => 'text/html; charset=utf-8',
 		),
 		array(
 			'name'  => 'Last-Modified',
-			'value' => gmdate( 'D, d M Y H:i:s', $modified_time ) . ' GMT'
-		)
+			'value' => gmdate( 'D, d M Y H:i:s', $modified_time ) . ' GMT',
+		),
 	);
 
 	if ( ! isset( $_SERVER['HTTP_X_VARNISH'] ) ) {
-		$headers = array_merge( array(
+		$headers = array_merge(
 			array(
-				'name'  => 'Expires',
-				'value' => 'Wed, 17 Aug 2005 00:00:00 GMT'
-			),
-			array(
-				'name'  => 'Cache-Control',
-				'value' => 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
-			),
-			array(
-				'name'  => 'Pragma',
-				'value' => 'no-cache'
+				array(
+					'name'  => 'Expires',
+					'value' => 'Wed, 17 Aug 2005 00:00:00 GMT',
+				),
+				array(
+					'name'  => 'Cache-Control',
+					'value' => 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0',
+				),
+				array(
+					'name'  => 'Pragma',
+					'value' => 'no-cache',
+				),
 			)
-		) );
+		);
 	}
 
-	$data = serialize( array( 'body' => $buffer, 'headers' => $headers ) );
+	$data = serialize(
+		array(
+			'body'    => $buffer,
+			'headers' => $headers,
+		)
+	);
 	//cache per users
 	if ( is_user_logged_in() ) {
 		$current_user = wp_get_current_user();
 		if ( $current_user->user_login ) {
 
 			if ( substr_count( $url_path, '?' ) > 0 ) {
-				$url_path .= '&'. $current_user->user_login;
-			}else{
-				$url_path .= '?'. $current_user->user_login;
+				$url_path .= '&' . $current_user->user_login;
+			} else {
+				$url_path .= '?' . $current_user->user_login;
 			}
 			#$url_path .= $current_user->user_login;
 		}
@@ -236,16 +239,16 @@ function breeze_cache( $buffer, $flags ) {
 	// Detect devices
 	if ( $detect->isMobile() && ! $detect->isTablet() ) {
 		if ( $devices['breeze-mobile-cache'] == 1 ) {
-			$X1       = 'D';
+			$X1        = 'D';
 			$url_path .= '_breeze_cache_desktop';
 		}
 		if ( $devices['breeze-mobile-cache'] == 2 ) {
-			$X1       = 'M';
+			$X1        = 'M';
 			$url_path .= '_breeze_cache_mobile';
 		}
 	} else {
 		if ( $devices['breeze-desktop-cache'] == 1 ) {
-			$X1       = 'D';
+			$X1        = 'D';
 			$url_path .= '_breeze_cache_desktop';
 		}
 	}
@@ -316,7 +319,7 @@ function breeze_serve_cache( $filename, $url_path, $X1, $opts ) {
 	}
 
 	$blog_id_requested = isset( $GLOBALS['breeze_config']['blog_id'] ) ? $GLOBALS['breeze_config']['blog_id'] : 0;
-	$path = breeze_get_cache_base_path(false, $blog_id_requested) . md5( $url_path ) . '/' . $file_name;
+	$path              = breeze_get_cache_base_path( false, $blog_id_requested ) . md5( $url_path ) . '/' . $file_name;
 
 	$modified_time = 0;
 	if ( file_exists( $path ) ) {
@@ -331,7 +334,6 @@ function breeze_serve_cache( $filename, $url_path, $X1, $opts ) {
 	if ( @file_exists( $path ) ) {
 
 		$cacheFile = file_get_contents( $path );
-
 
 		if ( $cacheFile != false ) {
 			$datas = unserialize( $cacheFile );
@@ -353,7 +355,7 @@ function breeze_serve_cache( $filename, $url_path, $X1, $opts ) {
 
 				$content = gzencode( $datas['body'], 9 );
 				header( 'Content-Encoding: gzip' );
-				header( "cache-control: must-revalidate" );
+				header( 'cache-control: must-revalidate' );
 				header( 'Content-Length: ' . strlen( $content ) );
 				header( 'Vary: Accept-Encoding' );
 				echo $content;
@@ -373,9 +375,14 @@ function check_exclude_page( $opts_config, $current_url ) {
 		return true;
 	}
 
-
 	//check disable cache for page
 	if ( ! empty( $opts_config['exclude_url'] ) ) {
+
+		$is_exclude = exec_breeze_check_for_exclude_values( $current_url, $opts_config['exclude_url'] );
+		if ( ! empty( $is_exclude ) ) {
+			return true;
+		}
+
 		foreach ( $opts_config['exclude_url'] as $v ) {
 			// Clear blank character
 			$v = trim( $v );
@@ -393,7 +400,6 @@ function check_exclude_page( $opts_config, $current_url ) {
 						return true;
 					}
 				}
-
 			} else {
 				if ( $v[0] == '/' ) {
 					// A path of exclude
@@ -411,3 +417,82 @@ function check_exclude_page( $opts_config, $current_url ) {
 
 	return false;
 }
+
+
+/**
+ * Used to check for regexp exclude pages
+ *
+ * @param string $needle
+ * @param array $haystack
+ *
+ * @return array
+ * @since 1.1.7
+ *
+ */
+function exec_breeze_check_for_exclude_values( $needle = '', $haystack = array() ) {
+	if ( empty( $needle ) || empty( $haystack ) ) {
+		return array();
+	}
+	$needle             = trim( $needle );
+	$is_string_in_array = array_filter(
+		$haystack,
+		function ( $var ) use ( $needle ) {
+			if ( exec_breeze_string_contains_exclude_regexp( $var ) ) {
+				return exec_breeze_file_match_pattern( $needle, $var );
+			} else {
+				return false;
+			}
+
+		}
+	);
+
+	return $is_string_in_array;
+}
+
+
+/**
+ * Function used to determine if the excluded URL contains regexp
+ *
+ * @param $file_url
+ * @param string $validate
+ *
+ * @return bool
+ */
+function exec_breeze_string_contains_exclude_regexp( $file_url, $validate = '(.*)' ) {
+	if ( empty( $file_url ) ) {
+		return false;
+	}
+	if ( empty( $validate ) ) {
+		return false;
+	}
+
+	$valid = false;
+
+	if ( substr_count( $file_url, $validate ) !== 0 ) {
+		$valid = true; // 0 or false
+	}
+
+	return $valid;
+}
+
+
+/**
+ * Method will prepare the URLs escaped for preg_match
+ * Will return the file_url matches the pattern.
+ * empty array for false,
+ * aray with data for true.
+ *
+ * @param $file_url
+ * @param $pattern
+ *
+ * @return false|int
+ */
+function exec_breeze_file_match_pattern( $file_url, $pattern ) {
+	$remove_pattern   = str_replace( '(.*)', 'REG_EXP_ALL', $pattern );
+	$prepared_pattern = preg_quote( $remove_pattern, '/' );
+	$pattern          = str_replace( 'REG_EXP_ALL', '(.*)', $prepared_pattern );
+	$result           = preg_match( '/' . $pattern . '/', $file_url );
+
+	return $result;
+}
+
