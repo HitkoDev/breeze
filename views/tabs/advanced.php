@@ -45,8 +45,8 @@ if ( isset( $advanced['breeze-exclude-urls'] ) && ! empty( $advanced['breeze-exc
 						href="https://support.cloudways.com/how-to-exclude-url-from-varnish/"
 						target="_blank"><?php _e( 'Knowledge Base', 'breeze' ); ?></a><?php _e( ' article.', 'breeze' ); ?> </span>
 			<?php if ( false === $excluded_url_list ) { ?>
-                <br/>
-                <span class="breeze_tool_tip" style="color: #ff0000">
+				<br/>
+				<span class="breeze_tool_tip" style="color: #ff0000">
 					<?php _e( 'One (or more) URL is invalid. Please check and correct the entry.', 'breeze' ); ?>
 				</span>
 			<?php } ?>
