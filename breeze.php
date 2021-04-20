@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Breeze
  * Description: Breeze is a WordPress cache plugin with extensive options to speed up your website. All the options including Varnish Cache are compatible with Cloudways hosting.
- * Version: 1.1.10
+ * Version: 1.1.11
  * Text Domain: breeze
  * Domain Path: /languages
  * Author: Cloudways
@@ -37,7 +37,7 @@ if ( ! defined( 'BREEZE_PLUGIN_DIR' ) ) {
 	define( 'BREEZE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 if ( ! defined( 'BREEZE_VERSION' ) ) {
-	define( 'BREEZE_VERSION', '1.1.10' );
+	define( 'BREEZE_VERSION', '1.1.11' );
 }
 if ( ! defined( 'BREEZE_SITEURL' ) ) {
 	define( 'BREEZE_SITEURL', get_site_url() );
@@ -209,7 +209,12 @@ add_action( 'upgrader_process_complete', 'breeze_after_plugin_update_done', 10, 
 function breeze_check_for_new_version() {
 	// When permalinks are reset, we also reset the config files.
 	if ( isset( $_POST['permalink_structure'] ) || isset( $_POST['category_base'] ) ) {
-		check_admin_referer( 'update-permalink' );
+		$to_action = isset( $_REQUEST['action'] ) ? $_REQUEST['action'] : 'permalink';
+		if ( 'permalink' !== $to_action ) {
+			check_admin_referer( 'options-options' );
+		} else {
+			check_admin_referer( 'update-permalink' );
+		}
 		// If the WP install is multi-site
 
 		global $wp_filesystem;
@@ -318,7 +323,7 @@ function breeze_check_for_new_version() {
 	}
 }
 
-add_action( 'init', 'breeze_check_for_new_version', 99 );
+add_action( 'admin_init', 'breeze_check_for_new_version', 99 );
 
 
 add_action( 'wp_login', 'refresh_config_files', 10, 2 );
