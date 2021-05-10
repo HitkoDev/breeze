@@ -7,6 +7,9 @@ defined( 'ABSPATH' ) || exit;
 // Load helper functions.
 require_once dirname( __DIR__ ) . '/functions.php';
 
+// Load lazy Load class.
+require_once dirname( __DIR__ ) . '/class-breeze-lazy-load.php';
+
 // Include and instantiate the class.
 require_once 'Mobile-Detect-2.8.25/Mobile_Detect.php';
 $detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect;
@@ -213,6 +216,61 @@ function breeze_cache( $buffer, $flags ) {
 		);
 	}
 
+	// Lazy load implementation
+	if ( class_exists( 'Breeze_Lazy_Load' ) ) {
+		$is_lazy_load_enabled = filter_var( $GLOBALS['breeze_config']['enabled-lazy-load'], FILTER_VALIDATE_BOOLEAN );
+		$is_lazy_load_native  = filter_var( $GLOBALS['breeze_config']['use-lazy-load-native'], FILTER_VALIDATE_BOOLEAN );
+
+		$lazy_load = new Breeze_Lazy_Load( $buffer, $is_lazy_load_enabled, $is_lazy_load_native );
+		$buffer    = $lazy_load->apply_lazy_load_feature();
+	}
+
+	if ( isset( $GLOBALS['breeze_config']['cache_options']['breeze-cross-origin'] ) && filter_var( $GLOBALS['breeze_config']['cache_options']['breeze-cross-origin'], FILTER_VALIDATE_BOOLEAN ) ) {
+		// Extract all <a> tags from the page.
+		preg_match_all( '/(?i)<a ([^>]+)>(.+?)<\/a>/', $buffer, $matches );
+
+		$home_url = $GLOBALS['breeze_config']['homepage'];
+		$home_url = ltrim( $home_url, 'https:' );
+
+		if ( ! empty( $matches ) && isset( $matches[0] ) && ! empty( $matches[0] ) ) {
+			$current_links = $matches[0];
+
+			foreach ( $current_links as $index => $html_a_tag ) {
+				// If the A tag qualifies.
+				if (
+					false === strpos( $html_a_tag, $home_url ) &&
+					false !== strpos( $html_a_tag, 'target' ) &&
+					false !== strpos( $html_a_tag, '_blank' )
+				) {
+					$anchor_attributed = new SimpleXMLElement( $html_a_tag );
+					// Only apply on valid URLS.
+					if (
+						! empty( $anchor_attributed ) &&
+						isset( $anchor_attributed['href'] ) &&
+						filter_var( $anchor_attributed['href'], FILTER_VALIDATE_URL )
+					) {
+						// Apply noopener noreferrer on the A tag
+						$replacement_rel    = 'noopener noreferrer';
+						$html_a_tag_replace = $html_a_tag;
+						if ( isset( $anchor_attributed['rel'] ) && ! empty( $anchor_attributed['rel'] ) ) {
+							if ( false === strpos( $anchor_attributed['rel'], 'noopener' ) && false === strpos( $anchor_attributed['rel'], 'noreferrer' ) ) {
+								$replacement_rel = 'noopener noreferrer';
+							} elseif ( false === strpos( $anchor_attributed['rel'], 'noopener' ) ) {
+								$replacement_rel = 'noopener';
+							} elseif ( false === strpos( $anchor_attributed['rel'], 'noreferrer' ) ) {
+								$replacement_rel = 'noreferrer';
+							}
+							$replacement_rel   .= ' ' . $anchor_attributed['rel'];
+							$html_a_tag_replace = preg_replace( '/(<[^>]+) rel=".*?"/i', '$1', $html_a_tag );
+						}
+						$html_a_tag_rel = preg_replace( '/(<a\b[^><]*)>/i', '$1 rel="' . $replacement_rel . '">', $html_a_tag_replace );
+						$buffer         = str_replace( $html_a_tag, $html_a_tag_rel, $buffer );
+					}
+				}
+			}
+		}
+	}
+
 	$data = serialize(
 		array(
 			'body'    => $buffer,
@@ -360,6 +418,7 @@ function breeze_serve_cache( $filename, $url_path, $X1, $opts ) {
 				header( 'Vary: Accept-Encoding' );
 				echo $content;
 			} else {
+				header( 'Content-Length: ' . strlen( $datas['body'] ) );
 				//render page cache
 				echo $datas['body'];
 			}

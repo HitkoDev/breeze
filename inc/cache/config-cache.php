@@ -173,6 +173,10 @@ class Breeze_ConfigCache {
 			$storage['blog_id'] = get_current_blog_id();
 		}
 
+		$storage['enabled-lazy-load']    = ( isset( $config['breeze-lazy-load'] ) ? $config['breeze-lazy-load'] : 0 );
+		$storage['use-lazy-load-native'] = ( isset( $config['breeze-lazy-load-native'] ) ? $config['breeze-lazy-load-native'] : 0 );
+		$storage['breeze-preload-links'] = ( isset( $config['breeze-preload-links'] ) ? $config['breeze-preload-links'] : 0 );
+
 		if ( class_exists( 'WooCommerce' ) ) {
 			$ecommerce_exclude_urls = Breeze_Ecommerce_Cache::factory()->ecommerce_exclude_pages();
 		}
