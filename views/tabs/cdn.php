@@ -11,6 +11,18 @@ if ( ! empty( $cdn_integration['cdn-content'] ) ) {
 if ( ! empty( $cdn_integration['cdn-exclude-content'] ) ) {
 	$cdn_exclude_content_value = implode( ',', $cdn_integration['cdn-exclude-content'] );
 }
+
+if ( ! isset( $cdn_integration['cdn-active'] ) ) {
+	$cdn_integration['cdn-active'] = '0';
+}
+
+if ( ! isset( $cdn_integration['cdn-url'] ) ) {
+	$cdn_integration['cdn-url'] = '';
+}
+
+if ( ! isset( $cdn_integration['cdn-relative-path'] ) ) {
+	$cdn_integration['cdn-relative-path'] = '0';
+}
 ?>
 <table cellspacing="15">
 	<tr>

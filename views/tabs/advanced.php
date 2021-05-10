@@ -25,8 +25,81 @@ if ( isset( $advanced['breeze-exclude-js'] ) && ! empty( $advanced['breeze-exclu
 if ( isset( $advanced['breeze-exclude-urls'] ) && ! empty( $advanced['breeze-exclude-urls'] ) ) {
 	$excluded_url_list = breeze_validate_urls( $advanced['breeze-exclude-urls'] );
 }
+
+if ( ! isset( $advanced['breeze-preload-links'] ) ) {
+	$advanced['breeze-preload-links'] = '0';
+}
+
+if ( ! isset( $advanced['breeze-lazy-load'] ) ) {
+	$advanced['breeze-lazy-load'] = '0';
+}
+
+if ( ! isset( $advanced['breeze-lazy-load-native'] ) ) {
+	$advanced['breeze-lazy-load-native'] = '0';
+}
+
+if ( ! isset( $advanced['breeze-group-css'] ) ) {
+	$advanced['breeze-group-css'] = '0';
+}
+
+if ( ! isset( $advanced['breeze-group-js'] ) ) {
+	$advanced['breeze-group-js'] = '0';
+}
 ?>
-<table cellspacing="15">
+<table cellspacing="15" id="advanced-options-tab">
+    <tr>
+        <td><label for="bz-lazy-load" class="breeze_tool_tip"><?php _e( 'Lazy-Load images', 'breeze' ); ?></label></td>
+        <td>
+			<?php
+			$disabled = 'disabled';
+
+			if ( class_exists( 'DOMDocument' ) && class_exists( 'DOMXPath' ) ) {
+				$disabled = '';
+			}
+			?>
+            <input type="checkbox" id="bz-lazy-load" name="bz-lazy-load"
+                   value='1' <?php checked( $advanced['breeze-lazy-load'], '1' ); ?> <?php echo $disabled; ?>/>
+            <span class="breeze_tool_tip">
+				<?php _e( 'Images will begin to load before being displayed on screen.', 'breeze' ); ?>
+			</span>
+			<?php
+			if ( ! empty( $disabled ) ) {
+				?>
+                <br/>
+                <span class="breeze_tool_tip" style="color: #ff0000">
+					<?php _e( 'This option requires the library PHP DOMDocument and PHP DOMXPath', 'breeze' ); ?>
+				</span>
+                <br/>
+				<?php
+			} else {
+				echo '<br/>';
+			}
+
+
+			$is_checked_lazy = checked( $advanced['breeze-lazy-load'], '1', false );
+			if ( ! empty( $is_checked_lazy ) ) {
+				if ( ! empty( $disabled ) ) {
+					$hide = ' style="display:none"';
+				} else {
+					$hide = '';
+				}
+
+			} else {
+				$hide = ' style="display:none"';
+			}
+
+			?>
+            <br/>
+            <span <?php echo $hide; ?> id="native-lazy-option">
+            <input type="checkbox" id="bz-lazy-load-nat" name="bz-lazy-load-nat"
+                   value='1' <?php checked( $advanced['breeze-lazy-load-native'], '1' ); ?>/>
+                <span class="breeze_tool_tip">
+                    <strong><?php _e( 'Enable native browser lazy load', 'breeze' ); ?></strong><br/>
+                    <?php _e( '<strong>Note</strong>: This is not supported by all browsers.', 'breeze' ); ?>
+                </span>
+            </span>
+        </td>
+    </tr>
 	<tr>
 		<td>
 			<label for="exclude-urls" class="breeze_tool_tip"><?php _e( 'Never Cache these URLs', 'breeze' ); ?></label>
@@ -79,6 +152,21 @@ if ( isset( $advanced['breeze-exclude-urls'] ) && ! empty( $advanced['breeze-exc
 	</tr>
 	<tr>
 		<td>
+            <label class="breeze_tool_tip"><?php _e( 'Preload links', 'breeze' ); ?></label>
+        </td>
+        <td>
+            <input type="checkbox" name="preload-links" id="preload-links"
+                   value="1" <?php checked( $advanced['breeze-preload-links'], '1' ); ?>/>
+            <label class="breeze_tool_tip" for="preload-links"><?php _e( 'Activate preload links feature', 'breeze' ); ?></label>
+            <br/>
+            <span class="breeze_tool_tip">
+						<b>Note:&nbsp;</b><?php _e( 'When users hover over links, the cache is created in advance. The page will load faster upon link visiting.', 'breeze' ); ?><br/>
+						<b><?php _e( 'Important: This feature is supported by Chromium based browsers (Chrome, Opera, Microsoft Edge Chromium, Brave...)', 'breeze' ); ?>;</b>
+					</span>
+        </td>
+    </tr>
+    <tr>
+        <td>
 			<label for="exclude-css" class="breeze_tool_tip"><?php _e( 'Exclude CSS', 'breeze' ); ?></label>
 		</td>
 		<td>
@@ -125,6 +213,70 @@ if ( isset( $advanced['breeze-exclude-urls'] ) && ! empty( $advanced['breeze-exc
 			<span class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e( 'Use this option to exclude JS files from Minification and Grouping. Enter the URLs of JS files on each line.', 'breeze' ); ?></span>
 		</td>
 	</tr>
+	<tr>
+		<td>
+            <label for="breeze-preload-font" class="breeze_tool_tip"><?php _e( 'Preload your webfonts', 'breeze' ); ?></label>
+        </td>
+        <td>
+            <div class="breeze-list-url">
+				<?php if ( ! empty( $advanced['breeze-preload-fonts'] ) ) : ?>
+					<?php foreach ( $advanced['breeze-preload-fonts'] as $font_url ) : ?>
+                        <div class="breeze-input-group">
+					<span class="sort-handle">
+						<span class="dashicons dashicons-arrow-up moveUp"></span>
+						<span class="dashicons dashicons-arrow-down moveDown"></span>
+					</span>
+                            <input type="text" size="98"
+                                   class="breeze-input-url"
+                                   name="breeze-preload-font[]"
+                                   placeholder="<?php _e( 'Enter Font/CSS URL...', 'breeze' ); ?>"
+                                   value="<?php echo esc_html( $font_url ); ?>"/>
+                            <span class="dashicons dashicons-no item-remove" title="<?php _e( 'Remove', 'breeze' ); ?>"></span>
+                        </div>
+					<?php endforeach; ?>
+				<?php else : ?>
+                    <div class="breeze-input-group">
+					<span class="sort-handle">
+						<span class="dashicons dashicons-arrow-up moveUp"></span>
+						<span class="dashicons dashicons-arrow-down moveDown"></span>
+					</span>
+                        <input type="text" size="98"
+                               class="breeze-input-url"
+                               id="breeze-preload-font"
+                               name="breeze-preload-font[]"
+                               placeholder="<?php _e( 'Enter Font/CSS URL...', 'breeze' ); ?>"
+                               value=""/>
+                        <span class="dashicons dashicons-no" title="<?php _e( 'Remove', 'breeze' ); ?>"></span>
+                    </div>
+				<?php endif; ?>
+            </div>
+            <div style="margin: 10px 0">
+                <button type="button" class="button add-url" id="add-breeze-preload-fonts">
+					<?php _e( 'Add URL', 'breeze' ); ?>
+                </button>
+            </div>
+            <div>
+				<span class="breeze_tool_tip">
+					<b>Note:&nbsp;</b>
+					<?php _e( 'Specify the local font URL or the URL for the CSS file which loads only fonts.', 'breeze' ); ?>
+				</span>
+                <span class="breeze_tool_tip">
+					<?php _e( 'Load WOFF format fonts for the best performance.', 'breeze' ); ?>
+				</span>
+                <span class="breeze_tool_tip">
+					<?php _e( 'Do not preload the whole website CSS file as it will slow down your website.', 'breeze' ); ?>
+				</span>
+                <span class="breeze_tool_tip">
+					<?php _e( 'Do not add Google Fonts links as those already use preload.', 'breeze' ); ?>
+				</span>
+                <br/>
+                <span class="breeze_tool_tip">
+                    <?php $theme_url = get_template_directory_uri().'/assets/fonts/my-font.woff';?>
+					<?php _e( 'Example:<code>'.$theme_url.'</code>', 'breeze' ); ?>
+				</span>
+            </div>
+        </td>
+    </tr>
 	<tr>
 		<td>
 			<label for="move-to-footer-js" class="breeze_tool_tip"><?php _e( 'Move JS files to footer', 'breeze' ); ?></label>
@@ -228,4 +380,21 @@ if ( isset( $advanced['breeze-exclude-urls'] ) && ! empty( $advanced['breeze-exc
 			</div>
 		</td>
 	</tr>
+    <tr>
+        <td>
+            <label for="delay-js-scripts" class="breeze_tool_tip"><?php _e( 'Delay JS inline scripts', 'breeze' ); ?></label>
+        </td>
+        <td>
+			<?php
+			$js_output = '';
+			if ( ! empty( $advanced['breeze-delay-js-scripts'] ) ) {
+				$output    = implode( "\n", $advanced['breeze-delay-js-scripts'] );
+				$js_output = esc_textarea( $output );
+			}
+			?>
+            <textarea cols="100" rows="7" id="delay-js-scripts" name="delay-js-scripts"><?php echo $js_output; ?></textarea>
+            <br/>
+            <span class="breeze_tool_tip"><b>Note:&nbsp;</b><?php _e( 'You can add specififc keywords to identify the inline JavaScript to be delayed. Each script identifying keyword must be added on a new line.', 'breeze' ); ?></span>
+        </td>
+    </tr>
 </table>
