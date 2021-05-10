@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Breeze
  * Description: Breeze is a WordPress cache plugin with extensive options to speed up your website. All the options including Varnish Cache are compatible with Cloudways hosting.
- * Version: 1.1.11
+ * Version: 1.2.0
  * Text Domain: breeze
  * Domain Path: /languages
  * Author: Cloudways
@@ -37,7 +37,7 @@ if ( ! defined( 'BREEZE_PLUGIN_DIR' ) ) {
 	define( 'BREEZE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 if ( ! defined( 'BREEZE_VERSION' ) ) {
-	define( 'BREEZE_VERSION', '1.1.11' );
+	define( 'BREEZE_VERSION', '1.2.0' );
 }
 if ( ! defined( 'BREEZE_SITEURL' ) ) {
 	define( 'BREEZE_SITEURL', get_site_url() );
@@ -56,6 +56,11 @@ if ( ! defined( 'BREEZE_WP_CONTENT_NAME' ) ) {
 }
 if ( ! defined( 'BREEZE_BASENAME' ) ) {
 	define( 'BREEZE_BASENAME', plugin_basename( __FILE__ ) );
+}
+
+if ( ! defined( 'BREEZE_PLUGIN_URL' ) ) {
+	// Usage BREEZE_PLUGIN_URL . "some_image.png" from plugin folder
+	define( 'BREEZE_PLUGIN_URL', plugins_url() . '/' . dirname( plugin_basename( __FILE__ ) ) . '/' );
 }
 
 define( 'BREEZE_CACHE_DELAY', true );
@@ -82,6 +87,8 @@ register_activation_hook( __FILE__, array( 'Breeze_Admin', 'plugin_active_hook' 
 register_deactivation_hook( __FILE__, array( 'Breeze_Admin', 'plugin_deactive_hook' ) );
 
 require_once( BREEZE_PLUGIN_DIR . 'inc/breeze-admin.php' );
+require_once( BREEZE_PLUGIN_DIR . 'inc/class-breeze-prefetch.php' );
+require_once( BREEZE_PLUGIN_DIR . 'inc/class-breeze-preload-fonts.php' );
 
 if ( is_admin() || 'cli' === php_sapi_name() ) {
 
@@ -105,16 +112,20 @@ if ( is_admin() || 'cli' === php_sapi_name() ) {
 	$config_advanced = breeze_get_option( 'advanced_settings' );
 
 	if ( ! empty( $cdn_conf['cdn-active'] )
-		 || ! empty( $basic_conf['breeze-minify-js'] )
-		 || ! empty( $basic_conf['breeze-minify-css'] )
-		 || ! empty( $basic_conf['breeze-minify-html'] )
-		 || ! empty( $config_advanced['breeze-defer-js'] )
-		 || ! empty( $config_advanced['breeze-move-to-footer-js'] )
+	     || ! empty( $basic_conf['breeze-minify-js'] )
+	     || ! empty( $basic_conf['breeze-minify-css'] )
+	     || ! empty( $basic_conf['breeze-minify-html'] )
+	     || ! empty( $config_advanced['breeze-defer-js'] )
+	     || ! empty( $config_advanced['breeze-move-to-footer-js'] )
+	     || ! empty( $config_advanced['breeze-delay-js-scripts'] )
 	) {
 		// Call back ob start
 		ob_start( 'breeze_ob_start_callback' );
 	}
 }
+// Compatibility with ShortPixel.
+require_once( BREEZE_PLUGIN_DIR . 'inc/compatibility/class-breeze-shortpixel-compatibility.php' );
+
 
 // Call back ob start - stack
 function breeze_ob_start_callback( $buffer ) {
@@ -284,6 +295,49 @@ function breeze_check_for_new_version() {
 			//config to cache
 			require_once( BREEZE_PLUGIN_DIR . 'inc/cache/config-cache.php' );
 		}
+
+		$advanced    = breeze_get_option( 'advanced_settings' );
+		$is_advanced = get_option( 'breeze_advanced_settings_120' );
+		if ( empty( $is_advanced ) ) {
+			$advanced['breeze-delay-js-scripts'] = array(
+				'gtag',
+				'document.write',
+				'html5.js',
+				'show_ads.js',
+				'google_ad',
+				'blogcatalog.com/w',
+				'tweetmeme.com/i',
+				'mybloglog.com/',
+				'histats.com/js',
+				'ads.smowtion.com/ad.js',
+				'statcounter.com/counter/counter.js',
+				'widgets.amung.us',
+				'ws.amazon.com/widgets',
+				'media.fastclick.net',
+				'/ads/',
+				'comment-form-quicktags/quicktags.php',
+				'edToolbar',
+				'intensedebate.com',
+				'scripts.chitika.net/',
+				'_gaq.push',
+				'jotform.com/',
+				'admin-bar.min.js',
+				'GoogleAnalyticsObject',
+				'plupload.full.min.js',
+				'syntaxhighlighter',
+				'adsbygoogle',
+				'gist.github.com',
+				'_stq',
+				'nonce',
+				'post_id',
+				'data-noptimize',
+				'googletagmanager',
+			);
+
+			breeze_update_option( 'advanced_settings', $advanced, true );
+			breeze_update_option( 'advanced_settings_120', 'yes', true );
+		}
+
 
 		// If the WP install is multi-site
 		if ( is_multisite() ) {
