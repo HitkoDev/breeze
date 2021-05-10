@@ -55,9 +55,11 @@ class Breeze_Configuration {
 
 				$basic = array(
 					'breeze-active'             => ( isset( $_POST['cache-system'] ) ? '1' : '0' ),
+					'breeze-cross-origin'       => ( isset( $_POST['safe-cross-origin'] ) ? '1' : '0' ),
 					'breeze-ttl'                => (int) $_POST['cache-ttl'],
 					'breeze-minify-html'        => ( isset( $_POST['minification-html'] ) ? '1' : '0' ),
 					'breeze-minify-css'         => ( isset( $_POST['minification-css'] ) ? '1' : '0' ),
+					'breeze-font-display-swap'  => ( isset( $_POST['font-display'] ) ? '1' : '0' ),
 					'breeze-minify-js'          => ( isset( $_POST['minification-js'] ) ? '1' : '0' ),
 					'breeze-gzip-compression'   => ( isset( $_POST['gzip-compression'] ) ? '1' : '0' ),
 					'breeze-browser-cache'      => ( isset( $_POST['browser-cache'] ) ? '1' : '0' ),
@@ -101,14 +103,28 @@ class Breeze_Configuration {
 				$exclude_urls      = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-urls'] ) );
 				$exclude_css       = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-css'] ) );
 				$exclude_js        = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-js'] ) );
-				$move_to_footer_js = $defer_js = array();
+				$delay_js          = $this->string_convert_arr( sanitize_textarea_field( $_POST['delay-js-scripts'] ) );
+				$preload_fonts = $move_to_footer_js = $defer_js = array();
 
 				if ( ! empty( $exclude_js ) ) {
 					$exclude_js = array_unique( $exclude_js );
 				}
+				if ( ! empty( $delay_js ) ) {
+					$delay_js = array_unique( $delay_js );
+				}
 
 				if ( ! empty( $exclude_css ) ) {
 					$exclude_css = array_unique( $exclude_css );
+				}
+
+				if ( isset( $_POST['breeze-preload-font'] ) && ! empty( $_POST['breeze-preload-font'] ) ) {
+					foreach ( $_POST['breeze-preload-font'] as $font_url ) {
+						if ( trim( $font_url ) == '' ) {
+							continue;
+						}
+						$font_url = current( explode( '?', $font_url, 2 ) );
+						$preload_fonts[ sanitize_text_field( $font_url ) ] = sanitize_text_field( $font_url );
+					}
 				}
 
 				if ( ! empty( $_POST['move-to-footer-js'] ) ) {
@@ -135,10 +151,15 @@ class Breeze_Configuration {
 					'breeze-exclude-urls'      => $exclude_urls,
 					'breeze-group-css'         => ( isset( $_POST['group-css'] ) ? '1' : '0' ),
 					'breeze-group-js'          => ( isset( $_POST['group-js'] ) ? '1' : '0' ),
+					'breeze-lazy-load'         => ( isset( $_POST['bz-lazy-load'] ) ? '1' : '0' ),
+					'breeze-lazy-load-native'  => ( isset( $_POST['bz-lazy-load-nat'] ) ? '1' : '0' ),
+					'breeze-preload-links'     => ( isset( $_POST['preload-links'] ) ? '1' : '0' ),
 					'breeze-exclude-css'       => $exclude_css,
 					'breeze-exclude-js'        => $exclude_js,
 					'breeze-move-to-footer-js' => $move_to_footer_js,
 					'breeze-defer-js'          => $defer_js,
+					'breeze-delay-js-scripts'  => $delay_js,
+					'breeze-preload-fonts'     => $preload_fonts,
 				);
 
 				breeze_update_option( 'advanced_settings', $advanced, true );
@@ -337,6 +358,7 @@ class Breeze_Configuration {
 	 * Trigger update to htaccess file.
 	 *
 	 * @param bool $clean If true, will clear custom .htaccess rules.
+	 *
 	 * @return bool
 	 */
 	public static function update_htaccess( $clean = false ) {
@@ -500,6 +522,7 @@ class Breeze_Configuration {
 	 * Add and remove custom blocks from .htaccess.
 	 *
 	 * @param array $args
+	 *
 	 * @return bool
 	 */
 	public static function write_htaccess( $args ) {
