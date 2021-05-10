@@ -36,7 +36,7 @@ class Breeze_Minify {
 			if ( Breeze_MinificationCache::create_cache_minification_folder() ) {
 				$conf            = breeze_get_option( 'basic_settings' );
 				$config_advanced = breeze_get_option( 'advanced_settings' );
-				if ( ! empty( $conf['breeze-minify-html'] ) || ! empty( $conf['breeze-minify-css'] ) || ! empty( $conf['breeze-minify-js'] ) || ! empty( $config_advanced['breeze-defer-js'] ) || ! empty( $config_advanced['breeze-move-to-footer-js'] ) ) {
+				if ( ! empty( $conf['breeze-minify-html'] ) || ! empty( $conf['breeze-minify-css'] ) || ! empty( $conf['breeze-minify-js'] ) || ! empty( $config_advanced['breeze-defer-js'] ) || ! empty( $config_advanced['breeze-move-to-footer-js'] ) || ! empty( $config_advanced['breeze-delay-js-scripts'] ) ) {
 
 					if ( defined( 'breeze_INIT_EARLIER' ) ) {
 						add_action( 'init', array( $this, 'breeze_start_buffering' ), - 1 );
@@ -103,7 +103,7 @@ class Breeze_Minify {
 				if ( ! defined( 'COMPRESS_SCRIPTS' ) ) {
 					define( 'COMPRESS_SCRIPTS', false );
 				}
-			} elseif ( ! empty( $config_advanced['breeze-defer-js'] ) || ! empty( $config_advanced['breeze-move-to-footer-js'] ) ) {
+			} elseif ( ! empty( $config_advanced['breeze-defer-js'] ) || ! empty( $config_advanced['breeze-move-to-footer-js'] ) || ! empty( $config_advanced['breeze-delay-js-scripts'] )) {
 				// If we have defer scripts to handle, load only the script for this action.
 				include_once( BREEZE_PLUGIN_DIR . 'inc/minification/breeze-js-deferred-loading.php' );
 			}
@@ -169,7 +169,7 @@ class Breeze_Minify {
 		$js_include_inline = $css_include_inline = false;
 		if ( ! empty( $conf['breeze-minify-js'] ) ) {
 			$classes[] = 'Breeze_MinificationScripts';
-		} elseif ( ! empty( $minify['breeze-defer-js'] ) || ! empty( $minify['breeze-move-to-footer-js'] ) ) {
+		} elseif ( ! empty( $minify['breeze-defer-js'] ) || ! empty( $minify['breeze-move-to-footer-js'] ) || ! empty( $minify['breeze-delay-js-scripts'] ) ) {
 			$classes[] = 'Breeze_Js_Deferred_Loading';
 		}
 
@@ -194,6 +194,11 @@ class Breeze_Minify {
 			$groupjs = true;
 		}
 
+		$font_swap = false;
+		if ( isset( $conf['breeze-font-display-swap'] ) ) {
+			$font_swap = filter_var( $conf['breeze-font-display-swap'], FILTER_VALIDATE_BOOLEAN );
+		}
+
 		// Set some options
 		$classoptions = array(
 			'Breeze_MinificationScripts' => array(
@@ -207,6 +212,7 @@ class Breeze_Minify {
 				'custom_js_exclude' => $minify['breeze-exclude-js'],
 				'move_to_footer_js' => $minify['breeze-move-to-footer-js'],
 				'defer_js'          => $minify['breeze-defer-js'],
+				'delay_inline_js'   => $minify['breeze-delay-js-scripts'],
 			),
 			'Breeze_MinificationStyles'  => array(
 				'justhead'             => false,
@@ -217,6 +223,7 @@ class Breeze_Minify {
 				'css_exclude'          => 'admin-bar.min.css, dashicons.min.css',
 				'cdn_url'              => '',
 				'include_inline'       => $css_include_inline,
+				'font_swap'            => $font_swap,
 				'nogooglefont'         => false,
 				'groupcss'             => $groupcss,
 				'custom_css_exclude'   => $minify['breeze-exclude-css'],
@@ -228,6 +235,7 @@ class Breeze_Minify {
 			'Breeze_Js_Deferred_Loading' => array(
 				'move_to_footer_js' => $minify['breeze-move-to-footer-js'],
 				'defer_js'          => $minify['breeze-defer-js'],
+				'delay_inline_js'   => $minify['breeze-delay-js-scripts'],
 				'cdn_url'           => $cdn_url,
 			),
 		);
@@ -363,6 +371,7 @@ class Breeze_Minify {
 	 * @access public
 	 */
 	public function read_the_config_file() {
+		global $wpdb;
 		$config_dir = trailingslashit( WP_CONTENT_DIR ) . 'breeze-config';
 		$filename   = 'breeze-config';
 		if ( is_multisite() && ! is_network_admin() ) {
