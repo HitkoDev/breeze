@@ -1,6 +1,6 @@
 <?php
 /**
- *  @copyright 2017  Cloudways  https://www.cloudways.com
+ * @copyright 2017  Cloudways  https://www.cloudways.com
  *
  *  This plugin is inspired from WP Speed of Light by JoomUnited.
  *
@@ -22,7 +22,7 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 
 class Breeze_Configuration {
 	public function __construct() {
-		 global $breeze_network_subsite_settings;
+		global $breeze_network_subsite_settings;
 		$breeze_network_subsite_settings = false;
 		add_action( 'load-settings_page_breeze', array( $this, 'afterLoadConfigPage' ) );
 	}
@@ -100,10 +100,10 @@ class Breeze_Configuration {
 		// Advanced options tab
 		if ( isset( $_REQUEST['breeze_advanced_action'] ) && $_REQUEST['breeze_advanced_action'] == 'breeze_advanced_settings' ) {
 			if ( isset( $_POST['breeze_settings_advanced_nonce'] ) && wp_verify_nonce( $_POST['breeze_settings_advanced_nonce'], 'breeze_settings_advanced' ) ) {
-				$exclude_urls      = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-urls'] ) );
-				$exclude_css       = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-css'] ) );
-				$exclude_js        = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-js'] ) );
-				$delay_js          = $this->string_convert_arr( sanitize_textarea_field( $_POST['delay-js-scripts'] ) );
+				$exclude_urls  = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-urls'] ) );
+				$exclude_css   = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-css'] ) );
+				$exclude_js    = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-js'] ) );
+				$delay_js      = $this->string_convert_arr( sanitize_textarea_field( $_POST['delay-js-scripts'] ) );
 				$preload_fonts = $move_to_footer_js = $defer_js = array();
 
 				if ( ! empty( $exclude_js ) ) {
@@ -122,7 +122,7 @@ class Breeze_Configuration {
 						if ( trim( $font_url ) == '' ) {
 							continue;
 						}
-						$font_url = current( explode( '?', $font_url, 2 ) );
+						$font_url                                          = current( explode( '?', $font_url, 2 ) );
 						$preload_fonts[ sanitize_text_field( $font_url ) ] = sanitize_text_field( $font_url );
 					}
 				}
@@ -132,7 +132,7 @@ class Breeze_Configuration {
 						if ( trim( $url ) == '' ) {
 							continue;
 						}
-						$url = current( explode( '?', $url, 2 ) );
+						$url                                              = current( explode( '?', $url, 2 ) );
 						$move_to_footer_js[ sanitize_text_field( $url ) ] = sanitize_text_field( $url );
 					}
 				}
@@ -160,6 +160,7 @@ class Breeze_Configuration {
 					'breeze-defer-js'          => $defer_js,
 					'breeze-delay-js-scripts'  => $delay_js,
 					'breeze-preload-fonts'     => $preload_fonts,
+					'breeze-enable-js-delay'   => ( isset( $_POST['enable-js-delay'] ) ? '1' : '0' ),
 				);
 
 				breeze_update_option( 'advanced_settings', $advanced, true );
@@ -272,26 +273,26 @@ class Breeze_Configuration {
 			$args['clean'] = true;
 		} else {
 			$args['content'] = 'SetEnv BREEZE_BROWSER_CACHE_ON 1' . PHP_EOL .
-							   '<IfModule mod_expires.c>' . PHP_EOL .
-							   '   ExpiresActive On' . PHP_EOL .
-							   '   ExpiresByType image/gif "access 1 year"' . PHP_EOL .
-							   '   ExpiresByType image/jpg "access 1 year"' . PHP_EOL .
-							   '   ExpiresByType image/jpeg "access 1 year"' . PHP_EOL .
-							   '   ExpiresByType image/png "access 1 year"' . PHP_EOL .
-							   '   ExpiresByType image/x-icon "access 1 year"' . PHP_EOL .
-							   '   ExpiresByType text/html "access plus 0 seconds"' . PHP_EOL .
-							   '   ExpiresByType text/xml "access plus 0 seconds"' . PHP_EOL .
-							   '   ExpiresByType text/css "access 1 month"' . PHP_EOL .
-							   '   ExpiresByType text/javascript "access 1 month"' . PHP_EOL .
-							   '   ExpiresByType application/xml "access plus 0 seconds"' . PHP_EOL .
-							   '   ExpiresByType application/json "access plus 0 seconds"' . PHP_EOL .
-							   '   ExpiresByType application/javascript "access 1 month"' . PHP_EOL .
-							   '   ExpiresByType application/x-javascript "access 1 month"' . PHP_EOL .
-							   '   ExpiresByType application/xhtml-xml "access 1 month"' . PHP_EOL .
-							   '   ExpiresByType application/pdf "access 1 month"' . PHP_EOL .
-							   '   ExpiresByType application/x-shockwave-flash "access 1 month"' . PHP_EOL .
-							   '   ExpiresDefault "access 1 month"' . PHP_EOL .
-							   '</IfModule>' . PHP_EOL;
+			                   '<IfModule mod_expires.c>' . PHP_EOL .
+			                   '   ExpiresActive On' . PHP_EOL .
+			                   '   ExpiresByType image/gif "access 1 year"' . PHP_EOL .
+			                   '   ExpiresByType image/jpg "access 1 year"' . PHP_EOL .
+			                   '   ExpiresByType image/jpeg "access 1 year"' . PHP_EOL .
+			                   '   ExpiresByType image/png "access 1 year"' . PHP_EOL .
+			                   '   ExpiresByType image/x-icon "access 1 year"' . PHP_EOL .
+			                   '   ExpiresByType text/html "access plus 0 seconds"' . PHP_EOL .
+			                   '   ExpiresByType text/xml "access plus 0 seconds"' . PHP_EOL .
+			                   '   ExpiresByType text/css "access 1 month"' . PHP_EOL .
+			                   '   ExpiresByType text/javascript "access 1 month"' . PHP_EOL .
+			                   '   ExpiresByType application/xml "access plus 0 seconds"' . PHP_EOL .
+			                   '   ExpiresByType application/json "access plus 0 seconds"' . PHP_EOL .
+			                   '   ExpiresByType application/javascript "access 1 month"' . PHP_EOL .
+			                   '   ExpiresByType application/x-javascript "access 1 month"' . PHP_EOL .
+			                   '   ExpiresByType application/xhtml-xml "access 1 month"' . PHP_EOL .
+			                   '   ExpiresByType application/pdf "access 1 month"' . PHP_EOL .
+			                   '   ExpiresByType application/x-shockwave-flash "access 1 month"' . PHP_EOL .
+			                   '   ExpiresDefault "access 1 month"' . PHP_EOL .
+			                   '</IfModule>' . PHP_EOL;
 
 			$args['conditions'] = array(
 				'mod_expires',
@@ -321,23 +322,23 @@ class Breeze_Configuration {
 			$args['clean'] = true;
 		} else {
 			$args['content'] = 'SetEnv BREEZE_GZIP_ON 1' . PHP_EOL .
-				'<IfModule mod_deflate.c>' . PHP_EOL .
-				'	AddType x-font/woff .woff' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE image/svg+xml' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE text/plain' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE text/html' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE text/xml' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE text/css' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE text/javascript' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE application/xml' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE application/xhtml+xml' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE application/rss+xml' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE application/javascript' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE application/x-javascript' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE application/x-font-ttf' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE application/vnd.ms-fontobject' . PHP_EOL .
-				'	AddOutputFilterByType DEFLATE font/opentype font/ttf font/eot font/otf' . PHP_EOL .
-				'</IfModule>' . PHP_EOL;
+			                   '<IfModule mod_deflate.c>' . PHP_EOL .
+			                   '	AddType x-font/woff .woff' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE image/svg+xml' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE text/plain' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE text/html' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE text/xml' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE text/css' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE text/javascript' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE application/xml' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE application/xhtml+xml' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE application/rss+xml' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE application/javascript' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE application/x-javascript' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE application/x-font-ttf' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE application/vnd.ms-fontobject' . PHP_EOL .
+			                   '	AddOutputFilterByType DEFLATE font/opentype font/ttf font/eot font/otf' . PHP_EOL .
+			                   '</IfModule>' . PHP_EOL;
 
 			$args['conditions'] = array(
 				'mod_deflate',
@@ -365,6 +366,7 @@ class Breeze_Configuration {
 		if ( $clean ) {
 			self::add_expires_header( $clean );
 			self::add_gzip_htacess( $clean );
+
 			return true;
 		}
 
@@ -462,8 +464,9 @@ class Breeze_Configuration {
 						// Remove host part from URLs.
 						${$enabled_sites} = array_filter(
 							array_map(
-								function( $url ) use ( $network_site_url ) {
+								function ( $url ) use ( $network_site_url ) {
 									$modified = str_replace( $network_site_url, '', $url );
+
 									return empty( $modified ) ? '/' : $modified;
 								},
 								${$enabled_sites}
@@ -482,8 +485,9 @@ class Breeze_Configuration {
 						// Remove host part from URLs.
 						${$disabled_sites} = array_filter(
 							array_map(
-								function( $url ) use ( $network_site_url ) {
+								function ( $url ) use ( $network_site_url ) {
 									$modified = str_replace( $network_site_url, '', $url );
+
 									return empty( $modified ) ? '/' : $modified;
 								},
 								${$disabled_sites}
@@ -511,6 +515,7 @@ class Breeze_Configuration {
 				// Caching not activated, clean up.
 				self::add_expires_header( true );
 				self::add_gzip_htacess( true );
+
 				return true;
 			}
 		}
@@ -555,6 +560,7 @@ class Breeze_Configuration {
 		}
 
 		file_put_contents( $htaccess_path, $htaccess_content );
+
 		return true;
 	}
 
@@ -643,6 +649,7 @@ class Breeze_Configuration {
 				$return  = $wpdb->query( $element );
 				break;
 		}
+
 		return $return;
 	}
 
@@ -659,8 +666,10 @@ class Breeze_Configuration {
 				$output[] = trim( $v );
 			}
 		}
+
 		return $output;
 	}
+
 	//ajax clean cache
 	public static function breeze_clean_cache() {
 		// Check whether we're clearing the cache for one subsite on the network.
@@ -674,7 +683,7 @@ class Breeze_Configuration {
 		// Analyze minification directory sizes.
 		$files_path = rtrim( WP_CONTENT_DIR, '/' ) . '/cache/breeze-minification';
 		if ( $is_subsite ) {
-			$blog_id     = get_current_blog_id();
+			$blog_id    = get_current_blog_id();
 			$files_path .= DIRECTORY_SEPARATOR . $blog_id;
 		}
 		$size_cache += breeze_get_directory_size( $files_path, array( 'index.html' ) );
@@ -701,6 +710,7 @@ class Breeze_Configuration {
 		echo json_encode( $result );
 		exit;
 	}
+
 	/*
 	 * Ajax purge varnish
 	 */
@@ -713,6 +723,7 @@ class Breeze_Configuration {
 		echo json_encode( array( 'clear' => true ) );
 		exit;
 	}
+
 	/*
 	 * Ajax purge database
 	 */
@@ -726,6 +737,7 @@ class Breeze_Configuration {
 		echo json_encode( array( 'clear' => true ) );
 		exit;
 	}
+
 	public static function formatBytes( $bytes, $precision = 2 ) {
 		if ( $bytes >= 1073741824 ) {
 			$bytes = number_format( $bytes / 1073741824, 2 );
