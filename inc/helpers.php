@@ -749,4 +749,81 @@ function breeze_libraries_already_minified( $script_path = '' ) {
 	return false;
 
 }
+
 add_filter( 'breeze_js_ignore_minify', 'breeze_libraries_already_minified' );
+
+/**
+ * Will check if there are any differences between saved option and default.
+ *
+ * if returns false, the nno changes occurred.
+ * If returns true, then there are differences.
+ *
+ * @param bool $is_network if it's called from multisite network.
+ *
+ * @return bool
+ * @since 1.2.1
+ */
+function breeze_is_delayjs_changed( $is_network = false, $blog_id = 0, $root = false ) {
+	if ( true === $is_network ) {
+		$saved_options = get_site_option( 'breeze_advanced_settings' );
+	} elseif ( true === $root ) {
+		$saved_options = get_blog_option( $blog_id, 'breeze_advanced_settings' );
+	} else {
+		$saved_options = get_option( 'breeze_advanced_settings' );
+	}
+
+
+	if ( ! isset( $saved_options['breeze-delay-js-scripts'] ) ) {
+		return true;
+	}
+
+	if ( empty( $saved_options['breeze-delay-js-scripts'] ) ) {
+		return true;
+	}
+
+	$saved_options['breeze-delay-js-scripts'] = array_filter( $saved_options['breeze-delay-js-scripts'] );
+
+	$default_values = array(
+		'gtag',
+		'document.write',
+		'html5.js',
+		'show_ads.js',
+		'google_ad',
+		'blogcatalog.com/w',
+		'tweetmeme.com/i',
+		'mybloglog.com/',
+		'histats.com/js',
+		'ads.smowtion.com/ad.js',
+		'statcounter.com/counter/counter.js',
+		'widgets.amung.us',
+		'ws.amazon.com/widgets',
+		'media.fastclick.net',
+		'/ads/',
+		'comment-form-quicktags/quicktags.php',
+		'edToolbar',
+		'intensedebate.com',
+		'scripts.chitika.net/',
+		'_gaq.push',
+		'jotform.com/',
+		'admin-bar.min.js',
+		'GoogleAnalyticsObject',
+		'plupload.full.min.js',
+		'syntaxhighlighter',
+		'adsbygoogle',
+		'gist.github.com',
+		'_stq',
+		'nonce',
+		'post_id',
+		'data-noptimize',
+		'googletagmanager',
+	);
+
+	$differences   = array_diff( $saved_options['breeze-delay-js-scripts'], $default_values );
+	$differences_2 = array_diff( $default_values, $saved_options['breeze-delay-js-scripts'] );
+
+	if ( empty( $differences ) && empty( $differences_2 ) ) {
+		return false;
+	}
+
+	return true;
+}
