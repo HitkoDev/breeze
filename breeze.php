@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Breeze
  * Description: Breeze is a WordPress cache plugin with extensive options to speed up your website. All the options including Varnish Cache are compatible with Cloudways hosting.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Text Domain: breeze
  * Domain Path: /languages
  * Author: Cloudways
@@ -37,7 +37,7 @@ if ( ! defined( 'BREEZE_PLUGIN_DIR' ) ) {
 	define( 'BREEZE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 if ( ! defined( 'BREEZE_VERSION' ) ) {
-	define( 'BREEZE_VERSION', '1.2.0' );
+	define( 'BREEZE_VERSION', '1.2.1' );
 }
 if ( ! defined( 'BREEZE_SITEURL' ) ) {
 	define( 'BREEZE_SITEURL', get_site_url() );
@@ -278,6 +278,7 @@ function breeze_check_for_new_version() {
 
 	// This process can also be started by Wp-CLI.
 	if ( ! empty( get_option( 'breeze_new_update', '' ) ) ) {
+		#if ( 1 == 1 ) {
 		// This needs to happen only once.
 		if ( class_exists( 'Breeze_Configuration' ) && method_exists( 'Breeze_Configuration', 'update_htaccess' ) ) {
 			Breeze_Configuration::update_htaccess();
@@ -295,67 +296,103 @@ function breeze_check_for_new_version() {
 			//config to cache
 			require_once( BREEZE_PLUGIN_DIR . 'inc/cache/config-cache.php' );
 		}
-
-		$advanced    = breeze_get_option( 'advanced_settings' );
-		$is_advanced = get_option( 'breeze_advanced_settings_120' );
-		if ( empty( $is_advanced ) ) {
-			$advanced['breeze-delay-js-scripts'] = array(
-				'gtag',
-				'document.write',
-				'html5.js',
-				'show_ads.js',
-				'google_ad',
-				'blogcatalog.com/w',
-				'tweetmeme.com/i',
-				'mybloglog.com/',
-				'histats.com/js',
-				'ads.smowtion.com/ad.js',
-				'statcounter.com/counter/counter.js',
-				'widgets.amung.us',
-				'ws.amazon.com/widgets',
-				'media.fastclick.net',
-				'/ads/',
-				'comment-form-quicktags/quicktags.php',
-				'edToolbar',
-				'intensedebate.com',
-				'scripts.chitika.net/',
-				'_gaq.push',
-				'jotform.com/',
-				'admin-bar.min.js',
-				'GoogleAnalyticsObject',
-				'plupload.full.min.js',
-				'syntaxhighlighter',
-				'adsbygoogle',
-				'gist.github.com',
-				'_stq',
-				'nonce',
-				'post_id',
-				'data-noptimize',
-				'googletagmanager',
-			);
-
-			breeze_update_option( 'advanced_settings', $advanced, true );
-			breeze_update_option( 'advanced_settings_120', 'yes', true );
-		}
+		$breeze_delay_js_scripts = array(
+			'gtag',
+			'document.write',
+			'html5.js',
+			'show_ads.js',
+			'google_ad',
+			'blogcatalog.com/w',
+			'tweetmeme.com/i',
+			'mybloglog.com/',
+			'histats.com/js',
+			'ads.smowtion.com/ad.js',
+			'statcounter.com/counter/counter.js',
+			'widgets.amung.us',
+			'ws.amazon.com/widgets',
+			'media.fastclick.net',
+			'/ads/',
+			'comment-form-quicktags/quicktags.php',
+			'edToolbar',
+			'intensedebate.com',
+			'scripts.chitika.net/',
+			'_gaq.push',
+			'jotform.com/',
+			'admin-bar.min.js',
+			'GoogleAnalyticsObject',
+			'plupload.full.min.js',
+			'syntaxhighlighter',
+			'adsbygoogle',
+			'gist.github.com',
+			'_stq',
+			'nonce',
+			'post_id',
+			'data-noptimize',
+			'googletagmanager',
+		);
 
 
 		// If the WP install is multi-site
 		if ( is_multisite() ) {
+			$advanced_network = get_site_option( 'breeze_advanced_settings' );
+			$is_advanced      = get_site_option( 'breeze_advanced_settings_120' );
+
+			if ( empty( $is_advanced ) ) {
+				$advanced_network['breeze-delay-js-scripts'] = $breeze_delay_js_scripts;
+
+				update_site_option( 'breeze_advanced_settings', $advanced_network );
+				update_site_option( 'breeze_advanced_settings_120', 'yes' );
+			}
+
+			if ( '1.2.1' === BREEZE_VERSION ) {
+				$is_changed = breeze_is_delayjs_changed( true, null, false );
+
+				if ( false === $is_changed ) {
+					$advanced_network['breeze-enable-js-delay'] = '0';
+				} else {
+					$advanced_network['breeze-enable-js-delay'] = '1';
+				}
+
+				update_site_option( 'breeze_advanced_settings', $advanced_network );
+			}
+
 			// For multi-site we need to also reset the root config-file.
 			Breeze_ConfigCache::factory()->write_config_cache( true );
 
 			$blogs = get_sites();
 			if ( ! empty( $blogs ) ) {
 				foreach ( $blogs as $blog_data ) {
-					$blog_id = $blog_data->blog_id;
+					$blog_id = (int) $blog_data->blog_id;
 					switch_to_blog( $blog_id );
 
 					// if the settings are inherited, then we do not need to refresh the config file.
-					$inherit_option = get_option( 'breeze_inherit_settings' );
+					$inherit_option = get_blog_option( $blog_id, 'breeze_inherit_settings' );
 					$inherit_option = filter_var( $inherit_option, FILTER_VALIDATE_BOOLEAN );
 
 					// If the settings are not inherited from parent blog, then refresh the config file.
 					if ( false === $inherit_option ) {
+						$advanced_options = get_blog_option( $blog_id, 'breeze_advanced_settings' );
+						$is_advanced      = get_blog_option( $blog_id, 'breeze_advanced_settings_120' );
+
+						if ( empty( $is_advanced ) && empty( $advanced_options['breeze-delay-js-scripts'] ) ) {
+							$advanced_options['breeze-delay-js-scripts'] = $breeze_delay_js_scripts;
+
+							update_blog_option( $blog_id, 'breeze_advanced_settings', $advanced_options );
+							update_blog_option( $blog_id, 'breeze_advanced_settings_120', 'yes' );
+						}
+
+						if ( '1.2.1' === BREEZE_VERSION ) {
+							$is_changed = breeze_is_delayjs_changed( false, $blog_id, true );
+							if ( false === $is_changed ) {
+								$advanced_options['breeze-enable-js-delay'] = '0';
+							} else {
+								$advanced_options['breeze-enable-js-delay'] = '1';
+							}
+
+
+							update_blog_option( $blog_id, 'breeze_advanced_settings', $advanced_options );
+						}
+
 						// Refresh breeze-cache.php file
 						Breeze_ConfigCache::factory()->write_config_cache();
 					}
@@ -368,7 +405,28 @@ function breeze_check_for_new_version() {
 			}
 		} else {
 			// For single site.
+			$advanced    = breeze_get_option( 'advanced_settings' );
+			$is_advanced = get_option( 'breeze_advanced_settings_120' );
 
+
+			if ( empty( $is_advanced ) ) {
+				$advanced['breeze-delay-js-scripts'] = $breeze_delay_js_scripts;
+
+				breeze_update_option( 'advanced_settings', $advanced, true );
+				breeze_update_option( 'advanced_settings_120', 'yes', true );
+			}
+
+			if ( '1.2.1' === BREEZE_VERSION ) {
+				$is_changed = breeze_is_delayjs_changed();
+				if ( false === $is_changed ) {
+					$advanced['breeze-enable-js-delay'] = '0';
+				} else {
+					$advanced['breeze-enable-js-delay'] = '1';
+				}
+
+
+				breeze_update_option( 'advanced_settings', $advanced, true );
+			}
 			// Refresh breeze-cache.php file
 			Breeze_ConfigCache::factory()->write_config_cache();
 
