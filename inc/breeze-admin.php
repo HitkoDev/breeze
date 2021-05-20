@@ -83,8 +83,16 @@ class Breeze_Admin {
 	 */
 	public function breeze_lazy_load() {
 		$advanced             = breeze_get_option( 'advanced_settings' );
-		$is_lazy_load_enabled = filter_var( $advanced['breeze-lazy-load'], FILTER_VALIDATE_BOOLEAN );
-		$is_lazy_load_native  = filter_var( $advanced['breeze-lazy-load-native'], FILTER_VALIDATE_BOOLEAN );
+		$is_lazy_load_enabled = false;
+		$is_lazy_load_native  = false;
+
+		if ( isset( $advanced['breeze-lazy-load'] ) ) {
+			$is_lazy_load_enabled = filter_var( $advanced['breeze-lazy-load'], FILTER_VALIDATE_BOOLEAN );
+		}
+		if ( isset( $advanced['breeze-lazy-load-native'] ) ) {
+			$is_lazy_load_native = filter_var( $advanced['breeze-lazy-load-native'], FILTER_VALIDATE_BOOLEAN );
+		}
+
 		if ( true === $is_lazy_load_enabled && false === $is_lazy_load_native ) {
 			if ( ! wp_script_is( 'jquery', 'enqueued' ) ) {
 				wp_enqueue_script( 'jquery' );
@@ -359,6 +367,7 @@ class Breeze_Admin {
 			'breeze-exclude-js'        => array(),
 			'breeze-move-to-footer-js' => array(),
 			'breeze-defer-js'          => array(),
+			'breeze-enable-js-delay'   => '0',
 		);
 
 		$is_advanced = get_option( 'breeze_advanced_settings_120' );
