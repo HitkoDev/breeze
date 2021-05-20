@@ -2,6 +2,17 @@
 defined( 'ABSPATH' ) or die;
 ?>
 <div id="faq-content">
+    <div class="faq-block">
+        <h3 class="faq-question"><?php _e( 'Delay inline JavaScript issue', 'breeze' ); ?></h3>
+        <div class="faq-answer">
+            <p>
+                <?php _e( 'If JavaScript errors show up in front-end you can try the following solutions.', 'breeze' ); ?><br/>
+                <?php _e( '- You can disable the option altogether.', 'breeze' ); ?><br/>
+                <?php _e( '- You can leave the option enabled and identify which line found in the textarea is causing the issue, then remove only that online that line.', 'breeze' ); ?>
+            </p>
+        </div>
+    </div>
+
 	<div class="faq-block">
 		<h3 class="faq-question"><?php _e( 'Does Breeze support Varnish and to what extent?', 'breeze' ); ?></h3>
 		<div class="faq-answer">
