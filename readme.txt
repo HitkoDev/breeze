@@ -148,7 +148,7 @@ Using Gzip, Breeze compresses the request files, further reducing the size of th
 = 1.2.1 =
 
  * Fix: improve the handling of warning undefine index of lazy load image while enable debug mode.
- * Add: Add: Enable/Disable option of Delay JS inline scripts.
+ * Add: Enable/Disable option of Delay JS inline scripts.
 
 = 1.2.0 =
 
