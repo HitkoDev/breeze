@@ -10,9 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 } // Exit if accessed directly
 
 class Breeze_MinificationScripts extends Breeze_MinificationBase {
-	private $head_scripts        = array();
-	private $footer_scripts      = array();
-	private $dontmove            = array(
+	private $head_scripts = array();
+	private $footer_scripts = array();
+	private $dontmove = array(
 		'gtag',
 		'document.write',
 		'html5.js',
@@ -48,8 +48,8 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 	);
 	private $donotmove_exception = array( 'jQuery' );
 
-	private $domove                = array( 'gaJsHost', 'load_cmc', 'jd.gallery.transitions.js', 'swfobject.embedSWF(', 'tiny_mce.js', 'tinyMCEPreInit.go' );
-	private $domovelast            = array(
+	private $domove = array( 'gaJsHost', 'load_cmc', 'jd.gallery.transitions.js', 'swfobject.embedSWF(', 'tiny_mce.js', 'tinyMCEPreInit.go' );
+	private $domovelast = array(
 		'addthis.com',
 		'/afsonline/show_afs_search.js',
 		'disqus.js',
@@ -64,40 +64,40 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 		'post_id',
 		'googletagmanager',
 	);
-	private $trycatch              = false;
-	private $alreadyminified       = false;
-	private $forcehead             = true;
-	private $include_inline        = false;
-	private $jscode                = '';
-	private $url                   = '';
-	private $move                  = array(
+	private $trycatch = false;
+	private $alreadyminified = false;
+	private $forcehead = true;
+	private $include_inline = false;
+	private $jscode = '';
+	private $url = '';
+	private $move = array(
 		'first' => array(),
 		'last'  => array(),
 	);
-	private $restofcontent         = '';
-	private $md5hash               = '';
-	private $whitelist             = '';
-	private $jsremovables          = array();
-	private $inject_min_late       = '';
-	private $group_js              = false;
-	private $custom_js_exclude     = array();
-	private $js_head_group         = array();
-	private $js_footer_group       = array();
-	private $js_min_head           = array();
-	private $js_min_footer         = array();
-	private $url_group_head        = array();
-	private $url_group_footer      = array();
-	private $jscode_inline_head    = array();
-	private $jscode_inline_footer  = array();
-	private $move_to_footer_js     = array();
-	private $move_to_footer        = array();
-	private $defer_js              = array();
-	private $full_script           = '';
-	private $uncompressed_inline   = array();
-	private $inline_increment      = 1;
-	private $original_content      = '';
+	private $restofcontent = '';
+	private $md5hash = '';
+	private $whitelist = '';
+	private $jsremovables = array();
+	private $inject_min_late = '';
+	private $group_js = false;
+	private $custom_js_exclude = array();
+	private $js_head_group = array();
+	private $js_footer_group = array();
+	private $js_min_head = array();
+	private $js_min_footer = array();
+	private $url_group_head = array();
+	private $url_group_footer = array();
+	private $jscode_inline_head = array();
+	private $jscode_inline_footer = array();
+	private $move_to_footer_js = array();
+	private $move_to_footer = array();
+	private $defer_js = array();
+	private $full_script = '';
+	private $uncompressed_inline = array();
+	private $inline_increment = 1;
+	private $original_content = '';
 	private $show_original_content = 0;
-	private $do_process            = false;
+	private $do_process = false;
 	/**
 	 * Defer/Delay the inline scripts.
 	 *
@@ -341,10 +341,10 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 										'version' => $script_version,
 									);
 								}
-						} else {
-							//We shouldn't touch this
-							$tag = '';
-						}
+							} else {
+								//We shouldn't touch this
+								$tag = '';
+							}
 
 						}
 					}
@@ -388,10 +388,10 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 									$this->delay_scripts['footer'][] = $code;
 								}
 
-						} else {
-							//We shouldn't touch this
-							$tag = '';
-						}
+							} else {
+								//We shouldn't touch this
+								$tag = '';
+							}
 
 						}
 					}
@@ -460,7 +460,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				if ( empty( $this->include_inline ) ) {
 
 					$index_inline                               = "/*!IS_UNCOMPRESSED_INLINE_{$this->inline_increment}*/";
-					$this->full_script                         .= $index_inline;
+					$this->full_script                          .= $index_inline;
 					$this->uncompressed_inline[ $index_inline ] = $script;
 					$this->inline_increment ++;
 
@@ -683,13 +683,13 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				if ( ! file_exists( $cache_directory . $cache->get_file_name() ) ) {
 					$url_exists = false;
 				} else {
-					$url                              = breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
+					$url = breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
 					if ( is_numeric( $old_url ) && $this->is_inline_delay( $js_code ) ) {
 						$this->url_group_head['defer'] = $this->url_replace_cdn( $url );
 					} else {
-					$this->url_group_head[ $old_url ] = $this->url_replace_cdn( $url );
+						$this->url_group_head[ $old_url ] = $this->url_replace_cdn( $url );
+					}
 				}
-			}
 			}
 
 			foreach ( $this->js_min_footer as $old_url => $js_min ) {
@@ -705,12 +705,12 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				if ( ! file_exists( $cache_directory . $cache->get_file_name() ) ) {
 					$url_exists = false;
 				} else {
-					$url                                = breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
+					$url = breeze_CACHE_URL . breeze_current_user_type() . $cache->getname();
 					if ( is_numeric( $old_url ) && $this->is_inline_delay( $js_code ) ) {
 						$this->url_group_footer['defer'] = $this->url_replace_cdn( $url );
 					} else {
-					$this->url_group_footer[ $old_url ] = $this->url_replace_cdn( $url );
-				}
+						$this->url_group_footer[ $old_url ] = $this->url_replace_cdn( $url );
+					}
 
 				}
 			}
@@ -730,7 +730,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 
 		// Restore the full content
 		if ( ! empty( $this->restofcontent ) ) {
-			$this->content      .= $this->restofcontent;
+			$this->content       .= $this->restofcontent;
 			$this->restofcontent = '';
 		}
 
@@ -743,11 +743,11 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				if ( $is_delayed = $this->is_inline_delay( $js ) ) {
 					$jsHead[] = '<script type="module">' . $js . '</script>';
 				} else {
-				$jsHead[] = '<script type="text/javascript">' . $js . '</script>';
-			}
+					$jsHead[] = '<script type="text/javascript">' . $js . '</script>';
+				}
 
 			}
-			$jsReplacement  = '';
+			$jsReplacement = '';
 			$jsReplacement .= implode( '', $jsHead );
 			$this->inject_in_html( $jsReplacement, $replaceTag );
 		}
@@ -758,11 +758,11 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 			foreach ( $this->jscode_inline_footer as $js ) {
 				if ( $is_delayed = $this->is_inline_delay( $js ) ) {
 					$jsFooter[] = '<script type="module">' . $js . '</script>';
-				}else{
-				$jsFooter[] = '<script type="text/javascript">' . $js . '</script>';
+				} else {
+					$jsFooter[] = '<script type="text/javascript">' . $js . '</script>';
+				}
 			}
-			}
-			$jsReplacement  = '';
+			$jsReplacement = '';
 			$jsReplacement .= implode( '', $jsFooter );
 			$this->inject_in_html( $jsReplacement, $replaceTag );
 		}
@@ -775,7 +775,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 			$bodyreplacementpayload = '<script type="text/javascript" defer src="' . $this->url . '"></script>';
 			$bodyreplacementpayload = apply_filters( 'breeze_filter_js_bodyreplacementpayload', $bodyreplacementpayload );
 
-			$bodyreplacement  = implode( '', $this->move['first'] );
+			$bodyreplacement = implode( '', $this->move['first'] );
 			$bodyreplacement .= $bodyreplacementpayload;
 			$bodyreplacement .= implode( '', $this->move['last'] );
 
@@ -812,6 +812,8 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				$js_footer_defer = array();
 				$defer           = 'defer ';
 				foreach ( $this->delay_scripts['footer'] as $js_url => $js_script ) {
+					$js_url = trim( $js_url, '”' );
+
 					if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
 						if ( ! empty( $js_script['version'] ) ) {
 							$js_url .= '?' . $js_script['version'];
@@ -851,7 +853,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				}
 				$jsReplacementPayload = implode( '', $headScript );
 
-				$jsReplacement  = implode( '', $this->move['first'] );
+				$jsReplacement = implode( '', $this->move['first'] );
 				$jsReplacement .= $jsReplacementPayload;
 
 				$replaceTag = apply_filters( 'breeze_filter_js_replacetag', $replaceTag );
@@ -880,7 +882,7 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				}
 				$jsReplacementPayload = implode( '', $footerScript );
 
-				$jsReplacement  = $jsReplacementPayload;
+				$jsReplacement = $jsReplacementPayload;
 				$jsReplacement .= implode( '', $this->move['last'] );
 
 				$replaceTag = apply_filters( 'breeze_filter_js_replacetag', $replaceTag );
