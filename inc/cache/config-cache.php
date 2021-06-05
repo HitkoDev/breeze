@@ -291,8 +291,7 @@ class Breeze_ConfigCache {
 
             $storage['exclude_url'] = array_merge(
                 $saved_pages_urls,
-                !empty($config['breeze-exclude-urls']) ? $config['breeze-exclude-urls'] : [],
-                $ecommerce_exclude_urls
+                $storage['exclude_url']
             );
         }
 
@@ -302,8 +301,7 @@ class Breeze_ConfigCache {
             if (!empty($woocommerce_fb_feed_link)) {
                 $storage['exclude_url'] = array_merge(
                     $woocommerce_fb_feed_link,
-                    !empty($config['breeze-exclude-urls']) ? $config['breeze-exclude-urls'] : [],
-                    $ecommerce_exclude_urls
+                    $storage['exclude_url']
                 );
             }
         }

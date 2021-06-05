@@ -18,14 +18,14 @@ if (!class_exists('Breeze_Incompatibility_Plugins')) {
         /**
          * Used to hold the data needed to display in the notice.
          *
-         * @var string HTML notification content.
+         * @var string HTML notification content
          */
         protected $notification_message = '';
 
         /**
          * Contains the plugins list
          *
-         * @var array current install plugins list.
+         * @var array current install plugins list
          */
         protected $plugins_list = [];
 
@@ -56,8 +56,8 @@ if (!class_exists('Breeze_Incompatibility_Plugins')) {
         /**
          * Display plugin conflicts list in plugins page.
          *
-         * @param string $file        Plugin basename.
-         * @param array  $plugin_data Plugin information.
+         * @param string $file        plugin basename
+         * @param array  $plugin_data plugin information
          */
         public function prepare_and_display_notification_content($file = '', $plugin_data = []) {
             $current_screen = get_current_screen(); // get the current WP screen
