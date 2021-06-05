@@ -87,7 +87,7 @@ jQuery(document).ready(function ($) {
         html += '   </span>';
         html += '   <input type="text" size="98"';
         html += 'class="breeze-input-url"';
-        if(preload){
+        if (preload) {
             html += 'name="breeze-preload-font[]"';
         } else if (!defer) {
             html += 'name="move-to-footer-js[]"';

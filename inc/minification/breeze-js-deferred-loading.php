@@ -1,8 +1,9 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) {
-	header( 'Status: 403 Forbidden' );
-	header( 'HTTP/1.1 403 Forbidden' );
-	exit;
+
+if (!defined('ABSPATH')) {
+    header('Status: 403 Forbidden');
+    header('HTTP/1.1 403 Forbidden');
+    exit;
 }
 
 /**
@@ -10,704 +11,690 @@ if ( ! defined( 'ABSPATH' ) ) {
  * that need to be handles.
  *
  * Class Breeze_Js_Deferred_Loading
+ *
  * @since 1.1.8
  */
 class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
-
-	/**
-	 * Javascript URLs that need the defer tag.
-	 *
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $defer_js = array();
-
-	/**
-	 * CDN domain.
-	 *
-	 * @since 1.1.8
-	 * @access private
-	 */
-	protected $cdn_url = '';
-
-	/**
-	 * Will hold the JS Scripts found in the header
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $head_scripts = array();
-
-	/**
-	 * Will hold the JS Scripts found in the body/footer
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $footer_scripts = array();
-
-	/**
-	 * Will hold scripts that need to be removed.
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $jsremovables = array();
-
-	/**
-	 * Holds scripts that need to be moved to the footer.
-	 *
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $move_to_footer_js = array();
-
-	/**
-	 * Prepared scripts that need to be moved to footer.
-	 *
-	 * @var array
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $move_to_footer = array();
-
-	/**
-	 * Files first or last.
-	 *
-	 * @var array[]
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private $move = array(
-		'first' => array(),
-		'last'  => array(),
-	);
-
-	private $domove = array(
-		'gaJsHost',
-		'load_cmc',
-		'jd.gallery.transitions.js',
-		'swfobject.embedSWF(',
-		'tiny_mce.js',
-		'tinyMCEPreInit.go',
-	);
-
-	private $domovelast = array(
-		'addthis.com',
-		'/afsonline/show_afs_search.js',
-		'disqus.js',
-		'networkedblogs.com/getnetworkwidget',
-		'infolinks.com/js/',
-		'jd.gallery.js.php',
-		'jd.gallery.transitions.js',
-		'swfobject.embedSWF(',
-		'linkwithin.com/widget.js',
-		'tiny_mce.js',
-		'tinyMCEPreInit.go',
-	);
-
-	private $dontmove = array(
-		'gtag',
-		'document.write',
-		'html5.js',
-		'show_ads.js',
-		'google_ad',
-		'blogcatalog.com/w',
-		'tweetmeme.com/i',
-		'mybloglog.com/',
-		'histats.com/js',
-		'ads.smowtion.com/ad.js',
-		'statcounter.com/counter/counter.js',
-		'widgets.amung.us',
-		'ws.amazon.com/widgets',
-		'media.fastclick.net',
-		'/ads/',
-		'comment-form-quicktags/quicktags.php',
-		'edToolbar',
-		'intensedebate.com',
-		'scripts.chitika.net/',
-		'_gaq.push',
-		'jotform.com/',
-		'admin-bar.min.js',
-		'GoogleAnalyticsObject',
-		'plupload.full.min.js',
-		'syntaxhighlighter',
-		'adsbygoogle',
-		'gist.github.com',
-		'_stq',
-		'nonce',
-		'post_id',
-		'data-noptimize',
-	);
-	/**
-	 * Defer/Delay the inline scripts.
-	 *
-	 * @var array
-	 */
-	private $delay_inline_js = array();
-
-	/**
-	 * Contains all the scripts that will be delayed.
-	 *
-	 * @var array
-	 */
-	private $delay_scripts = array(
-		'header' => array(),
-		'footer' => array(),
-	);
-
-	/**
-	 * Reads the page content and fetches the JavaScript script tags.
-	 *
-	 * @param array $options Script options.
-	 *
-	 * @return bool
-	 * @since 1.1.8
-	 * @access public
-	 */
-	public function read( $options = array() ) {
-
-		// Inline delay scripts
-		if ( ! empty( $options['delay_inline_js'] ) ) {
-			$this->delay_inline_js = $options['delay_inline_js'];
-		}
-
-		// Read the list of scripts that need defer tag.
-		if ( ! empty( $options['defer_js'] ) ) {
-			$this->defer_js = $options['defer_js'];
-		}
-
-		// JS files will move to footer
-		if ( ! empty( $options['move_to_footer_js'] ) ) {
-			$this->move_to_footer_js = $options['move_to_footer_js'];
-		}
-
-		// is there JS we should simply remove
-		$removableJS = apply_filters( 'breeze_filter_js_removables', '' );
-		if ( ! empty( $removableJS ) ) {
-			$this->jsremovables = array_filter( array_map( 'trim', explode( ',', $removableJS ) ) );
-		}
-
-		// noptimize me
-		$this->content = $this->hide_noptimize( $this->content );
-		// Save IE hacks
-		$this->content = $this->hide_iehacks( $this->content );
-		// comments
-		$this->content = $this->hide_comments( $this->content );
-
-		// get cdn url
-		$this->cdn_url = $options['cdn_url'];
-
-		//Get script files
-		$split_content = explode( '</head>', $this->content, 2 );
-		$this->fetch_javascript( $split_content[0] );
-		$this->fetch_javascript( $split_content[1], false );
-
-		if ( ! empty( $this->head_scripts ) || ! empty( $this->footer_scripts ) ) {
-			// Re-order moving to footer JS files
-			$ordered_moving_js    = array_intersect_key( $this->move_to_footer_js, $this->move_to_footer );
-			$ordered_moving_js    = array_map( array( $this, 'getpath' ), $ordered_moving_js );
-			$this->footer_scripts = array_merge( $ordered_moving_js, $this->footer_scripts );
-
-			// JS Scripts found, wen can start processing them.
-			return true;
-		}
-
-		// The page holds no JS scripts
-		return false;
-	}
-
-	/**
-	 * Returns the found javascript
-	 *
-	 * @param string $content HTML content
-	 * @param bool $head to process header or not.
-	 *
-	 * @return bool
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private function fetch_javascript( $content = '', $head = true ) {
-		$cdn_array_move_to_footer = array();
-
-		if ( ! empty( $this->move_to_footer_js ) ) {
-			foreach ( $this->move_to_footer_js as $index => $key ) {
-				$cdn_array_move_to_footer[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
-				$index = ltrim( $index, 'https:' );
-				$key   = ltrim( $key, 'https:' );
-				$cdn_array_move_to_footer[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
-			}
-		}
-
-		if ( preg_match_all( '#<script.*</script>#Usmi', $content, $matches ) ) {
-			foreach ( $matches[0] as $tag ) {
-				// only consider aggregation whitelisted in should_aggregate-function
-				if ( ! $this->should_aggregate( $tag ) ) {
-					$tag = '';
-					continue;
-				}
-
-				// handle only the scripts that have the a file as source.
-				if ( preg_match( '/\ssrc=("|\')?(.*(\ |\>))("|\')?/Usmi', $tag, $source ) ) {
-					$source[2] = substr( $source[2], 0, - 1 );
-					if ( $this->isremovable( $tag, $this->jsremovables ) ) {
-						$content = str_replace( $tag, '', $content );
-						continue;
-					}
-
-					// Get the script version.
-					$script_version = '';
-					$explode_url    = explode( '?', $source[2] );
-					if ( isset( $explode_url[1] ) ) {
-						$script_version = $explode_url[1];
-					}
-
-					// External script
-					$url = current( explode( '?', $source[2], 2 ) );
-					if ( $url[0] == "'" || $url[0] == '"' ) {
-						$url = substr( $url, 1 );
-					}
-					if ( $url[ strlen( $url ) - 1 ] == '"' || $url[ strlen( $url ) - 1 ] == "'" ) {
-						$url = substr( $url, 0, - 1 );
-					}
-
-					$path = $this->getpath( $url );
-					if ( $path !== false && preg_match( '#\.js$#', $path ) ) {
-
-						if ( $this->is_merge_valid( $tag ) ) {
-							//We can merge it
-							if ( true === $head ) {
-								// If this file will be move to footer
-								$compare_url  = ltrim( $url, 'https:' );
-								$cdn_url      = $this->url_replace_cdn( $url );
-								$cdn_url_trim = ltrim( $cdn_url, 'https:' );
-
-								if (
-									( in_array( $compare_url, $this->move_to_footer_js ) ||
-									  in_array( $url, $this->move_to_footer_js ) ||
-									  in_array( $cdn_url, $this->move_to_footer_js ) ||
-									  in_array( $cdn_url_trim, $this->move_to_footer_js )
-									) ||
-									(
-										in_array( $compare_url, $cdn_array_move_to_footer ) ||
-										in_array( $url, $cdn_array_move_to_footer ) ||
-										in_array( $cdn_url, $cdn_array_move_to_footer ) ||
-										in_array( $cdn_url_trim, $cdn_array_move_to_footer )
-									)
-								) {
-									$this->footer_scripts[ $url ] = $path;
-								} else {
-									$this->head_scripts[ $url ] = $path;
-								}
-							} else {
-								$this->footer_scripts[ $url ] = $path;
-							}
-						} else {
-							//No merge, but maybe we can move it
-							if ( $this->is_movable( $tag ) ) {
-								//Yeah, move it
-								if ( $this->move_to_last( $tag ) ) {
-									$this->move['last'][] = $tag;
-								} else {
-									$this->move['first'][] = $tag;
-								}
-							} else {
-								$is_delayed = $this->is_inline_delay( $tag );
-								if ( $is_delayed ) {
-									if ( true === $head ) {
-										$this->delay_scripts['header'][ $url ] = array(
-											'path'    => $path,
-											'version' => $script_version,
-										);
-									} else {
-										$this->delay_scripts['footer'][ $url ] = array(
-											'path'    => $path,
-											'version' => $script_version,
-										);
-									}
-									$content = str_replace( $tag, '', $content );
-								}
-
-								//We shouldn't touch this
-								$tag = '';
-							}
-						}
-					} else {
-						if ( breeze_validate_url_via_regexp( $url ) ) {
-
-							if ( true === $head ) {
-
-								if ( in_array( $url, $this->move_to_footer_js ) ) {
-									$this->move_to_footer[ $url ] = $url;
-								} else {
-									$this->head_scripts[ $url ] = $url;
-								}
-							} else {
-								$this->footer_scripts[ $url ] = $url;
-							}
-						}
-					}
-					//Remove the original script tag
-					$content = str_replace( $tag, '', $content );
-				} else {
-
-					$is_delayed = $this->is_inline_delay( $tag );
-					if ( true === $is_delayed ) {
-
-						preg_match( '#<script.*>(.*)</script>#Usmi', $tag, $code );
-						$code = preg_replace( '#.*<!\[CDATA\[(?:\s*\*/)?(.*)(?://|/\*)\s*?\]\]>.*#sm', '$1', $code[1] );
-						$code = preg_replace( '/(?:^\\s*<!--\\s*|\\s*(?:\\/\\/)?\\s*-->\\s*$)/', '', $code );
-						if ( true === $head ) {
-							$this->delay_scripts['header'][] = $code;
-						} else {
-							$this->delay_scripts['footer'][] = $code;
-						}
-						$content = str_replace( $tag, '', $content );
-					}
-				}
-			}
-		}
-
-		if ( true === $head ) {
-			$this->content = $content;
-		} else {
-			$this->content .= '</head>' . $content;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Needed function to match Breeze_MinificationBase class pattern
-	 *
-	 * @since 1.1.8
-	 * @access public
-	 */
-	public function minify() {
-
-		return true;
-	}
-
-	/**
-	 * Needed function to match Breeze_MinificationBase class pattern
-	 *
-	 * @since 1.1.8
-	 * @access public
-	 */
-	public function cache() {
-
-		return true;
-	}
-
-	/**
-	 * Needed function to match Breeze_MinificationBase class pattern
-	 *
-	 * @since 1.1.8
-	 * @access public
-	 */
-	public function getcontent() {
-		if ( ! empty( $this->cdn_url ) ) {
-			foreach ( $this->defer_js as $index => $key ) {
-				$this->defer_js[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
-				$index = ltrim( $index, 'https:' );
-				$key   = ltrim( $key, 'https:' );
-				$this->defer_js[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
-			}
-		} else {
-			foreach ( $this->defer_js as $index => $key ) {
-				$index                    = ltrim( $index, 'https:' );
-				$key                      = ltrim( $key, 'https:' );
-				$this->defer_js[ $index ] = $key;
-			}
-		}
-
-		// handle the 3rd party defer scripts in header.
-		if ( ! empty( $this->delay_scripts ) && ! empty( $this->delay_scripts['header'] ) ) {
-			$replace_tag   = array( '</head>', 'before' );
-			$js_head_defer = array();
-			$defer         = 'defer ';
-			foreach ( $this->delay_scripts['header'] as $js_url => $js_script ) {
-				if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
-					if ( ! empty( $js_script['version'] ) ) {
-						$js_url .= '?' . $js_script['version'];
-					}
-					$js_head_defer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
-				} else {
-					$js_head_defer[] = "<script type='module'>{$js_script}</script>\n";
-				}
-			}
-			$js_replacement = '';
-			$js_replacement .= implode( '', $js_head_defer );
-			$this->inject_in_html( $js_replacement, $replace_tag );
-		}
-
-		// handle the 3rd party defer scripts in footer.
-		if ( ! empty( $this->delay_scripts ) && ! empty( $this->delay_scripts['footer'] ) ) {
-			$replace_tag     = array( '</body>', 'before' );
-			$js_footer_defer = array();
-			$defer           = 'defer ';
-			foreach ( $this->delay_scripts['footer'] as $js_url => $js_script ) {
-				if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
-					if ( ! empty( $js_script['version'] ) ) {
-						$js_url .= '?' . $js_script['version'];
-					}
-					$js_footer_defer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
-				} else {
-					$js_footer_defer[] = "<script type='module'>{$js_script}</script>\n";
-				}
-			}
-
-			$js_replacement = '';
-			$js_replacement .= implode( '', $js_footer_defer );
-			$this->inject_in_html( $js_replacement, $replace_tag );
-		}
-
-		// Load inline JS to html
-		if ( ! empty( $this->head_scripts ) ) {
-
-			$replaceTag = array( '</head>', 'before' );
-			$js_head    = array();
-
-			foreach ( $this->head_scripts as $js_url => $js_path ) {
-				$defer = '';
-
-				if ( ! empty( $this->cdn_url ) ) {
-					$js_url = $this->url_replace_cdn( $js_url );
-				}
-
-				$js_url_trim = ltrim( $js_url, 'https:' );
-
-				if (
-					gettype( $js_url ) == 'string' &&
-					(
-						in_array( $js_url, $this->defer_js ) ||
-						in_array( $js_url_trim, $this->defer_js ) ||
-						$this->is_inline_delay( $js_url )
-					)
-				) {
-					$defer = 'defer ';
-				}
-
-				$js_head[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
-			}
-			$js_replacement  = '';
-			$js_replacement .= implode( '', $js_head );
-			$this->inject_in_html( $js_replacement, $replaceTag );
-		}
-
-		if ( ! empty( $this->footer_scripts ) ) {
-			$replaceTag = array( '</body>', 'before' );
-			$js_footer  = array();
-
-			foreach ( $this->footer_scripts as $js_url => $js_path ) {
-				$defer = '';
-				if ( ! empty( $this->cdn_url ) ) {
-					$js_url = $this->url_replace_cdn( $js_url );
-				}
-
-				$js_url_trim = ltrim( $js_url, 'https:' );
-
-				if (
-					gettype( $js_url ) == 'string' &&
-					(
-						in_array( $js_url, $this->defer_js ) ||
-						in_array( $js_url_trim, $this->defer_js ) ||
-						$this->is_inline_delay( $js_url )
-					)
-				) {
-					$defer = 'defer ';
-				}
-
-				$js_footer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
-			}
-			$js_replacement  = '';
-			$js_replacement .= implode( '', $js_footer );
-			$this->inject_in_html( $js_replacement, $replaceTag );
-		}
-
-		// restore comments
-		$this->content = $this->restore_comments( $this->content );
-
-		// Restore IE hacks
-		$this->content = $this->restore_iehacks( $this->content );
-
-		// Restore noptimize
-		$this->content = $this->restore_noptimize( $this->content );
-
-		return $this->content;
-	}
-
-
-	// Checks against the white- and blacklists
-	private function is_merge_valid( $tag ) {
-		if ( ! empty( $this->whitelist ) ) {
-			foreach ( $this->whitelist as $match ) {
-				if ( strpos( $tag, $match ) !== false ) {
-					return true;
-				}
-			}
-
-			// no match with whitelist
-			return false;
-		} else {
-			foreach ( $this->domove as $match ) {
-				if ( strpos( $tag, $match ) !== false ) {
-					//Matched something
-					return false;
-				}
-			}
-
-			if ( $this->move_to_last( $tag ) ) {
-				return false;
-			}
-
-			foreach ( $this->dontmove as $match ) {
-				if ( strpos( $tag, $match ) !== false ) {
-					//Matched something
-					return false;
-				}
-			}
-
-			// If we're here it's safe to merge
-			return true;
-		}
-	}
-
-	/**
-	 * Check if the script can be moved
-	 *
-	 * @param $tag
-	 *
-	 * @return bool
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private function is_movable( $tag ) {
-
-		foreach ( $this->domove as $match ) {
-			if ( strpos( $tag, $match ) !== false ) {
-				//Matched something
-				return true;
-			}
-		}
-
-		if ( $this->move_to_last( $tag ) ) {
-			return true;
-		}
-
-		foreach ( $this->dontmove as $match ) {
-			if ( strpos( $tag, $match ) !== false ) {
-				//Matched something
-				return false;
-			}
-		}
-
-		//If we're here it's safe to move
-		return true;
-	}
-
-	/**
-	 * Check if the inline script is in the list of delay.
-	 *
-	 * @param $tag
-	 *
-	 * @return bool
-	 */
-	private function is_inline_delay( $tag ) {
-		foreach ( $this->delay_inline_js as $match ) {
-			if ( strpos( $tag, $match ) !== false ) {
-				//Matched something
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Move the script last
-	 *
-	 * @param $tag
-	 *
-	 * @return bool
-	 * @since 1.1.8
-	 * @access private
-	 */
-	private function move_to_last( $tag ) {
-		foreach ( $this->domovelast as $match ) {
-			if ( strpos( $tag, $match ) !== false ) {
-				//Matched, return true
-				return true;
-			}
-		}
-
-		//Should be in 'first'
-		return false;
-	}
-
-	/**
-	 * Determines whether a <script> $tag should be aggregated or not.
-	 *
-	 * We consider these as "aggregation-safe" currently:
-	 * - script tags without a `type` attribute
-	 * - script tags with an explicit `type` of `text/javascript`, 'text/ecmascript',
-	 *   'application/javascript' or 'application/ecmascript'
-	 *
-	 * Everything else should return false.
-	 *
-	 * @param string $tag
-	 *
-	 * @return bool
-	 *
-	 * original function by https://github.com/zytzagoo/ on his AO fork, thanks Tomas!
-	 */
-	public function should_aggregate( $tag ) {
-		preg_match( '#<(script[^>]*)>#i', $tag, $scripttag );
-		if ( strpos( $scripttag[1], 'type=' ) === false ) {
-			return true;
-		} elseif ( preg_match( '/type=["\']?(?:text|application)\/(?:javascript|ecmascript)["\']?/i', $scripttag[1] ) ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Change the URL from local domain to CDN domain.
-	 *
-	 * @param string $url the given URL
-	 *
-	 * @return mixed|void
-	 */
-	protected function url_replace_cdn( $url ) {
-		$cdn_url = apply_filters( 'breeze_filter_base_cdnurl', $this->cdn_url );
-		if ( ! empty( $cdn_url ) ) {
-			// secondly prepend domain-less absolute URL's
-			if ( ( substr( $url, 0, 1 ) === '/' ) && ( substr( $url, 1, 1 ) !== '/' ) ) {
-				$url = rtrim( $cdn_url, '/' ) . $url;
-			} else {
-				// get WordPress base URL
-				$WPSiteBreakdown = parse_url( breeze_WP_SITE_URL );
-				$WPBaseUrl       = $WPSiteBreakdown['scheme'] . '://' . $WPSiteBreakdown['host'];
-				if ( ! empty( $WPSiteBreakdown['port'] ) ) {
-					$WPBaseUrl .= ':' . $WPSiteBreakdown['port'];
-				}
-				// three: replace full url's with scheme
-				$tmp_url = str_replace( $WPBaseUrl, rtrim( $cdn_url, '/' ), $url );
-				if ( $tmp_url === $url ) {
-					// last attempt; replace scheme-less URL's
-					$url = str_replace( preg_replace( '/https?:/', '', $WPBaseUrl ), rtrim( $cdn_url, '/' ), $url );
-				} else {
-					$url = $tmp_url;
-				}
-			}
-		}
-
-		// allow API filter to take alter after CDN replacement
-		$url = apply_filters( 'breeze_filter_base_replace_cdn', $url );
-
-		return $url;
-	}
+    /**
+     * CDN domain.
+     *
+     * @since 1.1.8
+     */
+    protected $cdn_url = '';
+
+    /**
+     * Javascript URLs that need the defer tag.
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $defer_js = [];
+
+    /**
+     * Will hold the JS Scripts found in the header
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $head_scripts = [];
+
+    /**
+     * Will hold the JS Scripts found in the body/footer
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $footer_scripts = [];
+
+    /**
+     * Will hold scripts that need to be removed.
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $jsremovables = [];
+
+    /**
+     * Holds scripts that need to be moved to the footer.
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $move_to_footer_js = [];
+
+    /**
+     * Prepared scripts that need to be moved to footer.
+     *
+     * @var array
+     *
+     * @since 1.1.8
+     */
+    private $move_to_footer = [];
+
+    /**
+     * Files first or last.
+     *
+     * @var array[]
+     *
+     * @since 1.1.8
+     */
+    private $move = [
+        'first' => [],
+        'last' => [],
+    ];
+
+    private $domove = [
+        'gaJsHost',
+        'load_cmc',
+        'jd.gallery.transitions.js',
+        'swfobject.embedSWF(',
+        'tiny_mce.js',
+        'tinyMCEPreInit.go',
+    ];
+
+    private $domovelast = [
+        'addthis.com',
+        '/afsonline/show_afs_search.js',
+        'disqus.js',
+        'networkedblogs.com/getnetworkwidget',
+        'infolinks.com/js/',
+        'jd.gallery.js.php',
+        'jd.gallery.transitions.js',
+        'swfobject.embedSWF(',
+        'linkwithin.com/widget.js',
+        'tiny_mce.js',
+        'tinyMCEPreInit.go',
+    ];
+
+    private $dontmove = [
+        'gtag',
+        'document.write',
+        'html5.js',
+        'show_ads.js',
+        'google_ad',
+        'blogcatalog.com/w',
+        'tweetmeme.com/i',
+        'mybloglog.com/',
+        'histats.com/js',
+        'ads.smowtion.com/ad.js',
+        'statcounter.com/counter/counter.js',
+        'widgets.amung.us',
+        'ws.amazon.com/widgets',
+        'media.fastclick.net',
+        '/ads/',
+        'comment-form-quicktags/quicktags.php',
+        'edToolbar',
+        'intensedebate.com',
+        'scripts.chitika.net/',
+        '_gaq.push',
+        'jotform.com/',
+        'admin-bar.min.js',
+        'GoogleAnalyticsObject',
+        'plupload.full.min.js',
+        'syntaxhighlighter',
+        'adsbygoogle',
+        'gist.github.com',
+        '_stq',
+        'nonce',
+        'post_id',
+        'data-noptimize',
+    ];
+    /**
+     * Defer/Delay the inline scripts.
+     *
+     * @var array
+     */
+    private $delay_inline_js = [];
+
+    /**
+     * Contains all the scripts that will be delayed.
+     *
+     * @var array
+     */
+    private $delay_scripts = [
+        'header' => [],
+        'footer' => [],
+    ];
+
+    /**
+     * Reads the page content and fetches the JavaScript script tags.
+     *
+     * @param array $options Script options.
+     *
+     * @return bool
+     *
+     * @since 1.1.8
+     */
+    public function read($options = []) {
+        // Inline delay scripts
+        if (!empty($options['delay_inline_js'])) {
+            $this->delay_inline_js = $options['delay_inline_js'];
+        }
+
+        // Read the list of scripts that need defer tag.
+        if (!empty($options['defer_js'])) {
+            $this->defer_js = $options['defer_js'];
+        }
+
+        // JS files will move to footer
+        if (!empty($options['move_to_footer_js'])) {
+            $this->move_to_footer_js = $options['move_to_footer_js'];
+        }
+
+        // is there JS we should simply remove
+        $removableJS = apply_filters('breeze_filter_js_removables', '');
+        if (!empty($removableJS)) {
+            $this->jsremovables = array_filter(array_map('trim', explode(',', $removableJS)));
+        }
+
+        // noptimize me
+        $this->content = $this->hide_noptimize($this->content);
+        // Save IE hacks
+        $this->content = $this->hide_iehacks($this->content);
+        // comments
+        $this->content = $this->hide_comments($this->content);
+
+        // get cdn url
+        $this->cdn_url = $options['cdn_url'];
+
+        //Get script files
+        $split_content = explode('</head>', $this->content, 2);
+        $this->fetch_javascript($split_content[0]);
+        $this->fetch_javascript($split_content[1], false);
+
+        if (!empty($this->head_scripts) || !empty($this->footer_scripts)) {
+            // Re-order moving to footer JS files
+            $ordered_moving_js = array_intersect_key($this->move_to_footer_js, $this->move_to_footer);
+            $ordered_moving_js = array_map([$this, 'getpath'], $ordered_moving_js);
+            $this->footer_scripts = array_merge($ordered_moving_js, $this->footer_scripts);
+
+            // JS Scripts found, wen can start processing them.
+            return true;
+        }
+
+        // The page holds no JS scripts
+        return false;
+    }
+
+    /**
+     * Needed function to match Breeze_MinificationBase class pattern
+     *
+     * @since 1.1.8
+     */
+    public function minify() {
+        return true;
+    }
+
+    /**
+     * Needed function to match Breeze_MinificationBase class pattern
+     *
+     * @since 1.1.8
+     */
+    public function cache() {
+        return true;
+    }
+
+    /**
+     * Needed function to match Breeze_MinificationBase class pattern
+     *
+     * @since 1.1.8
+     */
+    public function getcontent() {
+        if (!empty($this->cdn_url)) {
+            foreach ($this->defer_js as $index => $key) {
+                $this->defer_js[$this->url_replace_cdn($index)] = $this->url_replace_cdn($key);
+                $index = ltrim($index, 'https:');
+                $key = ltrim($key, 'https:');
+                $this->defer_js[$this->url_replace_cdn($index)] = $this->url_replace_cdn($key);
+            }
+        } else {
+            foreach ($this->defer_js as $index => $key) {
+                $index = ltrim($index, 'https:');
+                $key = ltrim($key, 'https:');
+                $this->defer_js[$index] = $key;
+            }
+        }
+
+        // handle the 3rd party defer scripts in header.
+        if (!empty($this->delay_scripts) && !empty($this->delay_scripts['header'])) {
+            $replace_tag = ['</head>', 'before'];
+            $js_head_defer = [];
+            $defer = 'defer ';
+            foreach ($this->delay_scripts['header'] as $js_url => $js_script) {
+                if (filter_var($js_url, FILTER_VALIDATE_URL)) {
+                    if (!empty($js_script['version'])) {
+                        $js_url .= '?' . $js_script['version'];
+                    }
+                    $js_head_defer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
+                } else {
+                    $js_head_defer[] = "<script type='module'>{$js_script}</script>\n";
+                }
+            }
+            $js_replacement = '';
+            $js_replacement .= implode('', $js_head_defer);
+            $this->inject_in_html($js_replacement, $replace_tag);
+        }
+
+        // handle the 3rd party defer scripts in footer.
+        if (!empty($this->delay_scripts) && !empty($this->delay_scripts['footer'])) {
+            $replace_tag = ['</body>', 'before'];
+            $js_footer_defer = [];
+            $defer = 'defer ';
+            foreach ($this->delay_scripts['footer'] as $js_url => $js_script) {
+                if (filter_var($js_url, FILTER_VALIDATE_URL)) {
+                    if (!empty($js_script['version'])) {
+                        $js_url .= '?' . $js_script['version'];
+                    }
+                    $js_footer_defer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
+                } else {
+                    $js_footer_defer[] = "<script type='module'>{$js_script}</script>\n";
+                }
+            }
+
+            $js_replacement = '';
+            $js_replacement .= implode('', $js_footer_defer);
+            $this->inject_in_html($js_replacement, $replace_tag);
+        }
+
+        // Load inline JS to html
+        if (!empty($this->head_scripts)) {
+            $replaceTag = ['</head>', 'before'];
+            $js_head = [];
+
+            foreach ($this->head_scripts as $js_url => $js_path) {
+                $defer = '';
+
+                if (!empty($this->cdn_url)) {
+                    $js_url = $this->url_replace_cdn($js_url);
+                }
+
+                $js_url_trim = ltrim($js_url, 'https:');
+
+                if (
+                    gettype($js_url) == 'string'
+                    && (
+                        in_array($js_url, $this->defer_js)
+                        || in_array($js_url_trim, $this->defer_js)
+                        || $this->is_inline_delay($js_url)
+                    )
+                ) {
+                    $defer = 'defer ';
+                }
+
+                $js_head[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
+            }
+            $js_replacement = '';
+            $js_replacement .= implode('', $js_head);
+            $this->inject_in_html($js_replacement, $replaceTag);
+        }
+
+        if (!empty($this->footer_scripts)) {
+            $replaceTag = ['</body>', 'before'];
+            $js_footer = [];
+
+            foreach ($this->footer_scripts as $js_url => $js_path) {
+                $defer = '';
+                if (!empty($this->cdn_url)) {
+                    $js_url = $this->url_replace_cdn($js_url);
+                }
+
+                $js_url_trim = ltrim($js_url, 'https:');
+
+                if (
+                    gettype($js_url) == 'string'
+                    && (
+                        in_array($js_url, $this->defer_js)
+                        || in_array($js_url_trim, $this->defer_js)
+                        || $this->is_inline_delay($js_url)
+                    )
+                ) {
+                    $defer = 'defer ';
+                }
+
+                $js_footer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
+            }
+            $js_replacement = '';
+            $js_replacement .= implode('', $js_footer);
+            $this->inject_in_html($js_replacement, $replaceTag);
+        }
+
+        // restore comments
+        $this->content = $this->restore_comments($this->content);
+
+        // Restore IE hacks
+        $this->content = $this->restore_iehacks($this->content);
+
+        // Restore noptimize
+        $this->content = $this->restore_noptimize($this->content);
+
+        return $this->content;
+    }
+
+    /**
+     * Determines whether a <script> $tag should be aggregated or not.
+     *
+     * We consider these as "aggregation-safe" currently:
+     * - script tags without a `type` attribute
+     * - script tags with an explicit `type` of `text/javascript`, 'text/ecmascript',
+     *   'application/javascript' or 'application/ecmascript'
+     *
+     * Everything else should return false.
+     *
+     * @param string $tag
+     *
+     * @return bool
+     *
+     * original function by https://github.com/zytzagoo/ on his AO fork, thanks Tomas!
+     */
+    public function should_aggregate($tag) {
+        preg_match('#<(script[^>]*)>#i', $tag, $scripttag);
+        if (strpos($scripttag[1], 'type=') === false) {
+            return true;
+        }
+        if (preg_match('/type=["\']?(?:text|application)\/(?:javascript|ecmascript)["\']?/i', $scripttag[1])) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Change the URL from local domain to CDN domain.
+     *
+     * @param string $url the given URL
+     *
+     * @return mixed|void
+     */
+    protected function url_replace_cdn($url) {
+        $cdn_url = apply_filters('breeze_filter_base_cdnurl', $this->cdn_url);
+        if (!empty($cdn_url)) {
+            // secondly prepend domain-less absolute URL's
+            if ((substr($url, 0, 1) === '/') && (substr($url, 1, 1) !== '/')) {
+                $url = rtrim($cdn_url, '/') . $url;
+            } else {
+                // get WordPress base URL
+                $WPSiteBreakdown = parse_url(breeze_WP_SITE_URL);
+                $WPBaseUrl = $WPSiteBreakdown['scheme'] . '://' . $WPSiteBreakdown['host'];
+                if (!empty($WPSiteBreakdown['port'])) {
+                    $WPBaseUrl .= ':' . $WPSiteBreakdown['port'];
+                }
+                // three: replace full url's with scheme
+                $tmp_url = str_replace($WPBaseUrl, rtrim($cdn_url, '/'), $url);
+                if ($tmp_url === $url) {
+                    // last attempt; replace scheme-less URL's
+                    $url = str_replace(preg_replace('/https?:/', '', $WPBaseUrl), rtrim($cdn_url, '/'), $url);
+                } else {
+                    $url = $tmp_url;
+                }
+            }
+        }
+
+        // allow API filter to take alter after CDN replacement
+        return apply_filters('breeze_filter_base_replace_cdn', $url);
+    }
+
+    /**
+     * Returns the found javascript
+     *
+     * @param string $content HTML content
+     * @param bool   $head    to process header or not.
+     *
+     * @return bool
+     *
+     * @since 1.1.8
+     */
+    private function fetch_javascript($content = '', $head = true) {
+        $cdn_array_move_to_footer = [];
+
+        if (!empty($this->move_to_footer_js)) {
+            foreach ($this->move_to_footer_js as $index => $key) {
+                $cdn_array_move_to_footer[$this->url_replace_cdn($index)] = $this->url_replace_cdn($key);
+                $index = ltrim($index, 'https:');
+                $key = ltrim($key, 'https:');
+                $cdn_array_move_to_footer[$this->url_replace_cdn($index)] = $this->url_replace_cdn($key);
+            }
+        }
+
+        if (preg_match_all('#<script.*</script>#Usmi', $content, $matches)) {
+            foreach ($matches[0] as $tag) {
+                // only consider aggregation whitelisted in should_aggregate-function
+                if (!$this->should_aggregate($tag)) {
+                    $tag = '';
+                    continue;
+                }
+
+                // handle only the scripts that have the a file as source.
+                if (preg_match('/\ssrc=("|\')?(.*(\ |\>))("|\')?/Usmi', $tag, $source)) {
+                    $source[2] = substr($source[2], 0, -1);
+                    if ($this->isremovable($tag, $this->jsremovables)) {
+                        $content = str_replace($tag, '', $content);
+                        continue;
+                    }
+
+                    // Get the script version.
+                    $script_version = '';
+                    $explode_url = explode('?', $source[2]);
+                    if (isset($explode_url[1])) {
+                        $script_version = $explode_url[1];
+                    }
+
+                    // External script
+                    $url = current(explode('?', $source[2], 2));
+                    if ($url[0] == "'" || $url[0] == '"') {
+                        $url = substr($url, 1);
+                    }
+                    if ($url[strlen($url) - 1] == '"' || $url[strlen($url) - 1] == "'") {
+                        $url = substr($url, 0, -1);
+                    }
+
+                    $path = $this->getpath($url);
+                    if ($path !== false && preg_match('#\.js$#', $path)) {
+                        if ($this->is_merge_valid($tag)) {
+                            //We can merge it
+                            if ($head === true) {
+                                // If this file will be move to footer
+                                $compare_url = ltrim($url, 'https:');
+                                $cdn_url = $this->url_replace_cdn($url);
+                                $cdn_url_trim = ltrim($cdn_url, 'https:');
+
+                                if (
+                                    (
+                                        in_array($compare_url, $this->move_to_footer_js)
+                                      || in_array($url, $this->move_to_footer_js)
+                                      || in_array($cdn_url, $this->move_to_footer_js)
+                                      || in_array($cdn_url_trim, $this->move_to_footer_js)
+                                    )
+                                    || (
+                                        in_array($compare_url, $cdn_array_move_to_footer)
+                                        || in_array($url, $cdn_array_move_to_footer)
+                                        || in_array($cdn_url, $cdn_array_move_to_footer)
+                                        || in_array($cdn_url_trim, $cdn_array_move_to_footer)
+                                    )
+                                ) {
+                                    $this->footer_scripts[$url] = $path;
+                                } else {
+                                    $this->head_scripts[$url] = $path;
+                                }
+                            } else {
+                                $this->footer_scripts[$url] = $path;
+                            }
+                        } else {
+                            //No merge, but maybe we can move it
+                            if ($this->is_movable($tag)) {
+                                //Yeah, move it
+                                if ($this->move_to_last($tag)) {
+                                    $this->move['last'][] = $tag;
+                                } else {
+                                    $this->move['first'][] = $tag;
+                                }
+                            } else {
+                                $is_delayed = $this->is_inline_delay($tag);
+                                if ($is_delayed) {
+                                    if ($head === true) {
+                                        $this->delay_scripts['header'][$url] = [
+                                            'path' => $path,
+                                            'version' => $script_version,
+                                        ];
+                                    } else {
+                                        $this->delay_scripts['footer'][$url] = [
+                                            'path' => $path,
+                                            'version' => $script_version,
+                                        ];
+                                    }
+                                    $content = str_replace($tag, '', $content);
+                                }
+
+                                //We shouldn't touch this
+                                $tag = '';
+                            }
+                        }
+                    } else {
+                        if (breeze_validate_url_via_regexp($url)) {
+                            if ($head === true) {
+                                if (in_array($url, $this->move_to_footer_js)) {
+                                    $this->move_to_footer[$url] = $url;
+                                } else {
+                                    $this->head_scripts[$url] = $url;
+                                }
+                            } else {
+                                $this->footer_scripts[$url] = $url;
+                            }
+                        }
+                    }
+                    //Remove the original script tag
+                    $content = str_replace($tag, '', $content);
+                } else {
+                    $is_delayed = $this->is_inline_delay($tag);
+                    if ($is_delayed === true) {
+                        preg_match('#<script.*>(.*)</script>#Usmi', $tag, $code);
+                        $code = preg_replace('#.*<!\[CDATA\[(?:\s*\*/)?(.*)(?://|/\*)\s*?\]\]>.*#sm', '$1', $code[1]);
+                        $code = preg_replace('/(?:^\\s*<!--\\s*|\\s*(?:\\/\\/)?\\s*-->\\s*$)/', '', $code);
+                        if ($head === true) {
+                            $this->delay_scripts['header'][] = $code;
+                        } else {
+                            $this->delay_scripts['footer'][] = $code;
+                        }
+                        $content = str_replace($tag, '', $content);
+                    }
+                }
+            }
+        }
+
+        if ($head === true) {
+            $this->content = $content;
+        } else {
+            $this->content .= '</head>' . $content;
+        }
+
+        return true;
+    }
+
+    // Checks against the white- and blacklists
+    private function is_merge_valid($tag) {
+        if (!empty($this->whitelist)) {
+            foreach ($this->whitelist as $match) {
+                if (strpos($tag, $match) !== false) {
+                    return true;
+                }
+            }
+
+            // no match with whitelist
+            return false;
+        }
+        foreach ($this->domove as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return false;
+            }
+        }
+
+        if ($this->move_to_last($tag)) {
+            return false;
+        }
+
+        foreach ($this->dontmove as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return false;
+            }
+        }
+
+        // If we're here it's safe to merge
+        return true;
+    }
+
+    /**
+     * Check if the script can be moved
+     *
+     * @param $tag
+     *
+     * @return bool
+     *
+     * @since 1.1.8
+     */
+    private function is_movable($tag) {
+        foreach ($this->domove as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return true;
+            }
+        }
+
+        if ($this->move_to_last($tag)) {
+            return true;
+        }
+
+        foreach ($this->dontmove as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return false;
+            }
+        }
+
+        //If we're here it's safe to move
+        return true;
+    }
+
+    /**
+     * Check if the inline script is in the list of delay.
+     *
+     * @param $tag
+     *
+     * @return bool
+     */
+    private function is_inline_delay($tag) {
+        foreach ($this->delay_inline_js as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Move the script last
+     *
+     * @param $tag
+     *
+     * @return bool
+     *
+     * @since 1.1.8
+     */
+    private function move_to_last($tag) {
+        foreach ($this->domovelast as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched, return true
+                return true;
+            }
+        }
+
+        //Should be in 'first'
+        return false;
+    }
 }
