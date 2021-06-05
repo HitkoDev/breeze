@@ -9,6 +9,12 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Breeze is a WordPress Caching Plugin developed by Cloudways. Breeze uses advance caching systems to improve WordPress loading times exponentially.
 
+== Help translate the plugin ==
+
+image:https://img.shields.io/poeditor/progress/449381/en?token=ad0ad7e9942177da0b47495128f8757b[POEditor,link=https://poeditor.com/join/project?hash=YWby1ESzh2]
+image:https://img.shields.io/poeditor/progress/449381/en-us?token=ad0ad7e9942177da0b47495128f8757b[POEditor,link=https://poeditor.com/join/project?hash=YWby1ESzh2]
+image:https://img.shields.io/poeditor/progress/449381/fr?token=ad0ad7e9942177da0b47495128f8757b[POEditor,link=https://poeditor.com/join/project?hash=YWby1ESzh2]
+
 == Description ==
 
 Breeze is a free, simple (yet powerful) and user-friendly WordPress Caching Plugin developed by the Cloudways team. It offers various options to optimize WordPress performance at various levels. It works equally great with WordPress, WordPress with WooCommerce and WordPress Multisite.
