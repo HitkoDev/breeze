@@ -200,6 +200,7 @@ function breeze_cache($buffer, $flags) {
 
     if (!isset($_SERVER['HTTP_X_VARNISH'])) {
         $headers = array_merge(
+            $headers,
             [
                 [
                     'name' => 'Expires',
