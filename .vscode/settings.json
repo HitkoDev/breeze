@@ -13,6 +13,8 @@
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": false,
     "typescript.tsdk": "node_modules/typescript/lib",
+    "php-cs-fixer.formatHtml": true,
+    "formate.verticalAlignProperties": false,
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
