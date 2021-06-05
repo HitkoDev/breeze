@@ -21,6 +21,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
     private $cssinlinesize = '';
     private $cssremovables = [];
     private $include_inline = false;
+    private $font_swap = false;
     private $inject_min_late = '';
     private $group_css = false;
     private $custom_css_exclude = [];
@@ -80,6 +81,12 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
         if (apply_filters('breeze_css_include_inline', $options['groupcss']) == true) {
             $this->group_css = true;
         }
+
+        // group css?
+        if (apply_filters('breeze_css_font_swap', $options['font_swap']) == true) {
+            $this->font_swap = true;
+        }
+
         //custom js exclude
         if (!empty($options['custom_css_exclude'])) {
             $this->custom_css_exclude = array_merge($this->custom_css_exclude, $options['custom_css_exclude']);
@@ -540,6 +547,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
                 $whole_css_file .= $code;
             }
 
+            $whole_css_file = $this->append_font_swap($whole_css_file);
             $md5 = md5($whole_css_file);
             $cache = new Breeze_MinificationCache($md5, 'css');
             if (!$cache->check()) {
@@ -566,6 +574,7 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
                 $cache = new Breeze_MinificationCache($hash, 'css');
                 if (!$cache->check()) {
                     // Cache our code
+                    $css = $this->append_font_swap($css);
                     $cache->cache($css, 'text/css');
                 }
 
@@ -853,5 +862,34 @@ class Breeze_MinificationStyles extends Breeze_MinificationBase {
         }
 
         return false;
+    }
+
+    /**
+     * Append font-display: wap parameter to font-face definitions.
+     *
+     * @param string $code
+     *
+     * @return mixed|string|string[]
+     *
+     * @since 1.2.0
+     */
+    private function append_font_swap($code = '') {
+        if ($this->font_swap === false) {
+            return $code;
+        }
+
+        if (!empty($code)) {
+            preg_match_all('/[\s+]?\@font-face[\s+]?(\{[a-zA-Z\s\:\;\0-9\,\?\=]+\})/mi', $code, $matches);
+            if (isset($matches) && !empty($matches) && isset($matches[0]) && !empty($matches[0])) {
+                foreach ($matches[0] as $index => $css_font_face) {
+                    if (!substr_count($css_font_face, 'font-display')) {
+                        $font_display = str_replace('{', '{font-display:swap;', $css_font_face);
+                        $code = str_replace($css_font_face, $font_display, $code);
+                    }
+                }
+            }
+        }
+
+        return $code;
     }
 }

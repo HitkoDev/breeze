@@ -118,7 +118,11 @@ class Minify_HTML {
         }
 
         // replace PREs with placeholders
-        $this->_html = preg_replace_callback('/\\s*(<pre\\b[^>]*?>[\\s\\S]*?<\\/pre>)\\s*/i', [$this, '_removePreCB'], $this->_html);
+        $this->_html = preg_replace_callback(
+            '/\\s*(<pre\\b[^>]*?>[\\s\\S]*?<\\/pre>)\\s*/i',
+            [$this, '_removePreCB'],
+            $this->_html
+        );
 
         // replace TEXTAREAs with placeholders
         $this->_html = preg_replace_callback(
@@ -139,11 +143,15 @@ class Minify_HTML {
         $this->_html = preg_replace('/^\\s+|\\s+$/m', '', $this->_html);
 
         // remove ws around block/undisplayed elements
-        $this->_html = preg_replace('/\\s+(<\\/?(?:area|article|aside|base(?:font)?|blockquote|body'
+        $this->_html = preg_replace(
+            '/\\s+(<\\/?(?:area|article|aside|base(?:font)?|blockquote|body'
             . '|canvas|caption|center|col(?:group)?|dd|dir|div|dl|dt|fieldset|figcaption|figure|footer|form'
             . '|frame(?:set)?|h[1-6]|head|header|hgroup|hr|html|legend|li|link|main|map|menu|meta|nav'
             . '|ol|opt(?:group|ion)|output|p|param|section|t(?:able|body|head|d|h||r|foot|itle)'
-            . '|ul|video)\\b[^>]*>)/i', '$1', $this->_html);
+            . '|ul|video)\\b[^>]*>)/i',
+            '$1',
+            $this->_html
+        );
 
         // remove ws outside of all elements
         $this->_html = preg_replace_callback(

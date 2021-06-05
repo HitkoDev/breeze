@@ -50,7 +50,7 @@ class Breeze_CDN_Integration {
         $rewrite = new Breeze_CDN_Rewrite($cdn_integration);
 
         //rewrite CDN Url to html raw
-//        ob_start(array(&$rewrite,'rewrite'));
+        //        ob_start(array(&$rewrite,'rewrite'));
         add_filter('breeze_cdn_content_return', [&$rewrite, 'rewrite']);
     }
 

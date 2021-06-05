@@ -2,7 +2,12 @@
 
 defined('ABSPATH') or exit;
 
-$post_revisions = 0; $drafted = 0; $trashed = 0; $comments = 0; $trackbacks = 0; $transients = 0;
+$post_revisions = 0;
+$drafted = 0;
+$trashed = 0;
+$comments = 0;
+$trackbacks = 0;
+$transients = 0;
 
 if (is_multisite() && is_network_admin()) {
     // Count items from all network sites.

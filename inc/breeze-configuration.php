@@ -1,6 +1,6 @@
 <?php
 /**
- *  @copyright 2017  Cloudways  https://www.cloudways.com
+ * @copyright 2017  Cloudways  https://www.cloudways.com
  *
  *  This plugin is inspired from WP Speed of Light by JoomUnited.
  *
@@ -53,9 +53,11 @@ class Breeze_Configuration {
 
                 $basic = [
                     'breeze-active' => (isset($_POST['cache-system']) ? '1' : '0'),
+                    'breeze-cross-origin' => (isset($_POST['safe-cross-origin']) ? '1' : '0'),
                     'breeze-ttl' => (int) $_POST['cache-ttl'],
                     'breeze-minify-html' => (isset($_POST['minification-html']) ? '1' : '0'),
                     'breeze-minify-css' => (isset($_POST['minification-css']) ? '1' : '0'),
+                    'breeze-font-display-swap' => (isset($_POST['font-display']) ? '1' : '0'),
                     'breeze-minify-js' => (isset($_POST['minification-js']) ? '1' : '0'),
                     'breeze-gzip-compression' => (isset($_POST['gzip-compression']) ? '1' : '0'),
                     'breeze-browser-cache' => (isset($_POST['browser-cache']) ? '1' : '0'),
@@ -98,14 +100,28 @@ class Breeze_Configuration {
                 $exclude_urls = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-urls']));
                 $exclude_css = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-css']));
                 $exclude_js = $this->string_convert_arr(sanitize_textarea_field($_POST['exclude-js']));
-                $move_to_footer_js = $defer_js = [];
+                $delay_js = $this->string_convert_arr(sanitize_textarea_field($_POST['delay-js-scripts']));
+                $preload_fonts = $move_to_footer_js = $defer_js = [];
 
                 if (!empty($exclude_js)) {
                     $exclude_js = array_unique($exclude_js);
                 }
+                if (!empty($delay_js)) {
+                    $delay_js = array_unique($delay_js);
+                }
 
                 if (!empty($exclude_css)) {
                     $exclude_css = array_unique($exclude_css);
+                }
+
+                if (isset($_POST['breeze-preload-font']) && !empty($_POST['breeze-preload-font'])) {
+                    foreach ($_POST['breeze-preload-font'] as $font_url) {
+                        if (trim($font_url) == '') {
+                            continue;
+                        }
+                        $font_url = current(explode('?', $font_url, 2));
+                        $preload_fonts[sanitize_text_field($font_url)] = sanitize_text_field($font_url);
+                    }
                 }
 
                 if (!empty($_POST['move-to-footer-js'])) {
@@ -132,10 +148,16 @@ class Breeze_Configuration {
                     'breeze-exclude-urls' => $exclude_urls,
                     'breeze-group-css' => (isset($_POST['group-css']) ? '1' : '0'),
                     'breeze-group-js' => (isset($_POST['group-js']) ? '1' : '0'),
+                    'breeze-lazy-load' => (isset($_POST['bz-lazy-load']) ? '1' : '0'),
+                    'breeze-lazy-load-native' => (isset($_POST['bz-lazy-load-nat']) ? '1' : '0'),
+                    'breeze-preload-links' => (isset($_POST['preload-links']) ? '1' : '0'),
                     'breeze-exclude-css' => $exclude_css,
                     'breeze-exclude-js' => $exclude_js,
                     'breeze-move-to-footer-js' => $move_to_footer_js,
-                    'breeze-defer-js' => $defer_js
+                    'breeze-defer-js' => $defer_js,
+                    'breeze-delay-js-scripts' => $delay_js,
+                    'breeze-preload-fonts' => $preload_fonts,
+                    'breeze-enable-js-delay' => (isset($_POST['enable-js-delay']) ? '1' : '0'),
                 ];
 
                 breeze_update_option('advanced_settings', $advanced, true);
@@ -213,7 +235,7 @@ class Breeze_Configuration {
             if (isset($_POST['breeze_settings_varnish_nonce']) && wp_verify_nonce($_POST['breeze_settings_varnish_nonce'], 'breeze_settings_varnish')) {
                 $varnish = [
                     'auto-purge-varnish' => (isset($_POST['auto-purge-varnish']) ? '1' : '0'),
-                    'breeze-varnish-server-ip' => preg_replace('/[^a-zA-Z0-9\-\_\.]*/', '', $_POST['varnish-server-ip'])
+                    'breeze-varnish-server-ip' => preg_replace('/[^a-zA-Z0-9\-\_\.]*/', '', $_POST['varnish-server-ip']),
                 ];
 
                 breeze_update_option('varnish_cache', $varnish, true);
@@ -295,23 +317,23 @@ class Breeze_Configuration {
             $args['clean'] = true;
         } else {
             $args['content'] = 'SetEnv BREEZE_GZIP_ON 1' . PHP_EOL .
-                '<IfModule mod_deflate.c>' . PHP_EOL .
-                '	AddType x-font/woff .woff' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE image/svg+xml' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE text/plain' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE text/html' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE text/xml' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE text/css' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE text/javascript' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE application/xml' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE application/xhtml+xml' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE application/rss+xml' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE application/javascript' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE application/x-javascript' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE application/x-font-ttf' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE application/vnd.ms-fontobject' . PHP_EOL .
-                '	AddOutputFilterByType DEFLATE font/opentype font/ttf font/eot font/otf' . PHP_EOL .
-                '</IfModule>' . PHP_EOL;
+                               '<IfModule mod_deflate.c>' . PHP_EOL .
+                               '	AddType x-font/woff .woff' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE image/svg+xml' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE text/plain' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE text/html' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE text/xml' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE text/css' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE text/javascript' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE application/xml' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE application/xhtml+xml' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE application/rss+xml' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE application/javascript' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE application/x-javascript' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE application/x-font-ttf' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE application/vnd.ms-fontobject' . PHP_EOL .
+                               '	AddOutputFilterByType DEFLATE font/opentype font/ttf font/eot font/otf' . PHP_EOL .
+                               '</IfModule>' . PHP_EOL;
 
             $args['conditions'] = [
                 'mod_deflate',
@@ -339,6 +361,7 @@ class Breeze_Configuration {
         if ($clean) {
             self::add_expires_header($clean);
             self::add_gzip_htacess($clean);
+
             return true;
         }
 
@@ -438,6 +461,7 @@ class Breeze_Configuration {
                             array_map(
                                 function ($url) use ($network_site_url) {
                                     $modified = str_replace($network_site_url, '', $url);
+
                                     return empty($modified) ? '/' : $modified;
                                 },
                                 ${$enabled_sites}
@@ -458,6 +482,7 @@ class Breeze_Configuration {
                             array_map(
                                 function ($url) use ($network_site_url) {
                                     $modified = str_replace($network_site_url, '', $url);
+
                                     return empty($modified) ? '/' : $modified;
                                 },
                                 ${$disabled_sites}
@@ -485,6 +510,7 @@ class Breeze_Configuration {
                 // Caching not activated, clean up.
                 self::add_expires_header(true);
                 self::add_gzip_htacess(true);
+
                 return true;
             }
         }
@@ -529,6 +555,7 @@ class Breeze_Configuration {
         }
 
         file_put_contents($htaccess_path, $htaccess_content);
+
         return true;
     }
 
@@ -628,6 +655,7 @@ class Breeze_Configuration {
                 $return = $wpdb->query($element);
                 break;
         }
+
         return $return;
     }
 
@@ -647,7 +675,6 @@ class Breeze_Configuration {
             $blog_id = get_current_blog_id();
             $files_path .= DIRECTORY_SEPARATOR . $blog_id;
         }
-
         $size_cache += breeze_get_directory_size($files_path, ['index.html']);
 
         $result = self::formatBytes($size_cache);
@@ -758,6 +785,7 @@ class Breeze_Configuration {
                 $output[] = trim($v);
             }
         }
+
         return $output;
     }
 }

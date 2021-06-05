@@ -3,7 +3,8 @@ defined('ABSPATH') or exit;
 
 $basic = breeze_get_option('basic_settings', true);
 ?>
-<table cellspacing="15">
+<table cellspacing="15"
+    id="basic-panel">
     <tr>
         <td>
             <label for="cache-system"><?php _e('Cache System', 'breeze'); ?></label>
@@ -13,9 +14,24 @@ $basic = breeze_get_option('basic_settings', true);
                 id="cache-system"
                 name="cache-system"
                 value='1'
-                <?php checked($basic['breeze-active'], '1'); ?>/>
+                <?php (isset($basic['breeze-active'])) ? checked($basic['breeze-active'], '1') : ''; ?> />
             <span class="breeze_tool_tip">
                 <?php _e('This is the basic cache that we recommend should be kept enabled in all cases. Basic cache will build the internal and static caches for the WordPress websites.', 'breeze'); ?>
+            </span>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label for="safe-cross-origin"><?php _e('Cross-origin safe links', 'breeze'); ?></label>
+        </td>
+        <td>
+            <input type="checkbox"
+                id="safe-cross-origin"
+                name="safe-cross-origin"
+                value='1'
+                <?php (isset($basic['breeze-cross-origin'])) ? checked($basic['breeze-cross-origin'], '1') : ''; ?>/>
+            <span class="breeze_tool_tip">
+                <?php _e('Apply "noopener noreferrer" to links which have target"_blank" attribute and the anchor leads to external websites.', 'breeze'); ?>
             </span>
         </td>
     </tr>
@@ -28,7 +44,7 @@ $basic = breeze_get_option('basic_settings', true);
                 id="cache-ttl"
                 size="5"
                 name="cache-ttl"
-                value='<?php echo !empty($basic['breeze-ttl']) ? (int) $basic['breeze-ttl'] : '1440'; ?>' />
+                value='<?php echo isset($basic['breeze-ttl']) && !empty($basic['breeze-ttl']) ? (int) $basic['breeze-ttl'] : '1440'; ?>' />
             <span class="breeze_tool_tip"
                 style="vertical-align: baseline">
                 <?php _e('Automatically purge internal cache after X minutes. By default this is set to 1440 minutes (1 day)', 'breeze'); ?>
@@ -46,7 +62,7 @@ $basic = breeze_get_option('basic_settings', true);
                         name="minification-html"
                         id="minification-html"
                         value="1"
-                        <?php checked($basic['breeze-minify-html'], '1'); ?>/>
+                        <?php (isset($basic['breeze-minify-html'])) ? checked($basic['breeze-minify-html'], '1') : ''; ?> />
                     <label class="breeze_tool_tip"
                         for="minification-html">
                         <?php _e('HTML', 'breeze'); ?>
@@ -57,10 +73,23 @@ $basic = breeze_get_option('basic_settings', true);
                         name="minification-css"
                         id="minification-css"
                         value="1"
-                        <?php checked($basic['breeze-minify-css'], '1'); ?>/>
+                        <?php (isset($basic['breeze-minify-css'])) ? checked($basic['breeze-minify-css'], '1') : ''; ?> />
                     <label class="breeze_tool_tip"
                         for="minification-css">
                         <?php _e('CSS', 'breeze'); ?>
+                    </label>
+                </li>
+                <li id="font-display-swap"
+                    style="display: none">
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="checkbox"
+                        name="font-display"
+                        id="font-display"
+                        value="1"
+                        <?php (isset($basic['breeze-font-display-swap'])) ? checked($basic['breeze-font-display-swap'], '1') : ''; ?>/>
+                    <label class="breeze_tool_tip"
+                        for="font-display">
+                        <?php _e('Font remain visible during load', 'breeze'); ?>
                     </label>
                 </li>
                 <li>
@@ -68,7 +97,7 @@ $basic = breeze_get_option('basic_settings', true);
                         name="minification-js"
                         id="minification-js"
                         value="1"
-                        <?php checked($basic['breeze-minify-js'], '1'); ?>/>
+                        <?php (isset($basic['breeze-minify-js'])) ? checked($basic['breeze-minify-js'], '1') : ''; ?> />
                     <label class="breeze_tool_tip"
                         for="minification-js">
                         <?php _e('JS', 'breeze'); ?>
@@ -79,7 +108,7 @@ $basic = breeze_get_option('basic_settings', true);
                         name="include-inline-js"
                         id="include-inline-js"
                         value="1"
-                        <?php checked($basic['breeze-include-inline-js'], '1'); ?>/>
+                        <?php (isset($basic['breeze-include-inline-js'])) ? checked($basic['breeze-include-inline-js'], '1') : ''; ?>/>
                     <label class="breeze_tool_tip"
                         for="include-inline-js">
                         <?php _e('Include inline JS', 'breeze'); ?>
@@ -90,7 +119,7 @@ $basic = breeze_get_option('basic_settings', true);
                         name="include-inline-css"
                         id="include-inline-css"
                         value="1"
-                        <?php checked($basic['breeze-include-inline-css'], '1'); ?>/>
+                        <?php (isset($basic['breeze-include-inline-css'])) ? checked($basic['breeze-include-inline-css'], '1') : ''; ?> />
                     <label class="breeze_tool_tip"
                         for="include-inline-css">
                         <?php _e('Include inline CSS', 'breeze'); ?>
@@ -201,7 +230,7 @@ $basic = breeze_get_option('basic_settings', true);
                         name="breeze-admin-cache"
                         id="breeze-admin-cache"
                         value="0"
-                        <?php checked($basic['breeze-disable-admin'], '0'); ?>/>
+                        <?php (isset($basic['breeze-disable-admin'])) ? checked($basic['breeze-disable-admin'], '0') : ''; ?> />
                     <label class="breeze_tool_tip"
                         for="breeze-admin-cache">
                         <?php _e('Enable cache for WP standard user roles: Administrator, Editor, Author, Contributor.', 'breeze'); ?>

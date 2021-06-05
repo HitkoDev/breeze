@@ -207,7 +207,7 @@ class Breeze_MinificationCache {
         return true;
     }
 
-//      check dir cache
+    //      check dir cache
     public static function checkCacheDir($dir) {
         // Check and create if not exists
         if (!file_exists($dir)) {

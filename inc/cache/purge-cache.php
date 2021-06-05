@@ -49,7 +49,7 @@ class Breeze_PurgeCache {
         }
     }
 
-//    Automatically purge all file based page cache on post changes
+    //    Automatically purge all file based page cache on post changes
     public function purge_post_on_update($post_id) {
         $post_type = get_post_type($post_id);
         if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || $post_type === 'revision') {
@@ -90,7 +90,7 @@ class Breeze_PurgeCache {
         }
     }
 
-//            if a comments status changes, purge it's parent posts cache
+    //            if a comments status changes, purge it's parent posts cache
     public function purge_post_on_comment_status_change($comment_ID, $comment_status) {
         $config = breeze_get_option('basic_settings');
 

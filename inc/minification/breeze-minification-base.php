@@ -9,6 +9,7 @@ if (!defined('ABSPATH')) {
 abstract class Breeze_MinificationBase {
     protected $content = '';
     protected $tagWarning = false;
+    protected $cdn_url = '';
 
     public function __construct($content) {
         $this->content = $content;
@@ -235,7 +236,7 @@ abstract class Breeze_MinificationBase {
             if ((substr($url, 0, 1) === '/') && (substr($url, 1, 1) !== '/')) {
                 $url = rtrim($cdn_url, '/') . $url;
             } else {
-                // get wordpress base URL
+                // get WordPress base URL
                 $WPSiteBreakdown = parse_url(breeze_WP_SITE_URL);
                 $WPBaseUrl = $WPSiteBreakdown['scheme'] . '://' . $WPSiteBreakdown['host'];
                 if (!empty($WPSiteBreakdown['port'])) {
@@ -302,10 +303,10 @@ abstract class Breeze_MinificationBase {
 
                     // remove comments and blank lines
                     if (substr($filepath, -3, 3) === '.js') {
-                        $filecontent = preg_replace('#^\\s*\\/\\/.*$#Um', '', $filecontent);
+                        $filecontent = preg_replace('#^\s*\/\/.*$#Um', '', $filecontent);
                     }
 
-                    $filecontent = preg_replace('#^\\s*\\/\\*[^!].*\\*\\/\\s?#Us', '', $filecontent);
+                    $filecontent = preg_replace('#^\s*\/\*[^!].*\*\/\s?#Us', '', $filecontent);
                     $filecontent = preg_replace("#(^[\r\n]*|[\r\n]+)[\\s\t]*[\r\n]+#", "\n", $filecontent);
 
                     // specific stuff for JS-files

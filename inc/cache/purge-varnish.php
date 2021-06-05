@@ -286,7 +286,7 @@ class Breeze_PurgeVarnish {
                     $listofurls,
                     get_post_type_archive_link(get_post_type($postId)),
                     get_post_type_archive_feed_link(get_post_type($postId))
-                // Need to add in JSON?
+                    // Need to add in JSON?
                 );
             }
             // Feeds

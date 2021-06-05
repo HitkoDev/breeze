@@ -16,6 +16,13 @@ if (!defined('ABSPATH')) {
  */
 class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
     /**
+     * CDN domain.
+     *
+     * @since 1.1.8
+     */
+    protected $cdn_url = '';
+
+    /**
      * Javascript URLs that need the defer tag.
      *
      * @var array
@@ -87,7 +94,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
         'jd.gallery.transitions.js',
         'swfobject.embedSWF(',
         'tiny_mce.js',
-        'tinyMCEPreInit.go'
+        'tinyMCEPreInit.go',
     ];
 
     private $domovelast = [
@@ -137,6 +144,22 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
         'post_id',
         'data-noptimize',
     ];
+    /**
+     * Defer/Delay the inline scripts.
+     *
+     * @var array
+     */
+    private $delay_inline_js = [];
+
+    /**
+     * Contains all the scripts that will be delayed.
+     *
+     * @var array
+     */
+    private $delay_scripts = [
+        'header' => [],
+        'footer' => [],
+    ];
 
     /**
      * Reads the page content and fetches the JavaScript script tags.
@@ -148,6 +171,11 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
      * @since 1.1.8
      */
     public function read($options = []) {
+        // Inline delay scripts
+        if (!empty($options['delay_inline_js'])) {
+            $this->delay_inline_js = $options['delay_inline_js'];
+        }
+
         // Read the list of scripts that need defer tag.
         if (!empty($options['defer_js'])) {
             $this->defer_js = $options['defer_js'];
@@ -170,6 +198,9 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
         $this->content = $this->hide_iehacks($this->content);
         // comments
         $this->content = $this->hide_comments($this->content);
+
+        // get cdn url
+        $this->cdn_url = $options['cdn_url'];
 
         //Get script files
         $split_content = explode('</head>', $this->content, 2);
@@ -214,6 +245,62 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
      * @since 1.1.8
      */
     public function getcontent() {
+        if (!empty($this->cdn_url)) {
+            foreach ($this->defer_js as $index => $key) {
+                $this->defer_js[$this->url_replace_cdn($index)] = $this->url_replace_cdn($key);
+                $index = ltrim($index, 'https:');
+                $key = ltrim($key, 'https:');
+                $this->defer_js[$this->url_replace_cdn($index)] = $this->url_replace_cdn($key);
+            }
+        } else {
+            foreach ($this->defer_js as $index => $key) {
+                $index = ltrim($index, 'https:');
+                $key = ltrim($key, 'https:');
+                $this->defer_js[$index] = $key;
+            }
+        }
+
+        // handle the 3rd party defer scripts in header.
+        if (!empty($this->delay_scripts) && !empty($this->delay_scripts['header'])) {
+            $replace_tag = ['</head>', 'before'];
+            $js_head_defer = [];
+            $defer = 'defer ';
+            foreach ($this->delay_scripts['header'] as $js_url => $js_script) {
+                if (filter_var($js_url, FILTER_VALIDATE_URL)) {
+                    if (!empty($js_script['version'])) {
+                        $js_url .= '?' . $js_script['version'];
+                    }
+                    $js_head_defer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
+                } else {
+                    $js_head_defer[] = "<script type='module'>{$js_script}</script>\n";
+                }
+            }
+            $js_replacement = '';
+            $js_replacement .= implode('', $js_head_defer);
+            $this->inject_in_html($js_replacement, $replace_tag);
+        }
+
+        // handle the 3rd party defer scripts in footer.
+        if (!empty($this->delay_scripts) && !empty($this->delay_scripts['footer'])) {
+            $replace_tag = ['</body>', 'before'];
+            $js_footer_defer = [];
+            $defer = 'defer ';
+            foreach ($this->delay_scripts['footer'] as $js_url => $js_script) {
+                if (filter_var($js_url, FILTER_VALIDATE_URL)) {
+                    if (!empty($js_script['version'])) {
+                        $js_url .= '?' . $js_script['version'];
+                    }
+                    $js_footer_defer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
+                } else {
+                    $js_footer_defer[] = "<script type='module'>{$js_script}</script>\n";
+                }
+            }
+
+            $js_replacement = '';
+            $js_replacement .= implode('', $js_footer_defer);
+            $this->inject_in_html($js_replacement, $replace_tag);
+        }
+
         // Load inline JS to html
         if (!empty($this->head_scripts)) {
             $replaceTag = ['</head>', 'before'];
@@ -221,7 +308,21 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
             foreach ($this->head_scripts as $js_url => $js_path) {
                 $defer = '';
-                if (gettype($js_url) == 'string' && in_array($js_url, $this->defer_js)) {
+
+                if (!empty($this->cdn_url)) {
+                    $js_url = $this->url_replace_cdn($js_url);
+                }
+
+                $js_url_trim = ltrim($js_url, 'https:');
+
+                if (
+                    gettype($js_url) == 'string'
+                    && (
+                        in_array($js_url, $this->defer_js)
+                        || in_array($js_url_trim, $this->defer_js)
+                        || $this->is_inline_delay($js_url)
+                    )
+                ) {
                     $defer = 'defer ';
                 }
 
@@ -238,7 +339,20 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
             foreach ($this->footer_scripts as $js_url => $js_path) {
                 $defer = '';
-                if (gettype($js_url) == 'string' && in_array($js_url, $this->defer_js)) {
+                if (!empty($this->cdn_url)) {
+                    $js_url = $this->url_replace_cdn($js_url);
+                }
+
+                $js_url_trim = ltrim($js_url, 'https:');
+
+                if (
+                    gettype($js_url) == 'string'
+                    && (
+                        in_array($js_url, $this->defer_js)
+                        || in_array($js_url_trim, $this->defer_js)
+                        || $this->is_inline_delay($js_url)
+                    )
+                ) {
                     $defer = 'defer ';
                 }
 
@@ -289,6 +403,41 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
     }
 
     /**
+     * Change the URL from local domain to CDN domain.
+     *
+     * @param string $url the given URL
+     *
+     * @return mixed|void
+     */
+    protected function url_replace_cdn($url) {
+        $cdn_url = apply_filters('breeze_filter_base_cdnurl', $this->cdn_url);
+        if (!empty($cdn_url)) {
+            // secondly prepend domain-less absolute URL's
+            if ((substr($url, 0, 1) === '/') && (substr($url, 1, 1) !== '/')) {
+                $url = rtrim($cdn_url, '/') . $url;
+            } else {
+                // get WordPress base URL
+                $WPSiteBreakdown = parse_url(breeze_WP_SITE_URL);
+                $WPBaseUrl = $WPSiteBreakdown['scheme'] . '://' . $WPSiteBreakdown['host'];
+                if (!empty($WPSiteBreakdown['port'])) {
+                    $WPBaseUrl .= ':' . $WPSiteBreakdown['port'];
+                }
+                // three: replace full url's with scheme
+                $tmp_url = str_replace($WPBaseUrl, rtrim($cdn_url, '/'), $url);
+                if ($tmp_url === $url) {
+                    // last attempt; replace scheme-less URL's
+                    $url = str_replace(preg_replace('/https?:/', '', $WPBaseUrl), rtrim($cdn_url, '/'), $url);
+                } else {
+                    $url = $tmp_url;
+                }
+            }
+        }
+
+        // allow API filter to take alter after CDN replacement
+        return apply_filters('breeze_filter_base_replace_cdn', $url);
+    }
+
+    /**
      * Returns the found javascript
      *
      * @param string $content HTML content
@@ -299,6 +448,17 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
      * @since 1.1.8
      */
     private function fetch_javascript($content = '', $head = true) {
+        $cdn_array_move_to_footer = [];
+
+        if (!empty($this->move_to_footer_js)) {
+            foreach ($this->move_to_footer_js as $index => $key) {
+                $cdn_array_move_to_footer[$this->url_replace_cdn($index)] = $this->url_replace_cdn($key);
+                $index = ltrim($index, 'https:');
+                $key = ltrim($key, 'https:');
+                $cdn_array_move_to_footer[$this->url_replace_cdn($index)] = $this->url_replace_cdn($key);
+            }
+        }
+
         if (preg_match_all('#<script.*</script>#Usmi', $content, $matches)) {
             foreach ($matches[0] as $tag) {
                 // only consider aggregation whitelisted in should_aggregate-function
@@ -313,6 +473,13 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
                     if ($this->isremovable($tag, $this->jsremovables)) {
                         $content = str_replace($tag, '', $content);
                         continue;
+                    }
+
+                    // Get the script version.
+                    $script_version = '';
+                    $explode_url = explode('?', $source[2]);
+                    if (isset($explode_url[1])) {
+                        $script_version = $explode_url[1];
                     }
 
                     // External script
@@ -330,8 +497,25 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
                             //We can merge it
                             if ($head === true) {
                                 // If this file will be move to footer
-                                if (in_array($url, $this->move_to_footer_js)) {
-                                    $this->move_to_footer[$url] = $path;
+                                $compare_url = ltrim($url, 'https:');
+                                $cdn_url = $this->url_replace_cdn($url);
+                                $cdn_url_trim = ltrim($cdn_url, 'https:');
+
+                                if (
+                                    (
+                                        in_array($compare_url, $this->move_to_footer_js)
+                                      || in_array($url, $this->move_to_footer_js)
+                                      || in_array($cdn_url, $this->move_to_footer_js)
+                                      || in_array($cdn_url_trim, $this->move_to_footer_js)
+                                    )
+                                    || (
+                                        in_array($compare_url, $cdn_array_move_to_footer)
+                                        || in_array($url, $cdn_array_move_to_footer)
+                                        || in_array($cdn_url, $cdn_array_move_to_footer)
+                                        || in_array($cdn_url_trim, $cdn_array_move_to_footer)
+                                    )
+                                ) {
+                                    $this->footer_scripts[$url] = $path;
                                 } else {
                                     $this->head_scripts[$url] = $path;
                                 }
@@ -348,6 +532,22 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
                                     $this->move['first'][] = $tag;
                                 }
                             } else {
+                                $is_delayed = $this->is_inline_delay($tag);
+                                if ($is_delayed) {
+                                    if ($head === true) {
+                                        $this->delay_scripts['header'][$url] = [
+                                            'path' => $path,
+                                            'version' => $script_version,
+                                        ];
+                                    } else {
+                                        $this->delay_scripts['footer'][$url] = [
+                                            'path' => $path,
+                                            'version' => $script_version,
+                                        ];
+                                    }
+                                    $content = str_replace($tag, '', $content);
+                                }
+
                                 //We shouldn't touch this
                                 $tag = '';
                             }
@@ -367,6 +567,19 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
                     }
                     //Remove the original script tag
                     $content = str_replace($tag, '', $content);
+                } else {
+                    $is_delayed = $this->is_inline_delay($tag);
+                    if ($is_delayed === true) {
+                        preg_match('#<script.*>(.*)</script>#Usmi', $tag, $code);
+                        $code = preg_replace('#.*<!\[CDATA\[(?:\s*\*/)?(.*)(?://|/\*)\s*?\]\]>.*#sm', '$1', $code[1]);
+                        $code = preg_replace('/(?:^\\s*<!--\\s*|\\s*(?:\\/\\/)?\\s*-->\\s*$)/', '', $code);
+                        if ($head === true) {
+                            $this->delay_scripts['header'][] = $code;
+                        } else {
+                            $this->delay_scripts['footer'][] = $code;
+                        }
+                        $content = str_replace($tag, '', $content);
+                    }
                 }
             }
         }
@@ -444,6 +657,24 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
         //If we're here it's safe to move
         return true;
+    }
+
+    /**
+     * Check if the inline script is in the list of delay.
+     *
+     * @param $tag
+     *
+     * @return bool
+     */
+    private function is_inline_delay($tag) {
+        foreach ($this->delay_inline_js as $match) {
+            if (strpos($tag, $match) !== false) {
+                //Matched something
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

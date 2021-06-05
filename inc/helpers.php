@@ -249,7 +249,6 @@ function breeze_check_for_exclude_values($needle = '', $haystack = []) {
     return array_filter(
         $haystack,
         function ($var) use ($needle) {
-            //return false;
             if (breeze_string_contains_exclude_regexp($var)) {
                 return breeze_file_match_pattern($needle, $var);
             }
@@ -610,4 +609,201 @@ function multisite_blog_id_config() {
 
     if (!empty($blog_id)) {
     }
+}
+
+/**
+ * Purges the cache for a given URL.
+ * Varnish cache and local cache.
+ *
+ * @param string $url           The url for which to purge the cache.
+ * @param false  $purge_varnish If the check was already done for Varnish server On/OFF set to true.
+ * @param bool   $check_varnish If the check for Varnish was not done, set to true to check Varnish server status inside the function.
+ *
+ * @since 1.1.10
+ */
+function breeze_varnish_purge_cache($url = '', $purge_varnish = false, $check_varnish = true) {
+    global $wp_filesystem;
+
+    // Making sure the filesystem is loaded.
+    if (empty($wp_filesystem)) {
+        require_once ABSPATH . '/wp-admin/includes/file.php';
+        WP_Filesystem();
+    }
+
+    // Clear the local cache using the product URL.
+    if (!empty($url) && $wp_filesystem->exists(breeze_get_cache_base_path() . md5($url))) {
+        $wp_filesystem->rmdir(breeze_get_cache_base_path() . md5($url), true);
+    }
+
+    if ($purge_varnish === false && $check_varnish === true) {
+        // Checks if the Varnish server is ON.
+        $do_varnish_purge = is_varnish_cache_started();
+
+        if ($do_varnish_purge === false) {
+            return;
+        }
+    }
+
+    if ($purge_varnish === false && $check_varnish === false) {
+        return;
+    }
+
+    $parse_url = parse_url($url);
+    $pregex = '';
+    // Default method is URLPURGE to purge only one object, this method is specific to cloudways configuration
+    $purge_method = 'URLPURGE';
+    // Use PURGE method when purging all site
+    if (isset($parse_url['query']) && (strtolower($parse_url['query']) === 'breeze')) {
+        // The regex is not needed as cloudways configuration purge all the cache of the domain when a PURGE is done
+        $pregex = '.*';
+        $purge_method = 'PURGE';
+    }
+    // Determine the path
+    $url_path = '';
+    if (isset($parse_url['path'])) {
+        $url_path = $parse_url['path'];
+    }
+    // Determine the schema
+    $schema = 'http://';
+    if (isset($parse_url['scheme'])) {
+        $schema = $parse_url['scheme'] . '://';
+    }
+    // Determine the host
+    $host = $parse_url['host'];
+    $config = breeze_get_option('varnish_cache');
+    $varnish_host = isset($config['breeze-varnish-server-ip']) ? $config['breeze-varnish-server-ip'] : '127.0.0.1';
+    $purgeme = $varnish_host . $url_path . $pregex;
+    if (!empty($parse_url['query']) && strtolower($parse_url['query']) !== 'breeze') {
+        $purgeme .= '?' . $parse_url['query'];
+    }
+    $request_args = [
+        'method' => $purge_method,
+        'headers' => [
+            'Host' => $host,
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+        ],
+        'sslverify' => false,
+    ];
+    $response = wp_remote_request($schema . $purgeme, $request_args);
+    if (is_wp_error($response) || (int) $response['response']['code'] !== 200) {
+        if ($schema === 'https://') {
+            $schema = 'http://';
+        } else {
+            $schema = 'https://';
+        }
+        wp_remote_request($schema . $purgeme, $request_args);
+    }
+}
+
+/**
+ * Will ignore the files added into $minified_already array so that these files will not be minified twice.
+ *
+ * @param string $script_path local script path.
+ *
+ * @return bool
+ *
+ * @since 1.1.9
+ */
+function breeze_libraries_already_minified($script_path = '') {
+    if (empty($script_path)) {
+        return false;
+    }
+
+    $minified_already = [
+        'woocommerce-bookings/dist/frontend.js',
+    ];
+
+    $library = explode('/plugins/', $script_path);
+
+    if (empty($library) || !isset($library[1])) {
+        return false;
+    }
+
+    $library_path = $library[1];
+
+    if (in_array($library_path, $minified_already)) {
+        return true;
+    }
+
+    return false;
+}
+
+add_filter('breeze_js_ignore_minify', 'breeze_libraries_already_minified');
+
+/**
+ * Will check if there are any differences between saved option and default.
+ *
+ * if returns false, the nno changes occurred.
+ * If returns true, then there are differences.
+ *
+ * @param bool  $is_network if it's called from multisite network.
+ * @param mixed $blog_id
+ * @param mixed $root
+ *
+ * @return bool
+ *
+ * @since 1.2.1
+ */
+function breeze_is_delayjs_changed($is_network = false, $blog_id = 0, $root = false) {
+    if ($is_network === true) {
+        $saved_options = get_site_option('breeze_advanced_settings');
+    } elseif ($root === true) {
+        $saved_options = get_blog_option($blog_id, 'breeze_advanced_settings');
+    } else {
+        $saved_options = get_option('breeze_advanced_settings');
+    }
+
+    if (!isset($saved_options['breeze-delay-js-scripts'])) {
+        return true;
+    }
+
+    if (empty($saved_options['breeze-delay-js-scripts'])) {
+        return true;
+    }
+
+    $saved_options['breeze-delay-js-scripts'] = array_filter($saved_options['breeze-delay-js-scripts']);
+
+    $default_values = [
+        'gtag',
+        'document.write',
+        'html5.js',
+        'show_ads.js',
+        'google_ad',
+        'blogcatalog.com/w',
+        'tweetmeme.com/i',
+        'mybloglog.com/',
+        'histats.com/js',
+        'ads.smowtion.com/ad.js',
+        'statcounter.com/counter/counter.js',
+        'widgets.amung.us',
+        'ws.amazon.com/widgets',
+        'media.fastclick.net',
+        '/ads/',
+        'comment-form-quicktags/quicktags.php',
+        'edToolbar',
+        'intensedebate.com',
+        'scripts.chitika.net/',
+        '_gaq.push',
+        'jotform.com/',
+        'admin-bar.min.js',
+        'GoogleAnalyticsObject',
+        'plupload.full.min.js',
+        'syntaxhighlighter',
+        'adsbygoogle',
+        'gist.github.com',
+        '_stq',
+        'nonce',
+        'post_id',
+        'data-noptimize',
+        'googletagmanager',
+    ];
+
+    $differences = array_diff($saved_options['breeze-delay-js-scripts'], $default_values);
+    $differences_2 = array_diff($default_values, $saved_options['breeze-delay-js-scripts']);
+
+    if (empty($differences) && empty($differences_2)) {
+        return false;
+    }
+
+    return true;
 }

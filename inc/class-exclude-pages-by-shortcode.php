@@ -40,14 +40,17 @@ class Exclude_Pages_By_Shortcode {
                 $data = array_unique($data);
 
                 foreach ($shortcode_list as $shortcode) {
-                    $result = array_filter($data, function ($item) use ($shortcode) {
-                        $shortcode = str_replace('(.*)', '', $shortcode);
-                        if (stripos($item, $shortcode) !== false) {
-                            return true;
-                        }
+                    $result = array_filter(
+                        $data,
+                        function ($item) use ($shortcode) {
+                            $shortcode = str_replace('(.*)', '', $shortcode);
+                            if (stripos($item, $shortcode) !== false) {
+                                return true;
+                            }
 
-                        return false;
-                    });
+                            return false;
+                        }
+                    );
 
                     if (!empty($result)) {
                         $found = true;

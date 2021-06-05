@@ -138,4 +138,48 @@ jQuery(document).ready(function ($) {
 
     current_url_clean();
 
+
+    $('#advanced-options-tab').on('change', '#bz-lazy-load', function () {
+
+        var native_lazy = $('#native-lazy-option');
+        if (true === $(this).is(':checked')) {
+            native_lazy.show();
+        } else {
+            native_lazy.hide();
+            $('#bz-lazy-load-nat').attr('checked', false);
+        }
+    });
+
+    var font_display_swap = $('#font-display-swap');
+    var font_display = $('#font-display');
+    var css_minification = $('#minification-css');
+
+    if (css_minification.is(':checked')) {
+        font_display_swap.show();
+    } else {
+        font_display_swap.hide();
+        font_display.attr('checked', false);
+    }
+    $('#basic-panel').on(
+        'change',
+        '#minification-css',
+        function () {
+            if ($(this).is(':checked')) {
+                font_display_swap.show();
+            } else {
+                font_display_swap.hide();
+                font_display.attr('checked', false);
+            }
+        }
+    );
+
+    $('#advanced-options-tab').on('change', '#enable-js-delay', function () {
+        $delay_js_div = $('#breeze-delay-js-scripts-div');
+
+        if ($(this).is(':checked')) {
+            $delay_js_div.show();
+        } else {
+            $delay_js_div.hide();
+        }
+    })
 });

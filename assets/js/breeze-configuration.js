@@ -63,6 +63,7 @@ jQuery(document).ready(function ($) {
 
     $('button.add-url').unbind('click').click(function () {
         var defer = $(this).attr('id').indexOf('defer') > -1;
+        var preload = $(this).attr('id').indexOf('preload-fonts') > -1;
         var listURL = $(this).closest('td').find('.breeze-list-url');
         var html = '';
         var listInput = listURL.find('.breeze-input-group');
@@ -86,7 +87,9 @@ jQuery(document).ready(function ($) {
         html += '   </span>';
         html += '   <input type="text" size="98"';
         html += 'class="breeze-input-url"';
-        if (!defer) {
+        if (preload) {
+            html += 'name="breeze-preload-font[]"';
+        } else if (!defer) {
             html += 'name="move-to-footer-js[]"';
         } else {
             html += 'name="defer-js[]"';
