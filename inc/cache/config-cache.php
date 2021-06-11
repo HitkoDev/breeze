@@ -331,13 +331,13 @@ class Breeze_ConfigCache {
 
         $config_file = $config_dir . DIRECTORY_SEPARATOR . $filename . '.php';
 
-        if (is_multisite() && !is_network_admin() && breeze_does_inherit_settings()) {
+        /*if (is_multisite() && !is_network_admin() && breeze_does_inherit_settings()) {
             // Site inherits network-level setting, do not create separate configuration file and remove existing configuration file.
             if ($wp_filesystem->exists($config_file)) {
                 $wp_filesystem->delete($config_file, true);
             }
             return;
-        }
+        }*/
 
         $wp_filesystem->mkdir($config_dir);
 
