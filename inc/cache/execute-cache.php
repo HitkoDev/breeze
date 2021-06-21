@@ -164,19 +164,15 @@ function breeze_cache($buffer, $flags) {
         require_once ABSPATH . '/wp-admin/includes/file.php';
         WP_Filesystem();
     }
-    $url_path = breeze_get_url_path();
 
-    $blog_id_requested = isset($GLOBALS['breeze_config']['blog_id']) ? $GLOBALS['breeze_config']['blog_id'] : 0;
-    $cache_base_path = breeze_get_cache_base_path(false, $blog_id_requested);
-
-    $path = $cache_base_path . md5($url_path);
+    $path = $GLOBALS['breeze_filename'];
+    $X1 = $GLOBALS['breeze_x1'];
 
     // Make sure we can read/write files and that proper folders exist
-    if (!wp_mkdir_p($path)) {
+    if (!wp_mkdir_p(dirname($path))) {
         // Can not cache!
         return $buffer;
     }
-    $path .= '/';
 
     $modified_time = time(); // Make sure modified time is consistent
 
@@ -279,50 +275,9 @@ function breeze_cache($buffer, $flags) {
             'headers' => $headers,
         ]
     );
-    //cache per users
-    if (is_user_logged_in()) {
-        $current_user = wp_get_current_user();
-        if ($current_user->user_login) {
-            if (substr_count($url_path, '?') > 0) {
-                $url_path .= '&' . $current_user->user_login;
-            } else {
-                $url_path .= '?' . $current_user->user_login;
-            }
-            //$url_path .= $current_user->user_login;
-        }
-    } else {
-        global $filename_guest_suffix;
-        $url_path .= $filename_guest_suffix;
-    }
-    $devices = $GLOBALS['breeze_config']['cache_options'];
-    // Detect devices
-    if ($detect->isMobile() && !$detect->isTablet()) {
-        if ($devices['breeze-mobile-cache'] == 1) {
-            $X1 = 'D';
-            $url_path .= '_breeze_cache_desktop';
-        }
-        if ($devices['breeze-mobile-cache'] == 2) {
-            $X1 = 'M';
-            $url_path .= '_breeze_cache_mobile';
-        }
-    } else {
-        if ($devices['breeze-desktop-cache'] == 1) {
-            $X1 = 'D';
-            $url_path .= '_breeze_cache_desktop';
-        }
-    }
 
-    if (strpos($url_path, '_breeze_cache_') !== false) {
-        if (!empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression']) && function_exists('gzencode')) {
-            $wp_filesystem->put_contents($path . md5($url_path . '/index.gzip.html') . '.php', $data);
-            $wp_filesystem->touch($path . md5($url_path . '/index.gzip.html') . '.php', $modified_time);
-        } else {
-            $wp_filesystem->put_contents($path . md5($url_path . '/index.html') . '.php', $data);
-            $wp_filesystem->touch($path . md5($url_path . '/index.html') . '.php', $modified_time);
-        }
-    } else {
-        return $buffer;
-    }
+    $wp_filesystem->put_contents($path, $data);
+    $wp_filesystem->touch($path, $modified_time);
 
     //set cache provider header if not exists cache file
     header('Cache-Provider:CLOUDWAYS-CACHE-' . $X1 . 'C');
@@ -382,6 +337,9 @@ function breeze_serve_cache($filename, $url_path, $X1, $opts) {
 
     $blog_id_requested = isset($GLOBALS['breeze_config']['blog_id']) ? $GLOBALS['breeze_config']['blog_id'] : 0;
     $path = breeze_get_cache_base_path(false, $blog_id_requested) . md5($url_path) . '/' . $file_name;
+
+    $GLOBALS['breeze_filename'] = $path;
+    $GLOBALS['breeze_x1'] = $X1;
 
     $modified_time = 0;
     if (file_exists($path)) {
