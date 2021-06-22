@@ -147,7 +147,7 @@ Using Gzip, Breeze compresses the request files, further reducing the size of th
 
 = 1.2.2 =
 
- * Add: Export settings via Cmmand Line Interface (wp-cli).
+ * Add: Export settings via Command Line Interface (wp-cli).
  * Add: Import settings via Command Line Interface(wp-cli).
 
 
