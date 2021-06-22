@@ -218,11 +218,22 @@ function breeze_cache( $buffer, $flags ) {
 
 	// Lazy load implementation
 	if ( class_exists( 'Breeze_Lazy_Load' ) ) {
-		$is_lazy_load_enabled = filter_var( $GLOBALS['breeze_config']['enabled-lazy-load'], FILTER_VALIDATE_BOOLEAN );
-		$is_lazy_load_native  = filter_var( $GLOBALS['breeze_config']['use-lazy-load-native'], FILTER_VALIDATE_BOOLEAN );
+		if ( isset( $GLOBALS['breeze_config'] ) ) {
+				if ( ! isset( $GLOBALS['breeze_config']['enabled-lazy-load'] ) ) {
+					$GLOBALS['breeze_config']['enabled-lazy-load'] = false;
+				}
 
-		$lazy_load = new Breeze_Lazy_Load( $buffer, $is_lazy_load_enabled, $is_lazy_load_native );
-		$buffer    = $lazy_load->apply_lazy_load_feature();
+				if ( ! isset( $GLOBALS['breeze_config']['use-lazy-load-native'] ) ) {
+					$GLOBALS['breeze_config']['use-lazy-load-native'] = false;
+				}
+
+			$is_lazy_load_enabled = filter_var( $GLOBALS['breeze_config']['enabled-lazy-load'], FILTER_VALIDATE_BOOLEAN );
+			$is_lazy_load_native  = filter_var( $GLOBALS['breeze_config']['use-lazy-load-native'], FILTER_VALIDATE_BOOLEAN );
+
+			$lazy_load = new Breeze_Lazy_Load( $buffer, $is_lazy_load_enabled, $is_lazy_load_native );
+			$buffer    = $lazy_load->apply_lazy_load_feature();
+		}
+
 	}
 
 	if ( isset( $GLOBALS['breeze_config']['cache_options']['breeze-cross-origin'] ) && filter_var( $GLOBALS['breeze_config']['cache_options']['breeze-cross-origin'], FILTER_VALIDATE_BOOLEAN ) ) {
