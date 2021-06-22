@@ -24,7 +24,8 @@ class Breeze_Minify {
 
 	public function __construct() {
 		//check disable cache for page
-		$domain      = ( ( ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) || ( ! empty( $_SERVER['SERVER_PORT'] ) && $_SERVER['SERVER_PORT'] == 443 ) ) ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'];
+		$http_host_breeze = ( isset( $_SERVER['HTTP_HOST'] ) ) ? $_SERVER['HTTP_HOST'] : '';
+		$domain           = ( ( ( isset( $_SERVER['HTTPS'] ) && ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) || ( ! empty( $_SERVER['SERVER_PORT'] ) && $_SERVER['SERVER_PORT'] == 443 ) ) ? 'https://' : 'http://' ) . $http_host_breeze;
 		$current_url = $domain . $_SERVER['REQUEST_URI'];
 
 		$check_url = $this->check_exclude_url( $current_url );
@@ -338,6 +339,10 @@ class Breeze_Minify {
 			$opts_config['breeze-exclude-urls'] = array_merge( $opts_config['breeze-exclude-urls'], $config_options );
 			$urls                               = array_unique( $opts_config['breeze-exclude-urls'] );
 			$opts_config['breeze-exclude-urls'] = array_map( array( $this, 'rtrim_urls' ), $urls );
+		}
+
+		if ( ! isset( $opts_config['breeze-exclude-urls'] ) ) {
+			$opts_config['breeze-exclude-urls'] = array();
 		}
 
 		$is_exclude = breeze_check_for_exclude_values( $current_url, $opts_config['breeze-exclude-urls'] );
