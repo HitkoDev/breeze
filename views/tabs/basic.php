@@ -144,6 +144,15 @@ $basic = breeze_get_option( 'basic_settings', true );
 
 	?>
 
+    <?php
+    if ( ! isset( $basic['breeze-desktop-cache'] ) ) {
+	    $basic['breeze-desktop-cache'] = '1';
+    }
+
+    if ( ! isset( $basic['breeze-mobile-cache'] ) ) {
+	    $basic['breeze-mobile-cache'] = '1';
+    }
+    ?>
 	<tr style="display: none;">
 		<td style="vertical-align: middle">
 			<label for="desktop-cache" class="breeze_tool_tip"> <?php _e( 'Desktop Cache', 'breeze' ); ?></label>
