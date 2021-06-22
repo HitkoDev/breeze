@@ -3,7 +3,7 @@ Contributors: Cloudways
 Tags: cache,caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers
 Requires at least: 4.5
 Tested up to: 5.7
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,7 +23,7 @@ Breeze excels in the following areas:
 
 What makes Breeze WordPress Cache Plugin awesome is that it comes with builtin support for Varnish. If Varnish is not installed on your servers, Breeze will utilize its internal cache mechanism to boost up your WordPress site performance.
 
-**Support:** We love to provide support! Post your questions on the WordPress.org support forums, or if you are a Cloudways Customer you may ask questions on the <a href="https://community.cloudways.com/">Cloudways Community Forum</a>. 
+**Support:** We love to provide support! Post your questions on the WordPress.org support forums, or if you are a Cloudways Customer you may ask questions on the <a href="https://community.cloudways.com/">Cloudways Community Forum</a>.
 
 **Special Thanks:** We would like to give special mention to WP Speed Of Light for being an inspiration for Breeze.
 
@@ -61,11 +61,11 @@ Breeze, by default, supports Varnish. It has been tested to be fully compatible 
 
 = Does Breeze support WooCommerce? =
 
-Breeze is fully compatible with WooCommerce, out of the box. It does not require any special configurations. 
+Breeze is fully compatible with WooCommerce, out of the box. It does not require any special configurations.
 
 = Does Breeze support WordPress Multisite? =
 
-Breeze is fully compatible with WordPress Multisite without the need for any extra configuration. 
+Breeze is fully compatible with WordPress Multisite without the need for any extra configuration.
 
 = How does Breeze handle WordPress multisite? =
 
@@ -73,7 +73,7 @@ Breeze handles all WordPress multisite instances globally. All the settings for 
 
 = Is Breeze compatible with other WordPress Cache plugins? =
 
-We DO NOT recommend using two WordPress cache plugins at the same time on any WordPress website. 
+We DO NOT recommend using two WordPress cache plugins at the same time on any WordPress website.
 We strongly recommend that you use Breeze as the only cache plugin for your website. If there are any other cache plugins installed, please ensure that you have disabled them prior to proceeding with the Breeze installation.
 
 
@@ -87,13 +87,13 @@ Breeze has been tested with popular plugins available on WordPress.org. Please f
 
 = Does Breeze support CDN? =
 
-Breeze supports CDN integration. It allows all static assets (such as images, CSS and JS files) to be served via CDN. 
+Breeze supports CDN integration. It allows all static assets (such as images, CSS and JS files) to be served via CDN.
 
 = What does Breeze's Database Optimization feature do? =
 
-WordPress databases are notorious for storing information like post revisions, spam comments and much more. Over time, databases l become bloated and it is a good practice to clear out unwanted information to reduce database size and improve optimization. 
+WordPress databases are notorious for storing information like post revisions, spam comments and much more. Over time, databases l become bloated and it is a good practice to clear out unwanted information to reduce database size and improve optimization.
 
-Breeze's database optimization cleans out unwanted information in a single click. 
+Breeze's database optimization cleans out unwanted information in a single click.
 
 = Will comments and other dynamic parts of my blog appear immediately? =
 
@@ -101,7 +101,7 @@ Comments will appear upon moderation as per the comment system (or policy) set i
 
 = Can I exclude URLs of individual files and pages from cache? =
 
-You can exclude a file by mentioning its URL or file type (by mentioning file extension) in the exclude fields (available in the Breeze settings). Exclude will not let the cache impact that URL or file type. 
+You can exclude a file by mentioning its URL or file type (by mentioning file extension) in the exclude fields (available in the Breeze settings). Exclude will not let the cache impact that URL or file type.
 
 If Varnish is active, you will need to exclude URLs and file type(s) in the Varnish configuration. If you are hosting WordPress websites on Cloudways servers, follow <a href="https://support.cloudways.com/how-to-exclude-url-from-varnish/">this KB to exclude URLs from the Varnish cache</a>.
 
@@ -144,6 +144,12 @@ Yes. The process of setting up CloudFlare with Breeze is easy. Check out the fol
 Using Gzip, Breeze compresses the request files, further reducing the size of the download files and speeding up the user experience.
 
 == Changelog ==
+
+= 1.2.2 =
+
+ * Add: Export settings via Cmmand Line Interface (wp-cli).
+ * Add: Import settings via Command Line Interface(wp-cli).
+
 
 = 1.2.1 =
 
