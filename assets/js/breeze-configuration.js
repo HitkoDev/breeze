@@ -1,3 +1,4 @@
+var $valid_json = false;
 jQuery(document).ready(function ($) {
     // database clean tabs
     $('input[name="all_control"]').click(function () {
@@ -267,4 +268,84 @@ jQuery(document).ready(function ($) {
         clean_url = remove_query_arg(clean_url, 'database-cleanup');
         window.history.pushState(null, null, clean_url);
     }
+
+	/**
+	 * Import/Export settings TAB.
+	 */
+	var $tab_import = $( '#settings-import-export' );
+	$tab_import.on( 'click tap', '#breeze_export_settings', function () {
+		$network = $( '#breeze-level' ).val();
+		window.location = ajaxurl + '?action=breeze_export_json&network_level=' + $network;
+	} );
+
+	$( '#breeze_import_btn' ).attr( 'disabled', 'disabled' );
+
+	$tab_import.on( 'change', '#breeze_import_settings', function () {
+		var the_file = this.files[ 0 ];
+		var filename_holder = $( '#file-selected' );
+		var filename_error = $( '#file-error' );
+		var breeze_import_btn = $( '#breeze_import_btn' );
+
+		filename_holder.html( the_file.name );
+		if ( 'application/json' !== the_file.type ) {
+			$valid_json = false;
+			filename_holder.removeClass( 'file_green file_red' ).addClass( 'file_red' );
+			filename_error.html( 'File must be JSON' );
+			breeze_import_btn.attr( 'disabled', 'disabled' );
+		} else {
+			$valid_json = true;
+			filename_holder.removeClass( 'file_green file_red' ).addClass( 'file_green' );
+			filename_error.html( '' );
+			breeze_import_btn.removeAttr( 'disabled' );
+		}
+	} );
+
+	$tab_import.on( 'click tap', '#breeze_import_btn', function () {
+		if ( true === $valid_json ) {
+			network = $( '#breeze-level' ).val();
+			var the_file = $( '#breeze_import_settings' ).get( 0 ).files[ 0 ];
+
+			var breeze_data = new FormData();
+			breeze_data.append( 'action', 'breeze_import_json' );
+			breeze_data.append( 'network_level', network );
+			breeze_data.append( 'breeze_import_file', the_file );
+
+			$.ajax( {
+				type: "POST",
+				url: ajaxurl,
+				data: breeze_data,
+				processData: false,
+				contentType: false,
+				enctype: 'multipart/form-data',
+				mimeType: 'multipart/form-data', // this too
+				cache: false,
+				dataType: 'json', // xml, html, script, json, jsonp, text
+				success: function ( json ) {
+					var filename_holder = $( '#file-selected' );
+					var filename_error = $( '#file-error' );
+
+					if(true == json.success){
+						filename_holder.removeClass( 'file_green file_red' ).addClass( 'file_green' );
+						filename_holder.html(json.data);
+						filename_error.html( '' );
+						alert(json.data);
+						window.location.reload(true);
+					}else{
+						filename_holder.removeClass( 'file_green file_red' );
+						filename_holder.html( '' );
+						filename_error.html( json.data[0].message );
+					}
+				},
+				error: function ( jqXHR, textStatus, errorThrown ) {
+
+				},
+				// called when the request finishes (after success and error callbacks are executed)
+				complete: function ( jqXHR, textStatus ) {
+
+				}
+			} );
+
+
+		}
+	} );
 });
