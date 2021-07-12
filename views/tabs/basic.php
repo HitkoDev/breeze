@@ -187,7 +187,7 @@ $basic = breeze_get_option( 'basic_settings', true );
 					<input type="checkbox" name="breeze-admin-cache" id="breeze-admin-cache"
 						   value="0" <?php ( isset( $basic['breeze-disable-admin'] ) ) ? checked( $basic['breeze-disable-admin'], '0' ) : ''; ?> />
 					<label class="breeze_tool_tip" for="breeze-admin-cache">
-						<?php _e( 'Enable cache for WP standard user roles: Administrator, Editor, Author, Contributor.', 'breeze' ); ?>
+						<?php _e( 'Enable/Disable cache for authenticated users.', 'breeze' ); ?>
 
 					</label>
 					<br/>
