@@ -4,6 +4,25 @@
  */
 defined( 'ABSPATH' ) || exit;
 
+if ( isset( $GLOBALS['breeze_config'], $GLOBALS['breeze_config']['disable_per_adminuser'] ) ) {
+	$breeze_is_cache_disabled = $GLOBALS['breeze_config']['disable_per_adminuser'];
+	$breeze_is_cache_disabled = filter_var( $breeze_is_cache_disabled, FILTER_VALIDATE_BOOLEAN );
+
+	$wp_cookies = array( 'wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_' );
+
+	$breeze_user_logged = false;
+	foreach ( $_COOKIE as $key => $value ) {
+		// Logged in!
+		if ( strpos( $key, 'wordpress_logged_in_' ) !== false ) {
+			$breeze_user_logged = true;
+		}
+	}
+
+	if ( true === $breeze_user_logged && true === $breeze_is_cache_disabled ) {
+		return;
+	}
+
+}
 // Load helper functions.
 require_once dirname( __DIR__ ) . '/functions.php';
 
@@ -368,7 +387,7 @@ function breeze_get_url_path() {
 	$host   = ( isset( $_SERVER['HTTP_HOST'] ) ) ? $_SERVER['HTTP_HOST'] : '';
 	$domain = ( ( ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) || ( ! empty( $_SERVER['SERVER_PORT'] ) && $_SERVER['SERVER_PORT'] == 443 ) ) ? 'https://' : 'http://' );
 
-	return $domain . rtrim( $host, '/' ) . $_SERVER['REQUEST_URI'];
+	return  $domain . rtrim( $host, '/' ) . $_SERVER['REQUEST_URI'];
 }
 
 /**
@@ -395,11 +414,6 @@ function breeze_serve_cache( $filename, $url_path, $X1, $opts ) {
 		$modified_time = (int) @filemtime( $path );
 	}
 
-	if ( ! empty( $opts['breeze-browser-cache'] ) && ! empty( $modified_time ) && ! empty( $_SERVER['HTTP_IF_MODIFIED_SINCE'] ) && strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] ) === $modified_time ) {
-		header( $_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified', true, 304 );
-		exit;
-	}
-
 	if ( @file_exists( $path ) ) {
 
 		$cacheFile = file_get_contents( $path );
@@ -424,7 +438,6 @@ function breeze_serve_cache( $filename, $url_path, $X1, $opts ) {
 
 				$content = gzencode( $datas['body'], 9 );
 				header( 'Content-Encoding: gzip' );
-				header( 'cache-control: must-revalidate' );
 				header( 'Content-Length: ' . strlen( $content ) );
 				header( 'Vary: Accept-Encoding' );
 				echo $content;
