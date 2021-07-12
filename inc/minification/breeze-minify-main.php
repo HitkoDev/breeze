@@ -272,7 +272,12 @@ class Breeze_Minify {
 
 		$content = apply_filters( 'breeze_filter_html_before_minify', $content );
 
-		if ( ! empty( $conf ) && $conf['breeze-disable-admin'] && ( current_user_can( 'administrator' ) || current_user_can( 'editor' ) || current_user_can( 'author' ) || current_user_can( 'contributor' ) ) ) {
+		if ( ! isset( $conf['breeze-disable-admin'] ) ) {
+			$conf['breeze-disable-admin'] = true;
+		}
+
+		$breeze_is_cache_disabled = filter_var( $conf['breeze-disable-admin'], FILTER_VALIDATE_BOOLEAN );
+		if ( ! empty( $conf ) && true === $breeze_is_cache_disabled && is_user_logged_in() ) {
 			$content = apply_filters( 'breeze_html_after_minify', $content );
 
 		} else {
