@@ -11,6 +11,13 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 class Breeze_WP_Cli_Core extends \WP_CLI_Command {
 
 	function help( $args, $assoc_args ) {
+		WP_CLI::line( '---' );
+		WP_CLI::line( WP_CLI::colorize( 'Command to purge cache %Ywp breeze purge --cache=<all|varnish|local>%n:' ) );
+		WP_CLI::line( WP_CLI::colorize( '%Y--cache=%n%Gall%n will clear local cache and varnish cache.' ) );
+		WP_CLI::line( WP_CLI::colorize( '%Y--cache=%n%Gvarnish%n will clear varnish cache only.' ) );
+		WP_CLI::line( WP_CLI::colorize( '%Y--cache=%n%Glocal%n will clear local cache only.' ) );
+		WP_CLI::line( WP_CLI::colorize( '%Y--level=%n%G<blogID|network>%n (%Moptional multisite only%n) Will clear cache for the specified blogID or at network level(all sub-sites). If not specified then the default is network level.' ) );
+		WP_CLI::line( '---' );
 
 		WP_CLI::line( '---' );
 		WP_CLI::line( WP_CLI::colorize( 'Command to export settings %Ywp breeze export --file-path=/path/to/folder --level=<network|blogID>%n ' ) );
@@ -25,6 +32,141 @@ class Breeze_WP_Cli_Core extends \WP_CLI_Command {
 		WP_CLI::line( '---' );
 
 		return;
+	}
+
+	function purge( $args, $assoc_args ) {
+		$level = ( isset( $assoc_args['level'] ) && ! empty( $assoc_args['level'] ) ) ? trim( $assoc_args['level'] ) : '';
+
+		if ( is_numeric( $level ) ) {
+			$level = absint( $level );
+		}
+
+		if ( isset( $assoc_args ) && ! empty( $assoc_args ) && isset( $assoc_args['cache'] ) ) {
+
+			if ( empty( $assoc_args['cache'] ) ) {
+				WP_CLI::error(
+					__( 'Specify a value for parameter --cache=<all|varnish|local>', 'breeze' )
+				);
+
+				return;
+			}
+
+			$assoc_args['cache'] = strtolower( $assoc_args['cache'] );
+
+			if ( 'help' === $assoc_args['cache'] ) {
+				Breeze_Cli_Helpers::cache_helper_display();
+
+				return;
+			}
+
+			if ( 'all' === $assoc_args['cache'] ) {
+
+				// Clear all cache at network level.
+				if ( is_multisite() && empty( $level ) || 'network' === $level ) {
+
+					$sites = get_sites();
+					foreach ( $sites as $site ) {
+						switch_to_blog( $site->blog_id );
+						do_action( 'breeze_clear_all_cache' );
+						restore_current_blog();
+					}
+					WP_CLI::success(
+						__( 'Breeze all cache has been purged on network level', 'breeze' )
+					);
+				} else {
+					if ( ! empty( $level ) ) {
+						switch_to_blog( $level );
+					}
+
+					do_action( 'breeze_clear_all_cache' );
+
+					if ( ! empty( $level ) ) {
+						restore_current_blog();
+					}
+
+					WP_CLI::success(
+						__( 'Breeze all cache has been purged.', 'breeze' )
+					);
+				}
+
+			}
+
+			if ( 'varnish' === $assoc_args['cache'] ) {
+				// Clear varnish at network level.
+				if ( is_multisite() && empty( $level ) || 'network' === $level ) {
+					$sites = get_sites();
+					foreach ( $sites as $site ) {
+						switch_to_blog( $site->blog_id );
+						do_action( 'breeze_clear_varnish' );
+						restore_current_blog();
+					}
+
+					WP_CLI::success(
+						__( 'Breeze Varnish cache has been purged on network level.', 'breeze' )
+					);
+				} else {
+					if ( ! empty( $level ) ) {
+						switch_to_blog( $level );
+					}
+
+					do_action( 'breeze_clear_varnish' );
+
+					if ( ! empty( $level ) ) {
+						restore_current_blog();
+					}
+
+					WP_CLI::success(
+						__( 'Breeze Varnish cache has been purged.', 'breeze' )
+					);
+				}
+
+
+			}
+
+			if ( 'local' === $assoc_args['cache'] ) {
+				// Clear local cache at network level.
+				if ( is_multisite() && empty( $level ) || 'network' === $level ) {
+					$sites = get_sites();
+					foreach ( $sites as $site ) {
+						switch_to_blog( $site->blog_id );
+						//delete minify
+						Breeze_MinificationCache::clear_minification();
+						//clear normal cache
+						Breeze_PurgeCache::breeze_cache_flush();
+						restore_current_blog();
+					}
+
+					WP_CLI::success(
+						__( 'Breeze local cache has been purged on network level', 'breeze' )
+					);
+				} else {
+					if ( ! empty( $level ) ) {
+						switch_to_blog( $level );
+					}
+					//delete minify
+					Breeze_MinificationCache::clear_minification();
+					//clear normal cache
+					Breeze_PurgeCache::breeze_cache_flush();
+
+					if ( ! empty( $level ) ) {
+						restore_current_blog();
+					}
+
+					WP_CLI::success(
+						__( 'Breeze local cache has been purged.', 'breeze' )
+					);
+				}
+
+			}
+
+
+		} else {
+			Breeze_Cli_Helpers::cache_helper_display();
+			WP_CLI::error(
+				__( 'Parameter --cache=<all|varnish|local> is missing', 'breeze' )
+			);
+
+		}
 	}
 
 	/**
