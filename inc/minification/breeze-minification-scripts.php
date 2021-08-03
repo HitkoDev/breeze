@@ -250,6 +250,10 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				$this->custom_js_exclude[] = $jquery_local_path;
 			}
 
+			if ( isset( $matches[0] ) && ! empty( $matches[0] ) ) {
+				$matches[0] = $this->delay_script_loading( $matches[0] );
+			}
+
 			foreach ( $matches[0] as $tag ) {
 				// only consider aggregation whitelisted in should_aggregate-function
 				if ( ! $this->should_aggregate( $tag ) ) {
@@ -1085,5 +1089,59 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 		}
 
 		return false;
+	}
+
+	/**
+	 * This is an exception for bad written plugins.
+	 * Where they use jQuery but do not load their script with jQuery dependency.
+	 * We will delay these scripts. But if jQuery is not loaded the issue will still persist.
+	 *
+	 * @since 1.2.4
+	 * @access private
+	 */
+	private function delay_script_loading( $scripts = array() ) {
+
+		if ( ! is_array( $scripts ) || empty( $scripts ) ) {
+			return $scripts;
+		}
+
+		$to_move_last = apply_filters(
+			'breeze_delay_bag_scripts',
+			array(
+				'sp-scripts.min.js',
+				'js/tubular.js',
+			)
+		);
+
+		$return_scripts = array();
+		$add_last       = array();
+
+		foreach ( $scripts as $index => $script ) {
+			$add_return = false;
+			$add_later  = false;
+			foreach ( $to_move_last as $script_to_delay ) {
+				if ( false === strpos( $script, $script_to_delay ) ) {
+					$add_return = true;
+					break;
+				} else {
+					$add_later = true;
+				}
+			}
+
+			if ( false === $add_later && true === $add_return ) {
+				$return_scripts[] = $script;
+			} else if ( true === $add_later ) {
+				$add_last[] = $script;
+			}
+		}
+
+		if ( ! empty( $add_last ) ) {
+			foreach ( $add_last as $delayed_js_script ) {
+				$return_scripts[] = $delayed_js_script;
+			}
+		}
+
+		return $return_scripts;
+
 	}
 }
