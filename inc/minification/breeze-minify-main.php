@@ -26,7 +26,7 @@ class Breeze_Minify {
 		//check disable cache for page
 		$http_host_breeze = ( isset( $_SERVER['HTTP_HOST'] ) ) ? $_SERVER['HTTP_HOST'] : '';
 		$domain           = ( ( ( isset( $_SERVER['HTTPS'] ) && ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) || ( ! empty( $_SERVER['SERVER_PORT'] ) && $_SERVER['SERVER_PORT'] == 443 ) ) ? 'https://' : 'http://' ) . $http_host_breeze;
-		$current_url = $domain . $_SERVER['REQUEST_URI'];
+		$current_url      = $domain . $_SERVER['REQUEST_URI'];
 
 		$check_url = $this->check_exclude_url( $current_url );
 
@@ -184,7 +184,7 @@ class Breeze_Minify {
 			$minify['breeze-enable-js-delay'] = '0';
 		}
 
-		$cdn_url  = '';
+		$cdn_url = '';
 		if ( $cdn_data ) {
 			if ( '1' === $cdn_data['cdn-active'] ) {
 				$cdn_url = $cdn_data['cdn-url'];
@@ -198,7 +198,11 @@ class Breeze_Minify {
 		} elseif (
 			! empty( $minify['breeze-defer-js'] ) ||
 			! empty( $minify['breeze-move-to-footer-js'] ) ||
-			( ! empty( $minify['breeze-delay-js-scripts'] ) && true === filter_var( $minify['breeze-enable-js-delay'], FILTER_VALIDATE_BOOLEAN ) )
+			(
+				isset( $minify['breeze-delay-js-scripts'] ) &&
+				! empty( $minify['breeze-delay-js-scripts'] ) &&
+				true === filter_var( $minify['breeze-enable-js-delay'], FILTER_VALIDATE_BOOLEAN )
+			)
 		) {
 			$classes[] = 'Breeze_Js_Deferred_Loading';
 		}
@@ -242,7 +246,7 @@ class Breeze_Minify {
 				'custom_js_exclude' => $minify['breeze-exclude-js'],
 				'move_to_footer_js' => $minify['breeze-move-to-footer-js'],
 				'defer_js'          => $minify['breeze-defer-js'],
-				'delay_inline_js'   => $minify['breeze-delay-js-scripts'],
+				'delay_inline_js'   => ( isset( $minify['breeze-delay-js-scripts'] ) ? $minify['breeze-delay-js-scripts'] : array() ),
 			),
 			'Breeze_MinificationStyles'  => array(
 				'justhead'             => false,
@@ -265,7 +269,7 @@ class Breeze_Minify {
 			'Breeze_Js_Deferred_Loading' => array(
 				'move_to_footer_js' => $minify['breeze-move-to-footer-js'],
 				'defer_js'          => $minify['breeze-defer-js'],
-				'delay_inline_js'   => $minify['breeze-delay-js-scripts'],
+				'delay_inline_js'   => ( isset( $minify['breeze-delay-js-scripts'] ) ? $minify['breeze-delay-js-scripts'] : array() ),
 				'cdn_url'           => $cdn_url,
 			),
 		);
@@ -360,20 +364,31 @@ class Breeze_Minify {
 			foreach ( $opts_config['breeze-exclude-urls'] as $v ) {
 				// Clear blank character
 				$v = trim( $v );
+				if ( empty( $v ) ) {
+					continue;
+				}
+
 				if ( preg_match( '/(\&?\/?\(\.?\*\)|\/\*|\*)$/', $v, $matches ) ) {
-					// End of rules is *, /*, [&][/](*) , [&][/](.*)
-					$pattent = substr( $v, 0, strpos( $v, $matches[0] ) );
-					if ( $v[0] == '/' ) {
-						// A path of exclude url with regex
-						if ( ( @preg_match( '@' . $pattent . '@', $current_url, $matches ) > 0 ) ) {
-							return true;
-						}
-					} else {
-						// Full exclude url with regex
-						if ( strpos( $current_url, $pattent ) !== false ) {
-							return true;
+
+					if ( isset( $matches[0] ) && ! empty( $matches[0] ) ) {
+						// End of rules is *, /*, [&][/](*) , [&][/](.*)
+						$pattent = substr( $v, 0, strpos( $v, $matches[0] ) );
+						if ( $v[0] == '/' ) {
+							// A path of exclude url with regex
+							if ( ( @preg_match( '@' . $pattent . '@', $current_url, $matches ) > 0 ) ) {
+								return true;
+							}
+						} else {
+							// Full exclude url with regex
+							if ( ! empty( $pattent ) ) {
+								if ( strpos( $current_url, $pattent ) !== false ) {
+									return true;
+								}
+							}
+
 						}
 					}
+
 				} else {
 
 					$test_url    = rtrim( $v, '/' );
