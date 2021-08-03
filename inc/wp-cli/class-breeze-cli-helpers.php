@@ -56,4 +56,14 @@ class Breeze_Cli_Helpers {
 		}
 
 	}
+
+	public static function cache_helper_display(){
+		WP_CLI::line( '---' );
+		WP_CLI::line( WP_CLI::colorize( '%Ywp breeze purge --cache=<all|varnish|local>%n is the full command:' ) );
+		WP_CLI::line( WP_CLI::colorize( '%Y--cache=%n%Gall%n will clear local cache and varnish cache.' ) );
+		WP_CLI::line( WP_CLI::colorize( '%Y--cache=%n%Gvarnish%n will clear varnish cache only.' ) );
+		WP_CLI::line( WP_CLI::colorize( '%Y--cache=%n%Glocal%n will clear local cache only.' ) );
+		WP_CLI::line( WP_CLI::colorize( '%Y--level=%n%GblogID|network%n will clear cache for the specified blogID or at network level(all sub-sites).' ) );
+		WP_CLI::line( '---' );
+	}
 }
