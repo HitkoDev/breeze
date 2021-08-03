@@ -169,7 +169,8 @@ class Breeze_PurgeCache {
 	}
 
 }
-$settings = breeze_get_option( 'basic_settings' );
-if ( isset( $settings['breeze-active'] ) && $settings['breeze-active'] ) {
+$breez_basic_settings = breeze_get_option( 'basic_settings' );
+
+if ( isset( $breez_basic_settings['breeze-active'] ) && $breez_basic_settings['breeze-active'] ) {
 	Breeze_PurgeCache::factory();
 }
