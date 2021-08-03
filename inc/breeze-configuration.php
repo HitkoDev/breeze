@@ -41,6 +41,7 @@ class Breeze_Configuration {
 		) {
 			$inherit_settings = ( 1 == $_REQUEST['inherit-settings'] ? '1' : '0' );
 			update_option( 'breeze_inherit_settings', $inherit_settings );
+			Breeze_ConfigCache::factory()->write();
 
 			if ( ! isset( $_REQUEST['breeze_basic_action'], $_REQUEST['breeze_advanced_action'] ) ) {
 				WP_Filesystem();
@@ -168,6 +169,7 @@ class Breeze_Configuration {
 
 				WP_Filesystem();
 				// Storage infomation to cache pages
+				Breeze_ConfigCache::factory()->write();
 				Breeze_ConfigCache::factory()->write_config_cache();
 
 				//delete cache after settings
