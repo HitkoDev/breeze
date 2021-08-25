@@ -419,6 +419,30 @@ $js_inline_enable = filter_var( $advanced['breeze-enable-js-delay'], FILTER_VALI
 					</span>
 				</span>
 			</div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label for="cache-query-str" class="breeze_tool_tip"><?php _e( 'Cache query strings', 'breeze' ); ?></label>
+        </td>
+        <td>
+			<?php
+			$cached_query_strings = '';
+			if ( isset( $advanced['cached-query-strings'] ) && ! empty( $advanced['cached-query-strings'] ) ) {
+				$output               = implode( "\n", $advanced['cached-query-strings'] );
+				$cached_query_strings = esc_textarea( $output );
+			}
+
+			?>
+            <textarea cols="100" rows="7" id="cache-query-str" name="cache-query-str"><?php echo $cached_query_strings; ?></textarea>
+            <br/>
+            <span class="breeze_tool_tip">
+                    <strong>Note:&nbsp;</strong> <br/>
+                    <span>
+                         <?php _e( 'Pages that contain the query strings added here, will be cached. Each entry must be added in a new line.', 'breeze' ); ?>
+                    </span>
+                </span>
+
 		</td>
 	</tr>
 </table>
