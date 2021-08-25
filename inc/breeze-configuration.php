@@ -105,6 +105,7 @@ class Breeze_Configuration {
 				$exclude_css   = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-css'] ) );
 				$exclude_js    = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-js'] ) );
 				$delay_js      = $this->string_convert_arr( sanitize_textarea_field( $_POST['delay-js-scripts'] ) );
+				$cache_query_str = $this->string_convert_arr( sanitize_textarea_field( $_POST['cache-query-str'] ) );
 				$preload_fonts = $move_to_footer_js = $defer_js = array();
 
 				if ( ! empty( $exclude_js ) ) {
@@ -114,6 +115,9 @@ class Breeze_Configuration {
 					$delay_js = array_unique( $delay_js );
 				}
 
+				if ( ! empty( $cache_query_str ) ) {
+					$cache_query_str = array_unique( $cache_query_str );
+				}
 
 				if ( ! empty( $exclude_css ) ) {
 					$exclude_css = array_unique( $exclude_css );
@@ -161,6 +165,7 @@ class Breeze_Configuration {
 					'breeze-move-to-footer-js' => $move_to_footer_js,
 					'breeze-defer-js'          => $defer_js,
 					'breeze-delay-js-scripts'  => $delay_js,
+					'cached-query-strings'     => $cache_query_str,
 					'breeze-preload-fonts'     => $preload_fonts,
 					'breeze-enable-js-delay'   => ( isset( $_POST['enable-js-delay'] ) ? '1' : '0' ),
 				);
