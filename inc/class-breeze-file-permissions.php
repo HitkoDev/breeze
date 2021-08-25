@@ -182,7 +182,13 @@ class Breeze_File_Permissions {
 			foreach ( self::$errors as $message ) {
 				echo '<p>' . $message . '</p>';
 			}
-
+			echo '<p>';
+			printf(
+				'<a href="%s" target="_blank">%s</a>',
+				esc_url( 'https://support.cloudways.com/en/articles/5126387-how-can-i-reset-file-and-folder-permissions' ),
+				esc_html__( 'For reference please click on the KB', 'breeze' )
+			);
+			echo '</p>';
 			echo '</div>';
 		}
 	}
