@@ -198,6 +198,38 @@ class Breeze_ConfigCache {
 		$storage['use-lazy-load-native'] = ( isset( $config['breeze-lazy-load-native'] ) ? $config['breeze-lazy-load-native'] : 0 );
 		$storage['breeze-preload-links'] = ( isset( $config['breeze-preload-links'] ) ? $config['breeze-preload-links'] : 0 );
 
+
+		if ( isset( $_POST['woocommerce_default_customer_address'] ) ) {
+			$storage['woocommerce_geolocation_ajax'] = ( 'geolocation_ajax' === $_POST['woocommerce_default_customer_address'] ) ? 1 : 0;
+		} else {
+			$storage['woocommerce_geolocation_ajax'] = ( 'geolocation_ajax' === get_option( 'woocommerce_default_customer_address', '' ) ) ? 1 : 0;
+		}
+
+		// permalink_structure
+		if ( is_multisite() ) {
+			if ( is_network_admin() ) {
+				// network oes not have this setting.
+				// we save for each sub-site.
+				$blogs = get_sites();
+				if ( ! empty( $blogs ) ) {
+					foreach ( $blogs as $blog_data ) {
+						$blog_id = $blog_data->blog_id;
+						switch_to_blog( $blog_id );
+
+						$storage['permalink_structure'][ 'blog_' . $blog_id ] = get_blog_option( $blog_id, 'permalink_structure', '' );
+
+						restore_current_blog();
+					}
+				}
+			} else {
+				$network_id                     = get_current_blog_id();
+				$storage['permalink_structure'] = get_blog_option( $network_id, 'permalink_structure', '' );
+			}
+		} else {
+			$storage['permalink_structure'] = get_option( 'permalink_structure', '' );
+		}
+
+
 		if ( class_exists( 'WooCommerce' ) ) {
 			$ecommerce_exclude_urls = Breeze_Ecommerce_Cache::factory()->ecommerce_exclude_pages();
 		}
@@ -296,6 +328,10 @@ class Breeze_ConfigCache {
 
 		if ( ! empty( $settings['breeze-disable-admin'] ) ) {
 			$storage['disable_per_adminuser'] = $settings['breeze-disable-admin'];
+		}
+
+		if ( ! empty( $config['cached-query-strings'] ) ) {
+			$storage['cached-query-strings'] = $config['cached-query-strings'];
 		}
 
 		$storage['exclude_url'] = array_merge(
