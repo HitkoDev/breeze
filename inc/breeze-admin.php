@@ -368,6 +368,7 @@ class Breeze_Admin {
 			'breeze-move-to-footer-js' => array(),
 			'breeze-defer-js'          => array(),
 			'breeze-enable-js-delay'   => '0',
+			'cached-query-strings'     => array(),
 		);
 
 		$is_advanced = get_option( 'breeze_advanced_settings_120' );
