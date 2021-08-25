@@ -3,7 +3,7 @@ Contributors: Cloudways
 Tags: cache,caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers
 Requires at least: 4.5
 Tested up to: 5.8
-Stable tag: 1.2.4
+Stable tag: 1.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -144,6 +144,16 @@ Yes. The process of setting up CloudFlare with Breeze is easy. Check out the fol
 Using Gzip, Breeze compresses the request files, further reducing the size of the download files and speeding up the user experience.
 
 == Changelog ==
+
+= 1.2.5 =
+
+
+ * Add: URLs containing query strings will not be cached by default.
+ * Add: Ignore specific query strings while serving the cache to improve performance.
+ * Add: Ability to cache URLs with specific query strings variables.
+ * Add: Cache handling of URLs having multiple parameters in one query string.
+ * Add: Exceptional Cache handling for case where permalink is set to PLAIN, which includes links for POST, PAGES, ATTACHMENTS, CATEGORIES, ARCHIVES.
+
 
 = 1.2.4 =
 
