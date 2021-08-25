@@ -86,7 +86,10 @@ class Breeze_Minify {
 		}
 		// filter you can use to block autoptimization on your own terms
 		$ao_noptimize = (bool) apply_filters( 'breeze_filter_noptimize', $ao_noptimize );
-		if ( ! is_feed() && ! $ao_noptimize && ! is_admin() ) {
+		// if the link contains query string, we must ignore it from cache.
+		$query_instance         = Breeze_Query_Strings_Rules::get_instance();
+		$breeze_query_vars_list = $query_instance->check_query_var_group();
+		if ( ! is_feed() && ! $ao_noptimize && ! is_admin() && 0 === (int) $breeze_query_vars_list['extra_query_no'] ) {
 			// Config element
 			$conf            = breeze_get_option( 'basic_settings' );
 			$config_advanced = breeze_get_option( 'advanced_settings' );
