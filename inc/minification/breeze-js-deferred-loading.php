@@ -235,8 +235,8 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 		if ( ! empty( $this->move_to_footer_js ) ) {
 			foreach ( $this->move_to_footer_js as $index => $key ) {
 				$cdn_array_move_to_footer[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
-				$index = ltrim( $index, 'https:' );
-				$key   = ltrim( $key, 'https:' );
+				$index                                                        = ltrim( $index, 'https:' );
+				$key                                                          = ltrim( $key, 'https:' );
 				$cdn_array_move_to_footer[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
 			}
 		}
@@ -334,6 +334,8 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 								$tag = '';
 							}
 						}
+						//Remove the original script tag
+						$content = str_replace( $tag, '', $content );
 					} else {
 						if ( breeze_validate_url_via_regexp( $url ) ) {
 
@@ -347,10 +349,12 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 							} else {
 								$this->footer_scripts[ $url ] = $url;
 							}
+
+							//Remove the original script tag
+							$content = str_replace( $tag, '', $content );
 						}
 					}
-					//Remove the original script tag
-					$content = str_replace( $tag, '', $content );
+
 				} else {
 
 					$is_delayed = $this->is_inline_delay( $tag );
@@ -411,8 +415,8 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 		if ( ! empty( $this->cdn_url ) ) {
 			foreach ( $this->defer_js as $index => $key ) {
 				$this->defer_js[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
-				$index = ltrim( $index, 'https:' );
-				$key   = ltrim( $key, 'https:' );
+				$index                                              = ltrim( $index, 'https:' );
+				$key                                                = ltrim( $key, 'https:' );
 				$this->defer_js[ $this->url_replace_cdn( $index ) ] = $this->url_replace_cdn( $key );
 			}
 		} else {
@@ -492,7 +496,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
 				$js_head[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
 			}
-			$js_replacement  = '';
+			$js_replacement = '';
 			$js_replacement .= implode( '', $js_head );
 			$this->inject_in_html( $js_replacement, $replaceTag );
 		}
@@ -522,7 +526,7 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
 				$js_footer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
 			}
-			$js_replacement  = '';
+			$js_replacement = '';
 			$js_replacement .= implode( '', $js_footer );
 			$this->inject_in_html( $js_replacement, $replaceTag );
 		}
