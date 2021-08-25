@@ -18,6 +18,9 @@
  */
 defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 
+define( 'BREEZE_PLUGIN_FULL_PATH', dirname( __DIR__ ) . '/' );
+require_once BREEZE_PLUGIN_FULL_PATH . 'inc/class-breeze-query-strings-rules.php';
+
 /**
  * Get base path for the page cache directory.
  *
