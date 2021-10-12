@@ -51,8 +51,8 @@ class Breeze_ConfigCache {
 
 			foreach ( $blogs as $blog_id ) {
 				switch_to_blog( $blog_id );
-				$config = breeze_get_option( 'basic_settings' );
-				if ( ! empty( $config['breeze-active'] ) ) {
+				//$config = breeze_get_option( 'basic_settings' );
+				//if ( ! empty( $config['breeze-active'] ) ) {
 					$inherit_option = get_blog_option( $blog_id, 'breeze_inherit_settings', '0' );
 					$inherit_option = filter_var( $inherit_option, FILTER_VALIDATE_BOOLEAN );
 					if ( false === $inherit_option ) {
@@ -62,7 +62,7 @@ class Breeze_ConfigCache {
 						// Site uses global configuration.
 						$cache_configs['breeze-config'][ $blog_id ] = preg_replace( '(^https?://)', '', site_url() );
 					}
-				}
+				//}
 				restore_current_blog();
 			}
 		} else {
@@ -131,7 +131,7 @@ class Breeze_ConfigCache {
 								$the_blog_id = (int) $e[2];
 							}
 
-				}
+						}
 
 						$define_blog_identity = "\n\t\t\$config['blog_id']={$the_blog_id};";
 						$file_string          .= "\n\t\t\$config['config_path'] = '$blog_file';" . $define_blog_identity . "\n\t\tbreak;";
@@ -146,9 +146,9 @@ class Breeze_ConfigCache {
 			$file_string .= "\n\t" . 'return $config;';
 			$file_string .= "\n}";
 			$file_string .= "\n" . '$config = breeze_fetch_configuration_data( $site_url );';
-			$file_string .= "\n" . 'if ( empty( $config ) && false === filter_var( SUBDOMAIN_INSTALL, FILTER_VALIDATE_BOOLEAN ) && true === filter_var( MULTISITE, FILTER_VALIDATE_BOOLEAN ) ) {';
-			$file_string .= "\n\t" . '$config   = breeze_fetch_configuration_data( $domain );';
-			$file_string .= "\n" . '}';
+			//$file_string .= "\n" . 'if ( empty( $config ) && false === filter_var( SUBDOMAIN_INSTALL, FILTER_VALIDATE_BOOLEAN ) && true === filter_var( MULTISITE, FILTER_VALIDATE_BOOLEAN ) ) {';
+			//$file_string .= "\n\t" . '$config   = breeze_fetch_configuration_data( $domain );';
+			//$file_string .= "\n" . '}';
 		}
 
 		$file_string .= "\nif ( empty( \$config ) || ! isset( \$config['config_path'] ) || ! @file_exists( \$config['config_path'] ) ) { return; }" .
@@ -186,13 +186,15 @@ class Breeze_ConfigCache {
 		$storage = array(
 			'homepage'              => $homepage_url,
 			'cache_options'         => $settings,
-			'disable_per_adminuser' => 0,
+			'disable_per_adminuser' => array(),
 			'exclude_url'           => array(),
 		);
 
 		if ( is_multisite() ) {
 			$storage['blog_id'] = get_current_blog_id();
 		}
+
+		$storage['wp-user-roles'] = breeze_all_wp_user_roles();
 
 		$storage['enabled-lazy-load']    = ( isset( $config['breeze-lazy-load'] ) ? $config['breeze-lazy-load'] : 0 );
 		$storage['use-lazy-load-native'] = ( isset( $config['breeze-lazy-load-native'] ) ? $config['breeze-lazy-load-native'] : 0 );
@@ -208,6 +210,7 @@ class Breeze_ConfigCache {
 		// permalink_structure
 		if ( is_multisite() ) {
 			if ( is_network_admin() ) {
+				unset( $storage['woocommerce_geolocation_ajax'] );
 				// network oes not have this setting.
 				// we save for each sub-site.
 				$blogs = get_sites();
@@ -216,7 +219,8 @@ class Breeze_ConfigCache {
 						$blog_id = $blog_data->blog_id;
 						switch_to_blog( $blog_id );
 
-						$storage['permalink_structure'][ 'blog_' . $blog_id ] = get_blog_option( $blog_id, 'permalink_structure', '' );
+						$storage['woocommerce_geolocation_ajax_inherit'][ 'subsite_' . $blog_id ] = ( 'geolocation_ajax' === get_blog_option( $blog_id, 'woocommerce_default_customer_address', '' ) ) ? 1 : 0;
+						$storage['permalink_structure'][ 'blog_' . $blog_id ]                     = get_blog_option( $blog_id, 'permalink_structure', '' );
 
 						restore_current_blog();
 					}
@@ -419,6 +423,14 @@ class Breeze_ConfigCache {
 	 * @return bool|void
 	 */
 	public function toggle_caching( $status ) {
+		$allow_cache_toggle = true;
+		if ( is_multisite() && ! is_network_admin() ) {
+			$allow_cache_toggle = false;
+		}
+
+		if ( false === $allow_cache_toggle ) {
+			return false;
+		}
 
 		global $wp_filesystem;
 		if ( defined( 'WP_CACHE' ) && WP_CACHE === $status ) {
