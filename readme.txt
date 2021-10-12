@@ -3,7 +3,7 @@ Contributors: Cloudways
 Tags: cache,caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers
 Requires at least: 4.5
 Tested up to: 5.8
-Stable tag: 1.2.5
+Stable tag: 1.2.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -144,6 +144,22 @@ Yes. The process of setting up CloudFlare with Breeze is easy. Check out the fol
 Using Gzip, Breeze compresses the request files, further reducing the size of the download files and speeding up the user experience.
 
 == Changelog ==
+
+= 1.2.6 =
+
+ * Add: Varnish will be clear while plugin deactivate.
+ * Add: Enable cache for specific user role.
+ * Add: Disable Emojis to reduce request
+ * Add: Delete options values from database while deactivate the plugin
+ * Fix: Compatibility issue of map short codes with GeoDirectory plugin.
+ * Fix: Compatibility issue with Ad Inserter plugin.
+ * Fix: Compatibility issue of minification  with BB-Plugin.
+ * Fix: Compatibility issue of JS scripts with AMP Plugin.
+ * Fix: Reduce cookie life time span while user posts a comment.
+ * Fix: HTML elements filtered from RestAPI end point of lazy-load scripts.
+ * Fix: Config file of each subsite save with appropriate ID in advance cache file.
+ * Fix: Google Analytics script exclude from Minification.
+
 
 = 1.2.5 =
 
