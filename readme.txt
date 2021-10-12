@@ -153,7 +153,7 @@ Using Gzip, Breeze compresses the request files, further reducing the size of th
  * Add: Delete breeze options values from database on plugin deletion.
  * Fix: Compatibility issue of map short codes with GeoDirectory plugin.
  * Fix: Compatibility issue with Ad Inserter plugin.
- * Fix: Compatibility issue of minification  with BB-Plugin.
+ * Fix: Compatibility issue of minification  with Beaver Builder Plugin.
  * Fix: Compatibility issue of JS scripts with AMP Plugin.
  * Fix: Reduce cookie life time span while user posts a comment.
  * Fix: HTML elements filtered from RestAPI end point of lazy-load scripts.
