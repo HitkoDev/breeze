@@ -23,6 +23,15 @@ defined( 'ABSPATH' ) || die( 'No direct script access allowed!' );
 class Breeze_Minify {
 
 	public function __construct() {
+		$conf              = breeze_get_option( 'basic_settings' );
+		$is_caching_active = filter_var( $conf['breeze-active'], FILTER_VALIDATE_BOOLEAN );
+
+		if ( defined( 'WP_CACHE' ) && false === WP_CACHE ) {
+			$is_caching_active = false;
+		}
+
+		if ( true === $is_caching_active ) {
+
 		//check disable cache for page
 		$http_host_breeze = ( isset( $_SERVER['HTTP_HOST'] ) ) ? $_SERVER['HTTP_HOST'] : '';
 		$domain           = ( ( ( isset( $_SERVER['HTTPS'] ) && ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) || ( ! empty( $_SERVER['SERVER_PORT'] ) && $_SERVER['SERVER_PORT'] == 443 ) ) ? 'https://' : 'http://' ) . $http_host_breeze;
@@ -59,7 +68,7 @@ class Breeze_Minify {
 				}
 			}
 		}
-
+		}
 	}
 
 	/**
@@ -279,12 +288,22 @@ class Breeze_Minify {
 
 		$content = apply_filters( 'breeze_filter_html_before_minify', $content );
 
-		if ( ! isset( $conf['breeze-disable-admin'] ) ) {
-			$conf['breeze-disable-admin'] = true;
+		$is_caching_on = filter_var( $conf['breeze-active'], FILTER_VALIDATE_BOOLEAN );
+		if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) {
+			$current_user       = wp_get_current_user();
+			$current_user_roles = (array) $current_user->roles;
+			//$one_role           = reset( $current_user_roles );
+			$is_found = false;
+			foreach ( $current_user_roles as $index => $one_role ) {
+				if ( isset( $conf['breeze-disable-admin'][ $one_role ] ) && true === filter_var( $conf['breeze-disable-admin'][ $one_role ], FILTER_VALIDATE_BOOLEAN ) ) {
+					$is_found = true;
+				}
+			}
+
+			$is_caching_on = $is_found;
 		}
 
-		$breeze_is_cache_disabled = filter_var( $conf['breeze-disable-admin'], FILTER_VALIDATE_BOOLEAN );
-		if ( ! empty( $conf ) && true === $breeze_is_cache_disabled && is_user_logged_in() ) {
+		if ( ! empty( $conf ) && false === $is_caching_on && is_user_logged_in() ) {
 			$content = apply_filters( 'breeze_html_after_minify', $content );
 
 		} else {
