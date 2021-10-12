@@ -827,3 +827,16 @@ function breeze_is_delayjs_changed( $is_network = false, $blog_id = 0, $root = f
 
 	return true;
 }
+
+/**
+ * The Page is AMP so don't minifiy stuff.
+ * @return bool
+ * @since 1.2.3
+ */
+function breeze_is_amp_page() {
+	if ( function_exists( 'amp_is_request' ) && amp_is_request() ) {
+		return true;
+	}
+
+	return false;
+}
