@@ -243,6 +243,11 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 
 		if ( preg_match_all( '#<script.*</script>#Usmi', $content, $matches ) ) {
 			foreach ( $matches[0] as $tag ) {
+				if ( ! empty( $tag ) ) {
+					$tag = str_replace( '”', '"', $tag );
+				}
+
+
 				// only consider aggregation whitelisted in should_aggregate-function
 				if ( ! $this->should_aggregate( $tag ) ) {
 					$tag = '';
@@ -334,8 +339,6 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 								$tag = '';
 							}
 						}
-						//Remove the original script tag
-						$content = str_replace( $tag, '', $content );
 					} else {
 						if ( breeze_validate_url_via_regexp( $url ) ) {
 
@@ -427,47 +430,6 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 			}
 		}
 
-		// handle the 3rd party defer scripts in header.
-		if ( ! empty( $this->delay_scripts ) && ! empty( $this->delay_scripts['header'] ) ) {
-			$replace_tag   = array( '</head>', 'before' );
-			$js_head_defer = array();
-			$defer         = 'defer ';
-			foreach ( $this->delay_scripts['header'] as $js_url => $js_script ) {
-				if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
-					if ( ! empty( $js_script['version'] ) ) {
-						$js_url .= '?' . $js_script['version'];
-					}
-					$js_head_defer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
-				} else {
-					$js_head_defer[] = "<script type='module'>{$js_script}</script>\n";
-				}
-			}
-			$js_replacement = '';
-			$js_replacement .= implode( '', $js_head_defer );
-			$this->inject_in_html( $js_replacement, $replace_tag );
-		}
-
-		// handle the 3rd party defer scripts in footer.
-		if ( ! empty( $this->delay_scripts ) && ! empty( $this->delay_scripts['footer'] ) ) {
-			$replace_tag     = array( '</body>', 'before' );
-			$js_footer_defer = array();
-			$defer           = 'defer ';
-			foreach ( $this->delay_scripts['footer'] as $js_url => $js_script ) {
-				if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
-					if ( ! empty( $js_script['version'] ) ) {
-						$js_url .= '?' . $js_script['version'];
-					}
-					$js_footer_defer[] = "<script type='application/javascript' {$defer}src='{$js_url}'></script>\n";
-				} else {
-					$js_footer_defer[] = "<script type='module'>{$js_script}</script>\n";
-				}
-			}
-
-			$js_replacement = '';
-			$js_replacement .= implode( '', $js_footer_defer );
-			$this->inject_in_html( $js_replacement, $replace_tag );
-		}
-
 		// Load inline JS to html
 		if ( ! empty( $this->head_scripts ) ) {
 
@@ -529,6 +491,58 @@ class Breeze_Js_Deferred_Loading extends Breeze_MinificationBase {
 			$js_replacement = '';
 			$js_replacement .= implode( '', $js_footer );
 			$this->inject_in_html( $js_replacement, $replaceTag );
+		}
+
+
+		// handle the 3rd party defer scripts in header.
+		if ( ! empty( $this->delay_scripts ) && ! empty( $this->delay_scripts['header'] ) ) {
+			$replace_tag   = array( '</head>', 'before' );
+			$js_head_defer = array();
+			$defer         = 'defer';
+			foreach ( $this->delay_scripts['header'] as $js_url => $js_script ) {
+				if ( is_string( $js_url ) ) {
+					$js_url = trim( $js_url, '”' );
+				}
+
+				if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
+					if ( ! empty( $js_script['version'] ) ) {
+						$js_url_add = '?' . $js_script['version'];
+						$js_url_add = trim( $js_url_add, "'" );
+					}
+					$js_head_defer[] = "<script type='application/javascript' {$defer} src='{$js_url_add}'></script>\n";
+				} else {
+					$js_head_defer[] = "<script type='module'>{$js_script}</script>\n";
+				}
+			}
+			$js_replacement = '';
+			$js_replacement .= implode( '', $js_head_defer );
+			$this->inject_in_html( $js_replacement, $replace_tag );
+		}
+
+		// handle the 3rd party defer scripts in footer.
+		if ( ! empty( $this->delay_scripts ) && ! empty( $this->delay_scripts['footer'] ) ) {
+			$replace_tag     = array( '</body>', 'before' );
+			$js_footer_defer = array();
+			$defer           = 'defer';
+			foreach ( $this->delay_scripts['footer'] as $js_url => $js_script ) {
+				if ( is_string( $js_url ) ) {
+					$js_url = trim( $js_url, '”' );
+				}
+
+				if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
+					if ( ! empty( $js_script['version'] ) ) {
+						$js_url_add = $js_url . '?' . $js_script['version'];
+						$js_url_add = trim( $js_url_add, "'" );
+					}
+					$js_footer_defer[] = "<script type=\"application/javascript\" {$defer} src=\"{$js_url_add}\"></script>\n";
+				} else {
+					$js_footer_defer[] = "<script type='module'>{$js_script}</script>\n";
+				}
+			}
+
+			$js_replacement = '';
+			$js_replacement .= implode( '', $js_footer_defer );
+			$this->inject_in_html( $js_replacement, $replace_tag );
 		}
 
 		// restore comments
