@@ -46,7 +46,7 @@ class Breeze_PurgeCache {
 
 			$post_id = $comment->comment_post_ID;
 
-			setcookie( 'breeze_commented_posts[' . $post_id . ']', parse_url( get_permalink( $post_id ), PHP_URL_PATH ), ( time() + HOUR_IN_SECONDS * 24 * 30 ) );
+			setcookie( 'breeze_commented_posts[' . $post_id . ']', parse_url( get_permalink( $post_id ), PHP_URL_PATH ), ( time() + HOUR_IN_SECONDS * 24 * 7 ) );
 		}
 	}
 
