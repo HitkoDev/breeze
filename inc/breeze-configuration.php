@@ -39,20 +39,52 @@ class Breeze_Configuration {
 			isset( $_POST['breeze_inherit_settings_nonce'] ) &&
 			wp_verify_nonce( $_POST['breeze_inherit_settings_nonce'], 'breeze_inherit_settings' )
 		) {
-			$inherit_settings = ( 1 == $_REQUEST['inherit-settings'] ? '1' : '0' );
+
+			$inherit_settings = ( true === filter_var( $_REQUEST['inherit-settings'], FILTER_VALIDATE_BOOLEAN ) ? '1' : '0' );
 			update_option( 'breeze_inherit_settings', $inherit_settings );
 			Breeze_ConfigCache::factory()->write();
+
+			Breeze_ConfigCache::factory()->write_config_cache( true );
+			$is_inherit_settings_change = filter_var( $inherit_settings, FILTER_VALIDATE_BOOLEAN );
+			if ( ! is_network_admin() && true === $is_inherit_settings_change ) {
+				do_action( 'breeze_clear_all_cache' );
+			}
 
 			if ( ! isset( $_REQUEST['breeze_basic_action'], $_REQUEST['breeze_advanced_action'] ) ) {
 				WP_Filesystem();
 				Breeze_ConfigCache::factory()->write_config_cache();
 			}
+
+			//return current page
+			if ( ! is_network_admin() && true === $is_inherit_settings_change && ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+				$url = remove_query_arg( 'database-cleanup', $_REQUEST['_wp_http_referer'] );
+				wp_safe_redirect( add_query_arg( 'save-settings', 'success', $url ) );
+				exit;
+			}
 		}
+
 
 		// Basic options tab
 		if ( isset( $_REQUEST['breeze_basic_action'] ) && $_REQUEST['breeze_basic_action'] == 'breeze_basic_settings' ) {
 			if ( isset( $_POST['breeze_settings_basic_nonce'] ) && wp_verify_nonce( $_POST['breeze_settings_basic_nonce'], 'breeze_settings_basic' ) ) {
 				WP_Filesystem();
+
+				$is_inherit_settings_on = filter_var( get_option( 'breeze_inherit_settings', '' ), FILTER_VALIDATE_BOOLEAN );
+				if ( ! is_network_admin() && true === $is_inherit_settings_on && ! empty( $_REQUEST['_wp_http_referer'] ) ) {
+					$url = remove_query_arg( 'database-cleanup', $_REQUEST['_wp_http_referer'] );
+					wp_safe_redirect( add_query_arg( 'save-settings', 'success', $url ) );
+					exit;
+				}
+
+				$post_activate_cache = isset( $_POST['breeze-admin-cache'] ) ? $_POST['breeze-admin-cache'] : array();
+				$all_user_roles      = breeze_all_wp_user_roles();
+				$active_cache_users  = array();
+				foreach ( $all_user_roles as $usr_role ) {
+					$active_cache_users[ $usr_role ] = 0;
+					if ( isset( $post_activate_cache[ $usr_role ] ) ) {
+						$active_cache_users[ $usr_role ] = 1;
+					}
+				}
 
 				$basic = array(
 					'breeze-active'             => ( isset( $_POST['cache-system'] ) ? '1' : '0' ),
@@ -66,10 +98,11 @@ class Breeze_Configuration {
 					'breeze-browser-cache'      => ( isset( $_POST['browser-cache'] ) ? '1' : '0' ),
 					'breeze-desktop-cache'      => (int) $_POST['desktop-cache'],
 					'breeze-mobile-cache'       => (int) $_POST['mobile-cache'],
-					'breeze-disable-admin'      => ( isset( $_POST['breeze-admin-cache'] ) ? '0' : '1' ), // 0 is enable, 1 is disable in this case.
+					'breeze-disable-admin'      => $active_cache_users, // 0 is enable, 1 is disable in this case. @TODO remove this text.
 					'breeze-display-clean'      => '1',
 					'breeze-include-inline-js'  => ( isset( $_POST['include-inline-js'] ) ? '1' : '0' ),
 					'breeze-include-inline-css' => ( isset( $_POST['include-inline-css'] ) ? '1' : '0' ),
+					'breeze-wp-emoji'           => ( isset( $_POST['breeze-wpjs-emoji'] ) ? '1' : '0' ),
 				);
 
 				breeze_update_option( 'basic_settings', $basic, true );
@@ -101,12 +134,12 @@ class Breeze_Configuration {
 		// Advanced options tab
 		if ( isset( $_REQUEST['breeze_advanced_action'] ) && $_REQUEST['breeze_advanced_action'] == 'breeze_advanced_settings' ) {
 			if ( isset( $_POST['breeze_settings_advanced_nonce'] ) && wp_verify_nonce( $_POST['breeze_settings_advanced_nonce'], 'breeze_settings_advanced' ) ) {
-				$exclude_urls  = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-urls'] ) );
-				$exclude_css   = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-css'] ) );
-				$exclude_js    = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-js'] ) );
-				$delay_js      = $this->string_convert_arr( sanitize_textarea_field( $_POST['delay-js-scripts'] ) );
+				$exclude_urls    = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-urls'] ) );
+				$exclude_css     = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-css'] ) );
+				$exclude_js      = $this->string_convert_arr( sanitize_textarea_field( $_POST['exclude-js'] ) );
+				$delay_js        = $this->string_convert_arr( sanitize_textarea_field( $_POST['delay-js-scripts'] ) );
 				$cache_query_str = $this->string_convert_arr( sanitize_textarea_field( $_POST['cache-query-str'] ) );
-				$preload_fonts = $move_to_footer_js = $defer_js = array();
+				$preload_fonts   = $move_to_footer_js = $defer_js = array();
 
 				if ( ! empty( $exclude_js ) ) {
 					$exclude_js = array_unique( $exclude_js );
