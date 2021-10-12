@@ -147,10 +147,10 @@ Using Gzip, Breeze compresses the request files, further reducing the size of th
 
 = 1.2.6 =
 
- * Add: Varnish will be clear while plugin deactivate.
+ * Add: Varnish cache will be clear while plugin deactivate.
  * Add: Enable cache for specific user role.
  * Add: Disable Emojis to reduce request
- * Add: Delete options values from database while deactivate the plugin
+ * Add: Delete breeze options values from database on plugin deletion.
  * Fix: Compatibility issue of map short codes with GeoDirectory plugin.
  * Fix: Compatibility issue with Ad Inserter plugin.
  * Fix: Compatibility issue of minification  with BB-Plugin.
