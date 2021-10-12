@@ -82,30 +82,69 @@ function breeze_get_directory_size( $dir, $exclude = array() ) {
 }
 
 function breeze_current_user_type( $as_dir = true ) {
+	$all_roles = array();
+	if ( isset( $GLOBALS['breeze_config']['wp-user-roles'] ) ) {
+		$all_roles = $GLOBALS['breeze_config']['wp-user-roles'];
+	}
 
-	if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) {
-		if ( current_user_can( 'administrator' ) ) {
-			return 'administrator' . ( true === $as_dir ? '/' : '' );
-		} elseif ( current_user_can( 'editor' ) ) {
-			return 'editor' . ( true === $as_dir ? '/' : '' );
-		} elseif ( current_user_can( 'author' ) ) {
-			return 'author' . ( true === $as_dir ? '/' : '' );
-		} elseif ( current_user_can( 'contributor' ) ) {
-			return 'contributor' . ( true === $as_dir ? '/' : '' );
+	foreach ( $all_roles as $user_role ) {
+		if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) {
+			if ( current_user_can( $user_role ) ) {
+				return $user_role . ( true === $as_dir ? '/' : '' );
+			}
 		}
 	}
+
 
 	return '';
 }
 
+
+/**
+ * Fetches all the current user roles in the wp install, including custom user roles.
+ *
+ * @return array
+ * @since 1.2.5
+ */
+function breeze_all_wp_user_roles() {
+	global $wp_roles;
+
+	if ( empty( $wp_roles ) || is_wp_error( $wp_roles ) ) {
+		return array();
+	}
+
+	$current_roles = array();
+	$roles         = $wp_roles->roles;
+
+	foreach ( $roles as $defined_user_role => $data ) {
+		$current_roles[] = $defined_user_role;
+	}
+
+	return $current_roles;
+
+}
+
 function breeze_all_user_folders() {
-	return array(
+	$all_roles = breeze_all_wp_user_roles();
+
+
+	$roles = array(
 		'',
 		'administrator',
 		'editor',
 		'author',
 		'contributor',
 	);
+
+	if ( ! empty( $all_roles ) ) {
+		foreach ( $all_roles as $role ) {
+			if ( ! in_array( $role, $roles, true ) ) {
+				$roles[] = $role;
+			}
+		}
+	}
+
+	return $roles;
 }
 
 function breeze_is_feed( $url ) {
@@ -126,4 +165,142 @@ function breeze_is_feed( $url ) {
 
 	return false;
 
+}
+
+
+function breeze_treat_exceptions( $content ) {
+	preg_match_all( '/<ins(.*)>/', $content, $matches );
+	if ( ! empty( $matches ) && ( isset( $matches[0] ) && ! empty( $matches[0] ) ) ) {
+		foreach ( $matches[0] as $html_tag ) {
+			$decode  = html_entity_decode( $html_tag );
+			$decode  = str_replace( '”', '', $decode );
+			$content = str_replace( $html_tag, $decode, $content );
+		}
+	}
+
+	return $content;
+
+}
+
+/**
+ * Check for AMP based on URL.
+ *
+ * @param string $url Given url.
+ *
+ * @return bool
+ */
+function breeze_uri_amp_check( $url = '' ) {
+
+	if (
+		false !== strpos( $url, '/amp/' ) ||
+		false !== strpos( $url, 'amp=1' ) ||
+		false !== strpos( $url, '?amp' )
+	) {
+		return true;
+	}
+
+	return false;
+}
+
+
+if ( defined( 'AUTH_SALT' ) && ! empty( AUTH_SALT ) ) {
+	define( 'BREEZE_WP_COOKIE_SALT', AUTH_SALT );
+} else {
+	define( 'BREEZE_WP_COOKIE_SALT', 'cQCDC6Z^R#FE*WpRHqfaWOfw!1baSb*NxeOP1B1^u9@X7x*%ah' );
+}
+define( 'BREEZE_WP_COOKIE', 'breeze_folder_name' );
+
+add_action( 'set_auth_cookie', 'breeze_auth_cookie_set', 15, 6 );
+function breeze_auth_cookie_set( $auth_cookie, $expire, $expiration, $user_id, $scheme, $token ) {
+
+	if ( ! apply_filters( 'send_auth_cookies', true ) ) {
+		return;
+	}
+
+	// get_userdata
+	$current_user_roles = (array) get_userdata( $user_id )->roles;
+	//$role               = reset( $current_user_roles );
+
+	$all_roles = array();
+	foreach ( $current_user_roles as $index => $one_role ) {
+		$all_roles[] = sha1( BREEZE_WP_COOKIE_SALT . $one_role );
+	}
+	$role   = implode( '|&&&|', $all_roles );
+	$secure = is_ssl();
+
+	// Front-end cookie is secure when the auth cookie is secure and the site's home URL uses HTTPS.
+	$secure_logged_in_cookie = $secure && 'https' === parse_url( get_option( 'home' ), PHP_URL_SCHEME );
+	$secure_logged_in_cookie = apply_filters( 'secure_logged_in_cookie', $secure_logged_in_cookie, $user_id, $secure );
+
+	setcookie( BREEZE_WP_COOKIE, $role, $expire, COOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true );
+}
+
+add_action( 'clear_auth_cookie', 'breeze_auth_cookie_clear' );
+
+function breeze_auth_cookie_clear() {
+	/** This filter is documented in wp-includes/pluggable.php */
+	if ( ! apply_filters( 'send_auth_cookies', true ) ) {
+		return;
+	}
+	setcookie( BREEZE_WP_COOKIE, ' ', time() - YEAR_IN_SECONDS, SITECOOKIEPATH, COOKIE_DOMAIN );
+
+}
+
+add_action( 'init', 'breeze_auth_cookie_set_init', 5 );
+
+function breeze_auth_cookie_set_init() {
+
+	if ( is_user_logged_in() && ! isset( $_COOKIE[ BREEZE_WP_COOKIE ] ) || empty( BREEZE_WP_COOKIE ) ) {
+
+		if ( ! apply_filters( 'send_auth_cookies', true ) ) {
+			return;
+		}
+
+		$current_user       = wp_get_current_user();
+		$current_user_roles = (array) $current_user->roles;
+		//$role               = reset( $current_user_roles );
+		$all_roles = array();
+		foreach ( $current_user_roles as $index => $one_role ) {
+			$all_roles[] = sha1( BREEZE_WP_COOKIE_SALT . $one_role );
+		}
+		$role   = implode( '|&&&|', $all_roles );
+		$secure = is_ssl();
+
+		// Front-end cookie is secure when the auth cookie is secure and the site's home URL uses HTTPS.
+		$secure_logged_in_cookie = $secure && 'https' === parse_url( get_option( 'home' ), PHP_URL_SCHEME );
+		$secure_logged_in_cookie = apply_filters( 'secure_logged_in_cookie', $secure_logged_in_cookie, $current_user->ID, $secure );
+		$expiration              = time() + apply_filters( 'auth_cookie_expiration', 14 * DAY_IN_SECONDS, $current_user->ID, true );
+		$expire                  = $expiration + ( 12 * HOUR_IN_SECONDS );
+
+		setcookie( BREEZE_WP_COOKIE, $role, $expire, COOKIEPATH, COOKIE_DOMAIN, $secure_logged_in_cookie, true );
+	}
+}
+
+
+function breeze_which_role_folder( $hash = '' ) {
+	if ( empty( $hash ) ) {
+		return false;
+	}
+
+	if ( isset( $GLOBALS['breeze_config'] ) && isset( $GLOBALS['breeze_config']['wp-user-roles'] ) ) {
+		$cache_folders = $GLOBALS['breeze_config']['wp-user-roles'];
+	} else {
+		return '';
+	}
+
+	$hash_roles = explode( '|&&&|', $hash );
+
+	$user_has_roles = array();
+
+	if ( ! empty( $cache_folders ) ) {
+		foreach ( $cache_folders as $folder ) {
+			$coded = sha1( BREEZE_WP_COOKIE_SALT . $folder );
+
+			if ( in_array( $coded, $hash_roles ) ) {
+				$user_has_roles[] = $folder;
+			}
+		}
+	}
+
+	return $user_has_roles;
 }
