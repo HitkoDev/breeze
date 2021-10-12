@@ -4,27 +4,54 @@
  */
 defined( 'ABSPATH' ) || exit;
 
-if ( isset( $GLOBALS['breeze_config'], $GLOBALS['breeze_config']['disable_per_adminuser'] ) ) {
-	$breeze_is_cache_disabled = $GLOBALS['breeze_config']['disable_per_adminuser'];
-	$breeze_is_cache_disabled = filter_var( $breeze_is_cache_disabled, FILTER_VALIDATE_BOOLEAN );
+if ( isset( $GLOBALS['breeze_config'], $GLOBALS['breeze_config']['cache_options'], $GLOBALS['breeze_config']['cache_options']['breeze-active'] ) ) {
+	$is_caching_active = filter_var( $GLOBALS['breeze_config']['cache_options']['breeze-active'], FILTER_VALIDATE_BOOLEAN );
+	if ( false === $is_caching_active ) {
+		return;
+	}
+}
 
+
+// Load helper functions.
+require_once dirname( __DIR__ ) . '/functions.php';
+
+if ( isset( $GLOBALS['breeze_config'], $GLOBALS['breeze_config']['disable_per_adminuser'] ) ) {
 	$wp_cookies = array( 'wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_' );
 
-	$breeze_user_logged = false;
+	$breeze_user_logged      = false;
+	$breeze_use_cache_system = filter_var( $GLOBALS['breeze_config']['cache_options']['breeze-active'], FILTER_VALIDATE_BOOLEAN );
+	$folder_cache            = '';
 	foreach ( $_COOKIE as $key => $value ) {
 		// Logged in!
 		if ( strpos( $key, 'wordpress_logged_in_' ) !== false ) {
 			$breeze_user_logged = true;
 		}
+
+		if ( BREEZE_WP_COOKIE === $key ) {
+			$folder_cache = breeze_which_role_folder( $value );
+		}
+
 	}
 
-	if ( true === $breeze_user_logged && true === $breeze_is_cache_disabled ) {
+	if ( ! empty( $folder_cache ) ) {
+		$is_active = false;
+		foreach ( $folder_cache as $cache_role ) {
+			if (
+				isset( $GLOBALS['breeze_config']['disable_per_adminuser'][ $cache_role ] ) &&
+				true === filter_var( $GLOBALS['breeze_config']['disable_per_adminuser'][ $cache_role ], FILTER_VALIDATE_BOOLEAN )
+			) {
+				$is_active = true;
+			}
+		}
+
+		$breeze_use_cache_system = $is_active;
+	}
+
+	if ( true === $breeze_user_logged && false === $breeze_use_cache_system ) {
 		return;
 	}
 
 }
-// Load helper functions.
-require_once dirname( __DIR__ ) . '/functions.php';
 
 // Load lazy Load class.
 require_once dirname( __DIR__ ) . '/class-breeze-lazy-load.php';
@@ -35,6 +62,10 @@ $detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect;
 
 // Don't cache robots.txt or htacesss
 if ( strpos( $_SERVER['REQUEST_URI'], 'robots.txt' ) !== false || strpos( $_SERVER['REQUEST_URI'], '.htaccess' ) !== false ) {
+	return;
+}
+
+if ( strpos( $_SERVER['REQUEST_URI'], '/wp-json/geodir/' ) !== false ) {
 	return;
 }
 
@@ -163,6 +194,7 @@ if ( ! $check_exclude ) {
  * @since  1.0
  */
 function breeze_cache( $buffer, $flags ) {
+	global $breeze_user_logged, $breeze_use_cache_system;
 	// No cache for pages without 200 response status
 	if ( http_response_code() !== 200 ) {
 		return $buffer;
@@ -171,13 +203,8 @@ function breeze_cache( $buffer, $flags ) {
 	require_once 'Mobile-Detect-2.8.25/Mobile_Detect.php';
 	$detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect;
 	//not cache per administrator if option disable optimization for admin users clicked
-	if ( ! empty( $GLOBALS['breeze_config'] ) && (int) $GLOBALS['breeze_config']['disable_per_adminuser'] ) {
-		if ( function_exists( 'is_user_logged_in' ) && is_user_logged_in() ) {
-			$current_user = wp_get_current_user();
-			if ( in_array( 'administrator', $current_user->roles ) ) {
-				return $buffer;
-			}
-		}
+	if ( true === $breeze_user_logged && false === $breeze_use_cache_system ) {
+		return $buffer;
 	}
 
 	if ( strlen( $buffer ) < 255 ) {
@@ -474,6 +501,11 @@ function check_exclude_page( $opts_config, $current_url ) {
 	$is_feed = breeze_is_feed( $current_url );
 
 	if ( true === $is_feed ) {
+		return true;
+	}
+
+	$is_amp = breeze_uri_amp_check( $current_url );
+	if ( true === $is_amp ) {
 		return true;
 	}
 
