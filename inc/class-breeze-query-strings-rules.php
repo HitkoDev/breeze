@@ -109,7 +109,18 @@ class Breeze_Query_Strings_Rules {
 		$this->always_cache_query = apply_filters( 'breeze_always_cache_query_strings', $this->always_cache_query );
 
 		// woocommerce_geolocation_ajax
-		if ( isset( $GLOBALS['breeze_config']['woocommerce_geolocation_ajax'] ) && 1 === (int) $GLOBALS['breeze_config']['woocommerce_geolocation_ajax'] ) {
+		if ( isset( $GLOBALS['breeze_config']['woocommerce_geolocation_ajax_inherit'] ) && ! empty( $GLOBALS['breeze_config']['woocommerce_geolocation_ajax_inherit'] ) ) {
+			$sub_blog_id = $GLOBALS['breeze_config']['blog_id'];
+
+			if (
+				isset( $GLOBALS['breeze_config']['woocommerce_geolocation_ajax_inherit'][ 'subsite_' . $sub_blog_id ] )
+				&&
+				1 === (int) $GLOBALS['breeze_config']['woocommerce_geolocation_ajax_inherit'][ 'subsite_' . $sub_blog_id ]
+			) {
+				$this->always_cache_query[] = 'v';
+			}
+
+		} else if ( isset( $GLOBALS['breeze_config']['woocommerce_geolocation_ajax'] ) && 1 === (int) $GLOBALS['breeze_config']['woocommerce_geolocation_ajax'] ) {
 			$this->always_cache_query[] = 'v';
 		}
 
