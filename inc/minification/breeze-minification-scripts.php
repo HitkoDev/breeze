@@ -255,6 +255,12 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 			}
 
 			foreach ( $matches[0] as $tag ) {
+
+				if ( false !== strpos( $tag, 'ga(' ) || false !== strpos( $tag, 'google-analytics.com/analytics.js' ) ) {
+					$tag = '';
+					continue;
+				}
+
 				// only consider aggregation whitelisted in should_aggregate-function
 				if ( ! $this->should_aggregate( $tag ) ) {
 					$tag = '';
@@ -796,6 +802,11 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				$js_head_defer = array();
 				$defer         = 'defer ';
 				foreach ( $this->delay_scripts['header'] as $js_url => $js_script ) {
+					if ( is_string( $js_url ) ) {
+						$js_url = trim( $js_url, '”' );
+					}
+
+
 					if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
 						if ( ! empty( $js_script['version'] ) ) {
 							$js_url .= '?' . $js_script['version'];
@@ -816,7 +827,9 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
 				$js_footer_defer = array();
 				$defer           = 'defer ';
 				foreach ( $this->delay_scripts['footer'] as $js_url => $js_script ) {
+					if ( is_string( $js_url ) ) {
 					$js_url = trim( $js_url, '”' );
+					}
 
 					if ( filter_var( $js_url, FILTER_VALIDATE_URL ) ) {
 						if ( ! empty( $js_script['version'] ) ) {
