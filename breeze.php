@@ -69,6 +69,10 @@ define('BREEZE_ROOT_DIR', str_replace(BREEZE_WP_CONTENT_NAME, '', WP_CONTENT_DIR
 
 // Compatibility checks
 require_once BREEZE_PLUGIN_DIR . 'inc/plugin-incompatibility/class-breeze-incompatibility-plugins.php';
+// Check for if folder/files are writable.
+require_once BREEZE_PLUGIN_DIR . 'inc/class-breeze-file-permissions.php';
+// AMP compatibility.
+require_once BREEZE_PLUGIN_DIR . 'inc/plugin-incompatibility/breeze-amp-compatibility.php';
 
 // Helper functions.
 require_once BREEZE_PLUGIN_DIR . 'inc/helpers.php';
@@ -80,6 +84,8 @@ require_once BREEZE_PLUGIN_DIR . 'inc/cache/purge-cache.php';
 require_once BREEZE_PLUGIN_DIR . 'inc/cache/purge-per-time.php';
 // Handle post exclude if shortcode.
 require_once BREEZE_PLUGIN_DIR . 'inc/class-exclude-pages-by-shortcode.php';
+// Handle the WP emoji library.
+require_once BREEZE_PLUGIN_DIR . 'inc/class-breeze-disable-emoji-option.php';
 
 // Activate plugin hook
 register_activation_hook(__FILE__, ['Breeze_Admin', 'plugin_active_hook']);
@@ -101,6 +107,7 @@ if (is_admin() || php_sapi_name() === 'cli') {
         'init',
         function () {
             new Breeze_Ecommerce_Cache();
+            Breeze_Query_Strings_Rules::when_woocommerce_settings_save();
         },
         0
     );
@@ -165,6 +172,9 @@ if (!class_exists('Breeze_CDN_Integration')) {
 
 // Refresh cache for ordered products.
 require_once BREEZE_PLUGIN_DIR . 'inc/class-breeze-woocommerce-product-cache.php';
+// WP-CLI commands
+require_once BREEZE_PLUGIN_DIR . 'inc/wp-cli/class-breeze-wp-cli-core.php';
+
 /**
  * This function will update htaccess files after the plugin update is done.
  *
@@ -328,6 +338,26 @@ function breeze_check_for_new_version() {
 
         // If the WP install is multi-site
         if (is_multisite()) {
+            $basic = get_site_option('breeze_basic_settings');
+            if (isset($basic['breeze-disable-admin']) && !is_array($basic['breeze-disable-admin'])) {
+                $all_user_roles = breeze_all_wp_user_roles();
+                $active_cache_users = [];
+                foreach ($all_user_roles as $usr_role) {
+                    $active_cache_users[$usr_role] = 0;
+                }
+
+                $old_user_cache = filter_var($basic['breeze-disable-admin'], FILTER_VALIDATE_BOOLEAN);
+
+                $basic['breeze-disable-admin'] = $active_cache_users;
+
+                if ($old_user_cache === false) {
+                    $basic['breeze-disable-admin']['administrator'] = 1;
+                    unset($old_user_cache);
+                }
+
+                update_site_option('breeze_basic_settings', $basic);
+            }
+
             $advanced_network = get_site_option('breeze_advanced_settings');
             $is_advanced = get_site_option('breeze_advanced_settings_120');
 
@@ -360,11 +390,35 @@ function breeze_check_for_new_version() {
                     switch_to_blog($blog_id);
 
                     // if the settings are inherited, then we do not need to refresh the config file.
-                    $inherit_option = get_blog_option($blog_id, 'breeze_inherit_settings');
+                    $inherit_option = get_blog_option($blog_id, 'breeze_inherit_settings', '');
+                    if ($inherit_option === '') {
+                        $inherit_option = '1';
+                        update_blog_option($blog_id, 'breeze_inherit_settings', $inherit_option);
+                    }
                     $inherit_option = filter_var($inherit_option, FILTER_VALIDATE_BOOLEAN);
 
                     // If the settings are not inherited from parent blog, then refresh the config file.
                     if ($inherit_option === false) {
+                        // update cache for logged-in users from administrator only to all user roles.
+                        $basic = get_blog_option($blog_id, 'breeze_basic_settings');
+                        if (isset($basic['breeze-disable-admin']) && !is_array($basic['breeze-disable-admin'])) {
+                            $all_user_roles = breeze_all_wp_user_roles();
+                            $active_cache_users = [];
+                            foreach ($all_user_roles as $usr_role) {
+                                $active_cache_users[$usr_role] = 0;
+                            }
+                            $old_user_cache = filter_var($basic['breeze-disable-admin'], FILTER_VALIDATE_BOOLEAN);
+
+                            $basic['breeze-disable-admin'] = $active_cache_users;
+
+                            if ($old_user_cache === false) {
+                                $basic['breeze-disable-admin']['administrator'] = 1;
+                                unset($old_user_cache);
+                            }
+
+                            update_blog_option($blog_id, 'breeze_basic_settings', $basic);
+                        }
+
                         $advanced_options = get_blog_option($blog_id, 'breeze_advanced_settings');
                         $is_advanced = get_blog_option($blog_id, 'breeze_advanced_settings_120');
 
@@ -397,6 +451,26 @@ function breeze_check_for_new_version() {
                 }
             }
         } else {
+            // update cache for logged-in users from administrator only to all user roles.
+            $basic = get_option('breeze_basic_settings');
+            if (isset($basic['breeze-disable-admin']) && !is_array($basic['breeze-disable-admin'])) {
+                $all_user_roles = breeze_all_wp_user_roles();
+                $active_cache_users = [];
+                foreach ($all_user_roles as $usr_role) {
+                    $active_cache_users[$usr_role] = 0;
+                }
+                $old_user_cache = filter_var($basic['breeze-disable-admin'], FILTER_VALIDATE_BOOLEAN);
+
+                $basic['breeze-disable-admin'] = $active_cache_users;
+
+                if ($old_user_cache === false) {
+                    $basic['breeze-disable-admin']['administrator'] = 1;
+                    unset($old_user_cache);
+                }
+
+                update_option('breeze_basic_settings', $basic);
+            }
+
             // For single site.
             $advanced = breeze_get_option('advanced_settings');
             $is_advanced = get_option('breeze_advanced_settings_120');
@@ -423,6 +497,7 @@ function breeze_check_for_new_version() {
 
             delete_option('breeze_new_update');
         }
+        Breeze_ConfigCache::factory()->write();
     }
 }
 

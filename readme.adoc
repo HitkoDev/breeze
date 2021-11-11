@@ -2,7 +2,7 @@
 Contributors: Cloudways +
 Tags: cache,caching, performance, wp-cache, cdn, combine, compress, speed plugin, database cache,gzip, http compression, js cache, minify, optimize, page cache, performance, speed, expire headers +
 Requires at least: 4.5 +
-Tested up to: 5.7 +
+Tested up to: 5.8 +
 Stable tag: 2.2.5 +
 License: GPLv2 or later +
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -154,6 +154,63 @@ Using Gzip, Breeze compresses the request files, further reducing the size of th
 == Changelog ==
 
 Below is the old changelog, for recent versions see link:https://github.com/HitkoDev/breeze/releases[Releases].
+
+= 1.2.6 =
+
+ * Add: Varnish cache will be clear while plugin deactivate.
+ * Add: Enable cache for specific user role.
+ * Add: Disable Emojis to reduce request
+ * Add: Delete breeze options values from database on plugin deletion.
+ * Fix: Compatibility issue of map short codes with GeoDirectory plugin.
+ * Fix: Compatibility issue with Ad Inserter plugin.
+ * Fix: Compatibility issue of minification  with Beaver Builder Plugin.
+ * Fix: Compatibility issue of JS scripts with AMP Plugin.
+ * Fix: Reduce cookie life time span while user posts a comment.
+ * Fix: HTML elements filtered from RestAPI end point of lazy-load scripts.
+ * Fix: Config file of each subsite save with appropriate ID in advance cache file.
+ * Fix: Google Analytics script exclude from Minification.
+
+
+= 1.2.5 =
+
+
+ * Add: URLs containing query strings will not be cached by default.
+ * Add: Ignore specific query strings while serving the cache to improve performance.
+ * Add: Ability to cache URLs with specific query strings variables.
+ * Add: Cache handling of URLs having multiple parameters in one query string.
+ * Add: Exceptional Cache handling for case where permalink is set to PLAIN, which includes links for POST, PAGES, ATTACHMENTS, CATEGORIES, ARCHIVES.
+
+
+= 1.2.4 =
+
+
+ * Add: Functionality to clear ALL cache via Command Line Interface (wp-cli).
+ * Add: Functionality to clear Varnish cache via Command Line Interface (wp-cli).
+ * Add: Functionality to clear Internal cache via Command Line Interface (wp-cli).
+ * Add: While the file Permission is not correct, the warning message has been added.
+ * Fix: Compatibility with Coming Soon Page, Maintenance Mode & Landing Pages by SeedProd.
+ * Fix: improve the handling of warning undefine array key of delay JS script while enable debug mode.
+
+
+
+= 1.2.3 =
+
+
+ * Add: Addition in Media assets rules for browser cacheable objects.
+ * Add: Addition in Font assets rules for browser cacheable object.
+ * Add: Addition in Data interchange rules for browser cacheable objects.
+ * Add: Addition in Manifest files rules for browser cacheable object.
+ * Add: Addition in Gzip compression rules.
+ * Fix: Improvise the handling of the Request header while the varnish is disable
+ * Fix: Improvise the condition of Option "Enable cache for logged-in users"
+ 
+
+
+= 1.2.2 =
+
+ * Add: Export settings via Command Line Interface (wp-cli).
+ * Add: Import settings via Command Line Interface(wp-cli).
+
 
 = 1.2.1 =
 
