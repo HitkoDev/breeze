@@ -46,7 +46,7 @@ class RedisClient {
                 $db = $db ? $db : 0;
                 $host = ($scheme ? $scheme . '://' : '') . $url['host'];
                 $port = isset($url['port']) ? $url['port'] : 6379;
-                $this->redis->connect($host, $port);
+                $this->redis->pconnect($host, $port);
                 $this->redis->select($db);
                 break;
         }
