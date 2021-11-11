@@ -27,7 +27,7 @@ jobs:
         run: |
           mkdir -p breeze
           rsync -a --exclude=breeze --exclude="\.*" --exclude=composer.lock  --exclude=composer.json . breeze
-          zip -r breeze.zip breeze
+          zip -r breeze-redis.zip breeze
 
       - name: Release
         uses: marvinpinto/action-automatic-releases@latest
@@ -35,4 +35,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: false
           files: |
-            breeze.zip
+            breeze-redis.zip

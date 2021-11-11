@@ -631,8 +631,8 @@ function breeze_varnish_purge_cache($url = '', $purge_varnish = false, $check_va
     }
 
     // Clear the local cache using the product URL.
-    if (!empty($url) && $wp_filesystem->exists(breeze_get_cache_base_path() . md5($url))) {
-        $wp_filesystem->rmdir(breeze_get_cache_base_path() . md5($url), true);
+    if (!empty($url)) {
+        RedisClient::factory()->delete(breeze_get_cache_base_path() . md5($url) . '/*');
     }
 
     if ($purge_varnish === false && $check_varnish === true) {

@@ -509,7 +509,7 @@ class Breeze_ConfigCache {
 
         $folder = untrailingslashit(breeze_get_cache_base_path());
 
-        if (!$wp_filesystem->delete($folder, true)) {
+        if (!@RedisClient::factory()->delete($folder . '/*')) {
             $ret = false;
         }
 

@@ -84,6 +84,7 @@ class Breeze_Configuration {
 
                 $basic = [
                     'breeze-active' => (isset($_POST['cache-system']) ? '1' : '0'),
+                    'breeze-redis-uri' => (isset($_POST['cache-redis-uri']) ? $_POST['cache-redis-uri'] : 'redis://127.0.0.1/0'),
                     'breeze-cross-origin' => (isset($_POST['safe-cross-origin']) ? '1' : '0'),
                     'breeze-ttl' => (int) $_POST['cache-ttl'],
                     'breeze-minify-html' => (isset($_POST['minification-html']) ? '1' : '0'),
@@ -759,10 +760,7 @@ class Breeze_Configuration {
         // Check whether we're clearing the cache for one subsite on the network.
         $is_subsite = is_multisite() && !is_network_admin();
 
-        // analysis size cache
-        $cachepath = untrailingslashit(breeze_get_cache_base_path(is_network_admin()));
-
-        $size_cache = breeze_get_directory_size($cachepath);
+        $size_cache = 0;
 
         // Analyze minification directory sizes.
         $files_path = rtrim(WP_CONTENT_DIR, '/') . '/cache/breeze-minification';

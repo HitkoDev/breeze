@@ -13,6 +13,7 @@ if (isset($GLOBALS['breeze_config'], $GLOBALS['breeze_config']['cache_options'],
 
 // Load helper functions.
 require_once dirname(__DIR__) . '/functions.php';
+require_once __DIR__ . '/redis-client.php';
 
 if (isset($GLOBALS['breeze_config'], $GLOBALS['breeze_config']['disable_per_adminuser'])) {
     $wp_cookies = ['wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_'];
@@ -211,11 +212,6 @@ function breeze_cache($buffer, $flags) {
     if (is_404() || is_search() || post_password_required()) {
         return $buffer;
     }
-    global $wp_filesystem;
-    if (empty($wp_filesystem)) {
-        require_once ABSPATH . '/wp-admin/includes/file.php';
-        WP_Filesystem();
-    }
 
     $path = $GLOBALS['breeze_filename'];
     $X1 = $GLOBALS['breeze_x1'];
@@ -341,8 +337,11 @@ function breeze_cache($buffer, $flags) {
         ]
     );
 
-    $wp_filesystem->put_contents($path, $data);
-    $wp_filesystem->touch($path, $modified_time);
+    $ttl = (isset($GLOBALS['breeze_config']['cache_options']['breeze-ttl']) ? (int) $GLOBALS['breeze_config']['cache_options']['breeze-ttl'] : 0) * 60;
+    if ($ttl <= 0) {
+        $ttl = 86400;
+    }
+    RedisClient::factory()->set($path, $data, $ttl);
 
     //set cache provider header if not exists cache file
     header('Cache-Provider:CLOUDWAYS-CACHE-' . $X1 . 'C');
@@ -406,9 +405,9 @@ function breeze_serve_cache($filename, $url_path, $X1, $opts) {
     }
 
     if (function_exists('gzencode') && !empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
-        $file_name = md5($filename . '/index.gzip.html') . '.php';
+        $file_name = md5($filename . '/index.gzip.html');
     } else {
-        $file_name = md5($filename . '/index.html') . '.php';
+        $file_name = md5($filename . '/index.html');
     }
 
     $blog_id_requested = isset($GLOBALS['breeze_config']['blog_id']) ? $GLOBALS['breeze_config']['blog_id'] : 0;
@@ -417,39 +416,37 @@ function breeze_serve_cache($filename, $url_path, $X1, $opts) {
     $GLOBALS['breeze_filename'] = $path;
     $GLOBALS['breeze_x1'] = $X1;
 
-    if (@file_exists($path)) {
-        $cacheFile = file_get_contents($path);
+    $cacheFile = @RedisClient::factory()->get($path);
 
-        if ($cacheFile != false) {
-            $datas = unserialize($cacheFile);
-            foreach ($datas['headers'] as $data) {
-                header($data['name'] . ': ' . $data['value']);
-            }
-            //set cache provider header
-            header('Cache-Provider:CLOUDWAYS-CACHE-' . $X1 . 'E');
-
-            $client_support_gzip = true;
-
-            //check gzip request from client
-            if (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && (strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') === false || strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'deflate') === false)) {
-                $client_support_gzip = false;
-            }
-
-            if ($client_support_gzip && function_exists('gzdecode') && !empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
-                //if file is zip
-
-                $content = gzencode($datas['body'], 9);
-                header('Content-Encoding: gzip');
-                header('Content-Length: ' . strlen($content));
-                header('Vary: Accept-Encoding');
-                echo $content;
-            } else {
-                header('Content-Length: ' . strlen($datas['body']));
-                //render page cache
-                echo $datas['body'];
-            }
-            exit;
+    if ($cacheFile) {
+        $datas = unserialize($cacheFile);
+        foreach ($datas['headers'] as $data) {
+            header($data['name'] . ': ' . $data['value']);
         }
+        //set cache provider header
+        header('Cache-Provider:CLOUDWAYS-CACHE-' . $X1 . 'E');
+
+        $client_support_gzip = true;
+
+        //check gzip request from client
+        if (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && (strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') === false || strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'deflate') === false)) {
+            $client_support_gzip = false;
+        }
+
+        if ($client_support_gzip && function_exists('gzdecode') && !empty($GLOBALS['breeze_config']['cache_options']['breeze-gzip-compression'])) {
+            //if file is zip
+
+            $content = gzencode($datas['body'], 9);
+            header('Content-Encoding: gzip');
+            header('Content-Length: ' . strlen($content));
+            header('Vary: Accept-Encoding');
+            echo $content;
+        } else {
+            header('Content-Length: ' . strlen($datas['body']));
+            //render page cache
+            echo $datas['body'];
+        }
+        exit;
     }
 }
 

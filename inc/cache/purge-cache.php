@@ -84,9 +84,7 @@ class Breeze_PurgeCache {
             }
 
             $url_path = get_permalink($post_id);
-            if ($wp_filesystem->exists(breeze_get_cache_base_path() . md5($url_path))) {
-                $wp_filesystem->rmdir(breeze_get_cache_base_path() . md5($url_path), true);
-            }
+            RedisClient::factory()->delete(breeze_get_cache_base_path() . md5($url_path) . '/*');
         }
     }
 
@@ -106,9 +104,7 @@ class Breeze_PurgeCache {
 
                 $url_path = get_permalink($post_id);
 
-                if ($wp_filesystem->exists(breeze_get_cache_base_path() . md5($url_path))) {
-                    $wp_filesystem->rmdir(breeze_get_cache_base_path() . md5($url_path), true);
-                }
+                RedisClient::factory()->delete(breeze_get_cache_base_path() . md5($url_path) . '/*');
             }
         }
     }
@@ -122,7 +118,7 @@ class Breeze_PurgeCache {
         WP_Filesystem();
 
         $cache_path = breeze_get_cache_base_path(is_network_admin());
-        $wp_filesystem->rmdir(untrailingslashit($cache_path), true);
+        RedisClient::factory()->delete($cache_path . '*');
 
         if (function_exists('wp_cache_flush')) {
             wp_cache_flush();
@@ -141,9 +137,7 @@ class Breeze_PurgeCache {
             $ret = false;
         }
 
-        $folder = untrailingslashit(breeze_get_cache_base_path());
-
-        if (!$wp_filesystem->delete($folder, true)) {
+        if (!@RedisClient::factory()->delete(breeze_get_cache_base_path() . '*')) {
             $ret = false;
         }
 

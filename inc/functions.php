@@ -22,6 +22,20 @@ define('BREEZE_PLUGIN_FULL_PATH', dirname(__DIR__) . '/');
 require_once BREEZE_PLUGIN_FULL_PATH . 'inc/class-breeze-query-strings-rules.php';
 
 /**
+ * Generate UUIDv4.
+ *
+ * @return string
+ */
+function guidv4() {
+    $data = random_bytes(16);
+
+    $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+    $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+
+/**
  * Get base path for the page cache directory.
  *
  * @param bool $is_network        Whether to include the blog ID in the path on multisite.
@@ -30,6 +44,14 @@ require_once BREEZE_PLUGIN_FULL_PATH . 'inc/class-breeze-query-strings-rules.php
  * @return string
  */
 function breeze_get_cache_base_path($is_network = false, $blog_id_requested = 0) {
+    $guild_path = rtrim(WP_CONTENT_DIR, '/\\') . '/breeze-guid.txt';
+    $guid = file_get_contents($guild_path);
+    if (empty($guid)) {
+        $guid = guidv4();
+        file_put_contents($guild_path, $guid);
+    }
+    $guid = rtrim($guid, '/\\') . '/';
+
     if (empty($blog_id_requested)) {
         $blog_id_requested = isset($GLOBALS['breeze_config']['blog_id']) ? $GLOBALS['breeze_config']['blog_id'] : 0;
     }
@@ -37,16 +59,16 @@ function breeze_get_cache_base_path($is_network = false, $blog_id_requested = 0)
     if (!$is_network && is_multisite()) {
         if (empty($blog_id_requested)) {
             global $blog_id;
-            $path = rtrim(WP_CONTENT_DIR, '/\\') . '/cache/breeze/';
+            $path = $guid;
             if (!empty($blog_id)) {
-                $path .= abs(intval($blog_id)) . DIRECTORY_SEPARATOR;
+                $path .= abs(intval($blog_id)) . '/';
             }
         } else {
-            $path = rtrim(WP_CONTENT_DIR, '/\\') . '/cache/breeze/';
-            $path .= abs(intval($blog_id_requested)) . DIRECTORY_SEPARATOR;
+            $path = $guid;
+            $path .= abs(intval($blog_id_requested)) . '/';
         }
     } else {
-        $path = rtrim(WP_CONTENT_DIR, '/\\') . '/cache/breeze/';
+        $path = $guid;
     }
 
     return $path;

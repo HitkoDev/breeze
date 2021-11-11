@@ -79,6 +79,7 @@ require_once BREEZE_PLUGIN_DIR . 'inc/helpers.php';
 require_once BREEZE_PLUGIN_DIR . 'inc/functions.php';
 
 //action to purge cache
+require_once BREEZE_PLUGIN_DIR . 'inc/cache/redis-client.php';
 require_once BREEZE_PLUGIN_DIR . 'inc/cache/purge-varnish.php';
 require_once BREEZE_PLUGIN_DIR . 'inc/cache/purge-cache.php';
 require_once BREEZE_PLUGIN_DIR . 'inc/cache/purge-per-time.php';
