@@ -86,6 +86,10 @@ class Breeze_Lazy_Load {
     public function apply_lazy_load_feature() {
         $content = $this->content;
 
+        if (defined('REST_REQUEST') || is_feed() || is_admin() || is_comment_feed() || is_preview() || is_robots() || is_trackback()) {
+            return $content;
+        }
+
         if ($this->lazy_load_enabled === false) {
             return $content;
         }

@@ -45,7 +45,7 @@ class Breeze_PurgeCache {
         if (!empty($config['breeze-active'])) {
             $post_id = $comment->comment_post_ID;
 
-            setcookie('breeze_commented_posts[' . $post_id . ']', parse_url(get_permalink($post_id), PHP_URL_PATH), (time() + HOUR_IN_SECONDS * 24 * 30));
+            setcookie('breeze_commented_posts[' . $post_id . ']', parse_url(get_permalink($post_id), PHP_URL_PATH), (time() + HOUR_IN_SECONDS * 24 * 7));
         }
     }
 
@@ -168,7 +168,8 @@ class Breeze_PurgeCache {
         return $instance;
     }
 }
-$settings = breeze_get_option('basic_settings');
-if (isset($settings['breeze-active']) && $settings['breeze-active']) {
+$breez_basic_settings = breeze_get_option('basic_settings');
+
+if (isset($breez_basic_settings['breeze-active']) && $breez_basic_settings['breeze-active']) {
     Breeze_PurgeCache::factory();
 }

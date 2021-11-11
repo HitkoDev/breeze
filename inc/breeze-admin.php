@@ -326,6 +326,13 @@ class Breeze_Admin {
         if (empty($basic)) {
             $basic = [];
         }
+
+        $all_user_roles = breeze_all_wp_user_roles();
+        $active_cache_users = [];
+        foreach ($all_user_roles as $usr_role) {
+            $active_cache_users[$usr_role] = 0;
+        }
+
         $default_basic = [
             'breeze-active' => '1',
             'breeze-ttl' => '',
@@ -337,7 +344,7 @@ class Breeze_Admin {
             'breeze-desktop-cache' => '1',
             'breeze-browser-cache' => '1',
             'breeze-mobile-cache' => '1',
-            'breeze-disable-admin' => '1',
+            'breeze-disable-admin' => $active_cache_users,
             'breeze-display-clean' => '1',
             'breeze-include-inline-js' => '0',
             'breeze-include-inline-css' => '0',
@@ -361,6 +368,7 @@ class Breeze_Admin {
             'breeze-move-to-footer-js' => [],
             'breeze-defer-js' => [],
             'breeze-enable-js-delay' => '0',
+            'cached-query-strings' => [],
         ];
 
         $is_advanced = get_option('breeze_advanced_settings_120');
@@ -437,6 +445,11 @@ class Breeze_Admin {
 
             $blogs = get_sites();
             foreach ($blogs as $blog) {
+                $is_inherit_already = get_blog_option((int) $blog->blog_id, 'breeze_inherit_settings', '');
+                if ($is_inherit_already === '') {
+                    update_blog_option((int) $blog->blog_id, 'breeze_inherit_settings', '1');
+                }
+
                 $blog_basic = get_blog_option((int) $blog->blog_id, 'breeze_basic_settings', '');
                 if (empty($blog_basic)) {
                     update_blog_option((int) $blog->blog_id, 'breeze_basic_settings', $basic);
@@ -500,6 +513,8 @@ class Breeze_Admin {
                     breeze_update_option('varnish_cache', $varnish);
                 }
             }
+
+            Breeze_ConfigCache::factory()->write_config_cache(true);
         } else {
             $singe_network_basic = breeze_get_option('basic_settings');
             if (!$singe_network_basic) {
@@ -553,6 +568,92 @@ class Breeze_Admin {
         Breeze_ConfigCache::factory()->clean_config();
         Breeze_ConfigCache::factory()->toggle_caching(false);
         Breeze_Configuration::update_htaccess(true);
+
+        $check_varnish = is_varnish_cache_started();
+        if ($check_varnish) {
+            if (is_multisite()) {
+                $sites = get_sites();
+                foreach ($sites as $site) {
+                    switch_to_blog($site->blog_id);
+                    do_action('breeze_clear_varnish');
+                    restore_current_blog();
+                }
+            } else {
+                do_action('breeze_clear_varnish');
+            }
+        }
+    }
+
+    /**
+     * Removed the files and the database settings when plugin is uninstalled
+     *
+     * @since 1.1.6
+     * @static
+     */
+    public static function plugin_uninstall_hook() {
+        // Remove config files and update .htaccess.
+        self::plugin_deactive_hook();
+        // Remove data from the database.
+        self::purge_local_options();
+    }
+
+    public static function purge_local_options() {
+        if ((is_admin() || php_sapi_name() === 'cli')) {
+            if (is_multisite()) {
+                $sites = get_sites(
+                    [
+                        'fields' => 'ids',
+                    ]
+                );
+
+                // Delete NETWORK level options.
+                $network_id = get_current_network_id();
+                delete_network_option($network_id, 'breeze_basic_settings');
+                delete_network_option($network_id, 'breeze_advanced_settings');
+                delete_network_option($network_id, 'breeze_cdn_integration');
+                delete_network_option($network_id, 'breeze_varnish_cache');
+                delete_network_option($network_id, 'breeze_inherit_settings');
+                delete_network_option($network_id, 'breeze_show_incompatibility');
+                delete_network_option($network_id, 'breeze_first_install');
+                delete_network_option($network_id, 'breeze_advanced_settings_120');
+                delete_network_option($network_id, 'breeze_new_update');
+                delete_network_option($network_id, 'breeze_ecommerce_detect');
+                delete_network_option($network_id, 'breeze_exclude_url_pages');
+                delete_network_option($network_id, 'breeze_hide_notice');
+
+                // Delete options for each sub-blog.
+                foreach ($sites as $blog_id) {
+                    switch_to_blog($blog_id);
+                    delete_option('breeze_basic_settings');
+                    delete_option('breeze_advanced_settings');
+                    delete_option('breeze_cdn_integration');
+                    delete_option('breeze_varnish_cache');
+                    delete_option('breeze_inherit_settings');
+                    delete_option('breeze_show_incompatibility');
+                    delete_option('breeze_first_install');
+                    delete_option('breeze_advanced_settings_120');
+                    delete_option('breeze_new_update');
+                    delete_option('breeze_ecommerce_detect');
+                    delete_option('breeze_exclude_url_pages');
+                    delete_option('breeze_hide_notice');
+                    restore_current_blog();
+                }
+            } else {
+                // Delete options for each sub-blog.
+                delete_option('breeze_basic_settings');
+                delete_option('breeze_advanced_settings');
+                delete_option('breeze_cdn_integration');
+                delete_option('breeze_varnish_cache');
+                delete_option('breeze_inherit_settings');
+                delete_option('breeze_show_incompatibility');
+                delete_option('breeze_first_install');
+                delete_option('breeze_advanced_settings_120');
+                delete_option('breeze_new_update');
+                delete_option('breeze_ecommerce_detect');
+                delete_option('breeze_exclude_url_pages');
+                delete_option('breeze_hide_notice');
+            }
+        }
     }
 
     /*

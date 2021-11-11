@@ -199,50 +199,89 @@ $basic = breeze_get_option('basic_settings', true);
         </td>
     </tr>
 
-    <tr style="display: none;">
-        <td style="vertical-align: middle">
-            <label for="mobile-cache"
-                class="breeze_tool_tip"> <?php _e('Mobile Cache', 'breeze'); ?></label>
-        </td>
-        <td>
-            <select id="mobile-cache"
-                name="mobile-cache">
-                <option value="1"
-                    <?php echo ($basic['breeze-mobile-cache'] == '1') ? 'selected="selected"' : ''; ?>><?php _e('Automatic (same as desktop)', 'breeze'); ?>
-                </option>
-                <option value="2"
-                    <?php echo ($basic['breeze-mobile-cache'] == '2') ? 'selected="selected"' : ''; ?>><?php _e('Specific mobile cache', 'breeze'); ?>
-                </option>
-                <option value="3"
-                    <?php echo ($basic['breeze-mobile-cache'] == '3') ? 'selected="selected"' : ''; ?>><?php _e('No cache for mobile', 'breeze'); ?>
-                </option>
-            </select>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            <label class="breeze_tool_tip"><?php _e('Enable cache for loggedin users', 'breeze'); ?></label>
+    <?php
+    if (!isset($basic['breeze-desktop-cache'])) {
+        $basic['breeze-desktop-cache'] = '1';
+    }
+
+    if (!isset($basic['breeze-mobile-cache'])) {
+        $basic['breeze-mobile-cache'] = '1';
+    }
+    ?>
+	<tr style="display: none;">
+		<td style="vertical-align: middle">
+			<label for="desktop-cache" class="breeze_tool_tip"> <?php _e('Desktop Cache', 'breeze'); ?></label>
+		</td>
+		<td>
+			<select id="desktop-cache" name="desktop-cache">
+				<option value="1" <?php echo ($basic['breeze-desktop-cache'] == '1') ? 'selected="selected"' : ''; ?>><?php _e('Activated', 'breeze'); ?></option>
+				<option value="2" <?php echo ($basic['breeze-desktop-cache'] == '2') ? 'selected="selected"' : ''; ?>><?php _e('No cache for desktop', 'breeze'); ?></option>
+			</select>
+		</td>
+	</tr>
+
+	<tr style="display: none;">
+		<td style="vertical-align: middle">
+			<label for="mobile-cache" class="breeze_tool_tip"> <?php _e('Mobile Cache', 'breeze'); ?></label>
+		</td>
+		<td>
+			<select id="mobile-cache" name="mobile-cache">
+				<option value="1" <?php echo ($basic['breeze-mobile-cache'] == '1') ? 'selected="selected"' : ''; ?>><?php _e('Automatic (same as desktop)', 'breeze'); ?></option>
+				<option value="2" <?php echo ($basic['breeze-mobile-cache'] == '2') ? 'selected="selected"' : ''; ?>><?php _e('Specific mobile cache', 'breeze'); ?></option>
+				<option value="3" <?php echo ($basic['breeze-mobile-cache'] == '3') ? 'selected="selected"' : ''; ?>><?php _e('No cache for mobile', 'breeze'); ?></option>
+			</select>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<label class="breeze_tool_tip"><?php _e('Enable cache for loggedin users', 'breeze'); ?></label>
+		</td>
+		<td>
+			<ul>
+				<li>
+					<?php
+                    global $wp_roles;
+                    $roles = $wp_roles->roles;
+
+                    foreach ($roles as $user_role => $user_role_data) {
+                        $is_checked_role = 0;
+                        if (is_array($basic['breeze-disable-admin']) && isset($basic['breeze-disable-admin'], $basic['breeze-disable-admin'][$user_role])) {
+                            $is_checked_role = (int) $basic['breeze-disable-admin'][$user_role];
+                        } ?>
+						<input type="checkbox" name="breeze-admin-cache[<?php echo esc_attr($user_role); ?>]" id="breeze-admin-cache-<?php echo esc_attr($user_role); ?>"
+							   value="1" <?php (isset($is_checked_role) && $is_checked_role === 1) ? checked($is_checked_role, '1') : ''; ?> />
+						<label class="breeze_tool_tip" for="breeze-admin-cache-<?php echo esc_attr($user_role); ?>">
+							<?php echo esc_html($user_role_data['name']); ?>
+					</label>
+					<br/>
+						<?php
+                    }
+                    ?>
+					<span>
+						<b><?php esc_html_e('Note', 'breeze'); ?>:&nbsp;</b>
+						<span style="color: #ff0000"><?php echo esc_html__('This option might not work properly with some page builders.', 'breeze'); ?></span>
+					</span>
+				</li>
+			</ul>
+		</td>
+	</tr>
+
+	<tr>
+		<td>
+            <label class="breeze_tool_tip"><?php _e('Disable emoji', 'breeze'); ?></label>
         </td>
         <td>
             <ul>
                 <li>
-                    <input type="checkbox"
-                        name="breeze-admin-cache"
-                        id="breeze-admin-cache"
-                        value="0"
-                        <?php (isset($basic['breeze-disable-admin'])) ? checked($basic['breeze-disable-admin'], '0') : ''; ?> />
-                    <label class="breeze_tool_tip"
-                        for="breeze-admin-cache">
-                        <?php _e('Enable cache for WP standard user roles: Administrator, Editor, Author, Contributor.', 'breeze'); ?>
+                    <input type="checkbox" name="breeze-wpjs-emoji" id="breeze-wpjs-emoji" value="1" <?php if (isset($basic['breeze-wp-emoji'])) {
+                        checked($basic['breeze-wp-emoji'], '1');
+                    }?>/>
+                    <label class="breeze_tool_tip" for="breeze-wpjs-emoji">
+		                <?php _e('Disable the emoji library loaded by default in WrodPress to reduce HTTP requests.', 'breeze'); ?>
 
                     </label>
-                    <br />
-                    <span>
-                        <b><?php esc_html_e('Note', 'breeze'); ?>:&nbsp;</b>
-                        <span style="color: #ff0000"><?php echo esc_html__('This option might not work properly with some page builders.', 'breeze'); ?></span>
-                    </span>
                 </li>
             </ul>
         </td>
-    </tr>
+	</tr>
 </table>

@@ -397,6 +397,10 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                 $js_head_defer = [];
                 $defer = 'defer ';
                 foreach ($this->delay_scripts['header'] as $js_url => $js_script) {
+                    if (is_string($js_url)) {
+                        $js_url = trim($js_url, '”');
+                    }
+
                     if (filter_var($js_url, FILTER_VALIDATE_URL)) {
                         if (!empty($js_script['version'])) {
                             $js_url .= '?' . $js_script['version'];
@@ -417,7 +421,9 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                 $js_footer_defer = [];
                 $defer = 'defer ';
                 foreach ($this->delay_scripts['footer'] as $js_url => $js_script) {
-                    $js_url = trim($js_url, '”');
+                    if (is_string($js_url)) {
+                        $js_url = trim($js_url, '”');
+                    }
 
                     if (filter_var($js_url, FILTER_VALIDATE_URL)) {
                         if (!empty($js_script['version'])) {
@@ -552,7 +558,16 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
                 $this->custom_js_exclude[] = $jquery_local_path;
             }
 
+            if (isset($matches[0]) && !empty($matches[0])) {
+                $matches[0] = $this->delay_script_loading($matches[0]);
+            }
+
             foreach ($matches[0] as $tag) {
+                if (strpos($tag, 'ga(') !== false || strpos($tag, 'google-analytics.com/analytics.js') !== false) {
+                    $tag = '';
+                    continue;
+                }
+
                 // only consider aggregation whitelisted in should_aggregate-function
                 if (!$this->should_aggregate($tag)) {
                     $tag = '';
@@ -1057,5 +1072,57 @@ class Breeze_MinificationScripts extends Breeze_MinificationBase {
         }
 
         return false;
+    }
+
+    /**
+     * This is an exception for bad written plugins.
+     * Where they use jQuery but do not load their script with jQuery dependency.
+     * We will delay these scripts. But if jQuery is not loaded the issue will still persist.
+     *
+     * @since 1.2.4
+     *
+     * @param mixed $scripts
+     */
+    private function delay_script_loading($scripts = []) {
+        if (!is_array($scripts) || empty($scripts)) {
+            return $scripts;
+        }
+
+        $to_move_last = apply_filters(
+            'breeze_delay_bag_scripts',
+            [
+                'sp-scripts.min.js',
+                'js/tubular.js',
+            ]
+        );
+
+        $return_scripts = [];
+        $add_last = [];
+
+        foreach ($scripts as $index => $script) {
+            $add_return = false;
+            $add_later = false;
+            foreach ($to_move_last as $script_to_delay) {
+                if (strpos($script, $script_to_delay) === false) {
+                    $add_return = true;
+                    break;
+                }
+                $add_later = true;
+            }
+
+            if ($add_later === false && $add_return === true) {
+                $return_scripts[] = $script;
+            } elseif ($add_later === true) {
+                $add_last[] = $script;
+            }
+        }
+
+        if (!empty($add_last)) {
+            foreach ($add_last as $delayed_js_script) {
+                $return_scripts[] = $delayed_js_script;
+            }
+        }
+
+        return $return_scripts;
     }
 }

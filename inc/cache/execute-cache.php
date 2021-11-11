@@ -4,8 +4,51 @@
  */
 defined('ABSPATH') || exit;
 
+if (isset($GLOBALS['breeze_config'], $GLOBALS['breeze_config']['cache_options'], $GLOBALS['breeze_config']['cache_options']['breeze-active'])) {
+    $is_caching_active = filter_var($GLOBALS['breeze_config']['cache_options']['breeze-active'], FILTER_VALIDATE_BOOLEAN);
+    if ($is_caching_active === false) {
+        return;
+    }
+}
+
 // Load helper functions.
 require_once dirname(__DIR__) . '/functions.php';
+
+if (isset($GLOBALS['breeze_config'], $GLOBALS['breeze_config']['disable_per_adminuser'])) {
+    $wp_cookies = ['wordpressuser_', 'wordpresspass_', 'wordpress_sec_', 'wordpress_logged_in_'];
+
+    $breeze_user_logged = false;
+    $breeze_use_cache_system = filter_var($GLOBALS['breeze_config']['cache_options']['breeze-active'], FILTER_VALIDATE_BOOLEAN);
+    $folder_cache = '';
+    foreach ($_COOKIE as $key => $value) {
+        // Logged in!
+        if (strpos($key, 'wordpress_logged_in_') !== false) {
+            $breeze_user_logged = true;
+        }
+
+        if ($key === BREEZE_WP_COOKIE) {
+            $folder_cache = breeze_which_role_folder($value);
+        }
+    }
+
+    if (!empty($folder_cache)) {
+        $is_active = false;
+        foreach ($folder_cache as $cache_role) {
+            if (
+                isset($GLOBALS['breeze_config']['disable_per_adminuser'][$cache_role])
+                && filter_var($GLOBALS['breeze_config']['disable_per_adminuser'][$cache_role], FILTER_VALIDATE_BOOLEAN) === true
+            ) {
+                $is_active = true;
+            }
+        }
+
+        $breeze_use_cache_system = $is_active;
+    }
+
+    if ($breeze_user_logged === true && $breeze_use_cache_system === false) {
+        return;
+    }
+}
 
 // Load lazy Load class.
 require_once dirname(__DIR__) . '/class-breeze-lazy-load.php';
@@ -16,6 +59,10 @@ $detect = new Detection\MobileDetect();
 
 // Don't cache robots.txt or htacesss
 if (strpos($_SERVER['REQUEST_URI'], 'robots.txt') !== false || strpos($_SERVER['REQUEST_URI'], '.htaccess') !== false) {
+    return;
+}
+
+if (strpos($_SERVER['REQUEST_URI'], '/wp-json/geodir/') !== false) {
     return;
 }
 
@@ -93,6 +140,15 @@ $current_url = $domain . rawurldecode($_SERVER['REQUEST_URI']);
 $opts_config = $GLOBALS['breeze_config'];
 $check_exclude = check_exclude_page($opts_config, $current_url);
 
+$query_instance = Breeze_Query_Strings_Rules::get_instance();
+$breeze_query_vars_list = $query_instance->check_query_var_group($current_url);
+
+if ($check_exclude === false && (int) $breeze_query_vars_list['extra_query_no'] !== 0) {
+    header('Cache-control: must-revalidate, max-age=0');
+
+    return;
+}
+
 //load cache
 if (!$check_exclude) {
     $devices = $opts_config['cache_options'];
@@ -134,21 +190,17 @@ if (!$check_exclude) {
  * @since  1.0
  */
 function breeze_cache($buffer, $flags) {
+    global $breeze_user_logged, $breeze_use_cache_system;
     // No cache for pages without 200 response status
     if (http_response_code() !== 200) {
         return $buffer;
     }
 
-    include_once dirname(dirname(__DIR__)) . '/vendor/autoload.php';
-    $detect = new Detection\MobileDetect();
+    require_once 'Mobile-Detect-2.8.25/Mobile_Detect.php';
+    $detect = new \Cloudways\Breeze\Mobile_Detect\Mobile_Detect();
     //not cache per administrator if option disable optimization for admin users clicked
-    if (!empty($GLOBALS['breeze_config']) && (int) $GLOBALS['breeze_config']['disable_per_adminuser']) {
-        if (function_exists('is_user_logged_in') && is_user_logged_in()) {
-            $current_user = wp_get_current_user();
-            if (in_array('administrator', $current_user->roles)) {
-                return $buffer;
-            }
-        }
+    if ($breeze_user_logged === true && $breeze_use_cache_system === false) {
+        return $buffer;
     }
 
     if (strlen($buffer) < 255) {
@@ -200,7 +252,6 @@ function breeze_cache($buffer, $flags) {
 
     if (!isset($_SERVER['HTTP_X_VARNISH'])) {
         $headers = array_merge(
-            $headers,
             [
                 [
                     'name' => 'Expires',
@@ -220,11 +271,21 @@ function breeze_cache($buffer, $flags) {
 
     // Lazy load implementation
     if (class_exists('Breeze_Lazy_Load')) {
-        $is_lazy_load_enabled = filter_var($GLOBALS['breeze_config']['enabled-lazy-load'], FILTER_VALIDATE_BOOLEAN);
-        $is_lazy_load_native = filter_var($GLOBALS['breeze_config']['use-lazy-load-native'], FILTER_VALIDATE_BOOLEAN);
+        if (isset($GLOBALS['breeze_config'])) {
+            if (!isset($GLOBALS['breeze_config']['enabled-lazy-load'])) {
+                $GLOBALS['breeze_config']['enabled-lazy-load'] = false;
+            }
 
-        $lazy_load = new Breeze_Lazy_Load($buffer, $is_lazy_load_enabled, $is_lazy_load_native);
-        $buffer = $lazy_load->apply_lazy_load_feature();
+            if (!isset($GLOBALS['breeze_config']['use-lazy-load-native'])) {
+                $GLOBALS['breeze_config']['use-lazy-load-native'] = false;
+            }
+
+            $is_lazy_load_enabled = filter_var($GLOBALS['breeze_config']['enabled-lazy-load'], FILTER_VALIDATE_BOOLEAN);
+            $is_lazy_load_native = filter_var($GLOBALS['breeze_config']['use-lazy-load-native'], FILTER_VALIDATE_BOOLEAN);
+
+            $lazy_load = new Breeze_Lazy_Load($buffer, $is_lazy_load_enabled, $is_lazy_load_native);
+            $buffer = $lazy_load->apply_lazy_load_feature();
+        }
     }
 
     if (isset($GLOBALS['breeze_config']['cache_options']['breeze-cross-origin']) && filter_var($GLOBALS['breeze_config']['cache_options']['breeze-cross-origin'], FILTER_VALIDATE_BOOLEAN)) {
@@ -244,29 +305,32 @@ function breeze_cache($buffer, $flags) {
                     && strpos($html_a_tag, 'target') !== false
                     && strpos($html_a_tag, '_blank') !== false
                 ) {
-                    $anchor_attributed = new SimpleXMLElement($html_a_tag);
-                    // Only apply on valid URLS.
-                    if (
-                        !empty($anchor_attributed)
-                        && isset($anchor_attributed['href'])
-                        && filter_var($anchor_attributed['href'], FILTER_VALIDATE_URL)
-                    ) {
-                        // Apply noopener noreferrer on the A tag
-                        $replacement_rel = 'noopener noreferrer';
-                        $html_a_tag_replace = $html_a_tag;
-                        if (isset($anchor_attributed['rel']) && !empty($anchor_attributed['rel'])) {
-                            if (strpos($anchor_attributed['rel'], 'noopener') === false && strpos($anchor_attributed['rel'], 'noreferrer') === false) {
-                                $replacement_rel = 'noopener noreferrer';
-                            } elseif (strpos($anchor_attributed['rel'], 'noopener') === false) {
-                                $replacement_rel = 'noopener';
-                            } elseif (strpos($anchor_attributed['rel'], 'noreferrer') === false) {
-                                $replacement_rel = 'noreferrer';
+                    try {
+                        $anchor_attributed = new SimpleXMLElement($html_a_tag);
+                        // Only apply on valid URLS.
+                        if (
+                            !empty($anchor_attributed)
+                            && isset($anchor_attributed['href'])
+                            && filter_var($anchor_attributed['href'], FILTER_VALIDATE_URL)
+                        ) {
+                            // Apply noopener noreferrer on the A tag
+                            $replacement_rel = 'noopener noreferrer';
+                            $html_a_tag_replace = $html_a_tag;
+                            if (isset($anchor_attributed['rel']) && !empty($anchor_attributed['rel'])) {
+                                if (strpos($anchor_attributed['rel'], 'noopener') === false && strpos($anchor_attributed['rel'], 'noreferrer') === false) {
+                                    $replacement_rel = 'noopener noreferrer';
+                                } elseif (strpos($anchor_attributed['rel'], 'noopener') === false) {
+                                    $replacement_rel = 'noopener';
+                                } elseif (strpos($anchor_attributed['rel'], 'noreferrer') === false) {
+                                    $replacement_rel = 'noreferrer';
+                                }
+                                $replacement_rel .= ' ' . $anchor_attributed['rel'];
+                                $html_a_tag_replace = preg_replace('/(<[^>]+) rel=".*?"/i', '$1', $html_a_tag);
                             }
-                            $replacement_rel .= ' ' . $anchor_attributed['rel'];
-                            $html_a_tag_replace = preg_replace('/(<[^>]+) rel=".*?"/i', '$1', $html_a_tag);
+                            $html_a_tag_rel = preg_replace('/(<a\b[^><]*)>/i', '$1 rel="' . $replacement_rel . '">', $html_a_tag_replace);
+                            $buffer = str_replace($html_a_tag, $html_a_tag_rel, $buffer);
                         }
-                        $html_a_tag_rel = preg_replace('/(<a\b[^><]*)>/i', '$1 rel="' . $replacement_rel . '">', $html_a_tag_replace);
-                        $buffer = str_replace($html_a_tag, $html_a_tag_rel, $buffer);
+                    } catch (exception $e) {
                     }
                 }
             }
@@ -279,6 +343,7 @@ function breeze_cache($buffer, $flags) {
             'headers' => $headers,
         ]
     );
+
     //cache per users
     if (is_user_logged_in()) {
         $current_user = wp_get_current_user();
@@ -356,7 +421,18 @@ function breeze_get_url_path() {
     $host = (isset($_SERVER['HTTP_HOST'])) ? $_SERVER['HTTP_HOST'] : '';
     $domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? 'https://' : 'http://');
 
-    return $domain . rtrim($host, '/') . $_SERVER['REQUEST_URI'];
+    $host = (isset($_SERVER['HTTP_HOST'])) ? $_SERVER['HTTP_HOST'] : '';
+    $domain = (((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? 'https://' : 'http://');
+
+    $the_url = $domain . rtrim($host, '/') . $_SERVER['REQUEST_URI'];
+
+    $query_instance = Breeze_Query_Strings_Rules::get_instance();
+    $breeze_query_vars_list = $query_instance->check_query_var_group($the_url);
+    if ((int) $breeze_query_vars_list['ignored_no'] !== 0) {
+        $the_url = $query_instance->rebuild_url($the_url, $breeze_query_vars_list);
+    }
+
+    return $the_url;
 }
 
 /**
@@ -383,16 +459,6 @@ function breeze_serve_cache($filename, $url_path, $X1, $opts) {
     $blog_id_requested = isset($GLOBALS['breeze_config']['blog_id']) ? $GLOBALS['breeze_config']['blog_id'] : 0;
     $path = breeze_get_cache_base_path(false, $blog_id_requested) . md5($url_path) . '/' . $file_name;
 
-    $modified_time = 0;
-    if (file_exists($path)) {
-        $modified_time = (int) @filemtime($path);
-    }
-
-    if (!empty($opts['breeze-browser-cache']) && !empty($modified_time) && !empty($_SERVER['HTTP_IF_MODIFIED_SINCE']) && strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']) === $modified_time) {
-        header($_SERVER['SERVER_PROTOCOL'] . ' 304 Not Modified', true, 304);
-        exit;
-    }
-
     if (@file_exists($path)) {
         $cacheFile = file_get_contents($path);
 
@@ -416,7 +482,6 @@ function breeze_serve_cache($filename, $url_path, $X1, $opts) {
 
                 $content = gzencode($datas['body'], 9);
                 header('Content-Encoding: gzip');
-                header('cache-control: must-revalidate');
                 header('Content-Length: ' . strlen($content));
                 header('Vary: Accept-Encoding');
                 echo $content;
@@ -434,6 +499,11 @@ function check_exclude_page($opts_config, $current_url) {
     $is_feed = breeze_is_feed($current_url);
 
     if ($is_feed === true) {
+        return true;
+    }
+
+    $is_amp = breeze_uri_amp_check($current_url);
+    if ($is_amp === true) {
         return true;
     }
 
