@@ -192,7 +192,7 @@ class Breeze_Query_Strings_Rules {
         $current_url_query = parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY);
         parse_str($current_url_query, $breeze_query_output);
 
-        if ($_SERVER['REQUEST_METHOD'] === 'GET' && !empty($current_url_query)) {
+        if (($_SERVER['REQUEST_METHOD'] === 'GET' || $_SERVER['REQUEST_METHOD'] === 'HEAD') && !empty($current_url_query)) {
             $cache_page = true;
             // If the URL contains query string that needs caching.
             foreach ($always_cache_query as $query_string) {
@@ -241,7 +241,7 @@ class Breeze_Query_Strings_Rules {
             $url = $_SERVER['REQUEST_URI'];
         }
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'HEAD') {
             return false;
         }
 
@@ -290,7 +290,7 @@ class Breeze_Query_Strings_Rules {
         ];
 
         // Only process links if the request is GET.
-        if ($_SERVER['REQUEST_METHOD'] !== 'GET' || empty($current_url)) {
+        if (($_SERVER['REQUEST_METHOD'] !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'HEAD') || empty($current_url)) {
             return $found_items;
         }
 
